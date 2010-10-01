@@ -1,0 +1,79 @@
+Tasks for 10/1
+==============
+- X Write design documentation in reStructuredText.
+- X Specify the fragment of Python to use for first run of PyTy.
+- X Define what it means for each type to typecheck.
+- Look into testing framework (unittest).
+- Look into how to parse epytext docstrings to obtain typechecking info.
+
+
+Goals for First Run
+===================
+Create typechecking system for small subset of Python language (ie, numbers,
+bools, binary ops, control flow), chosen as a subset of Python's Abstract 
+Syntax Tree's abstract grammar. Types will be defined in epydoc docstrings, and
+the PyTy type checker will use epydoc to parse the docstrings and look for
+apporpriate type definitions for every variable instantiated.
+
+
+Types
+=====
+
+stmt
+----
+- For(expr target, expr iter, stmt* body, stmt* orelse)
+- While(expr test, stmt* body, stmt* orelse)
+- If(expr test, stmt* body, stmt* orelse)
+- Expr(expr value)
+
+expr
+----
+- BoolOp(boolop op, expr* values)
+- BinOp(expr left, operator op, expr right)
+- UnaryOp(unaryop op, expr operand)
+- IfExp(expr test, expr body, expr orelse)
+- Repr(expr value)
+- Int(object n)
+- True
+- False
+
+boolop
+------
+- And
+- Or
+
+operator
+--------
+- Add
+- Sub
+- Mult
+- Div
+- Mod
+
+unaryop
+-------
+- Invert
+- Not
+
+
+Typechecking "Rules"
+====================
+
+- BinOp(expr left, operator op, expr right) typechecks as an expr if left,
+  op, and right have their correct types.
+- BoolOp(boolop op, expr* values) typechecks as an expr if op and values have
+  their correct types. 
+- Seems really basic and self-explanatory from the AST definitions...
+
+Notes on Epydoc Parsing
+=======================
+
+
+
+Important Links
+===============
+Python Abstract Syntax Tree Module - http://docs.python.org/library/ast.html
+Epydoc Epytext Parser - http://epydoc.sourceforge.net/api/epydoc.markup.epytext-module.html
+
+
+
