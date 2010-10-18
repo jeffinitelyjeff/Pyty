@@ -12,7 +12,9 @@ def test_function_1(a, b):
     @arg b: An integer.
     """
 
-    print(a * b)
+    x = 5 * 4
+
+    print(a * b + x)
 
 
 def test_function_2(c, d):
@@ -26,3 +28,6 @@ def test_function_2(c, d):
     """
 
     return
+
+def test_3(q):
+    print q
