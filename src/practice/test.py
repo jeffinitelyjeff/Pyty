@@ -12,7 +12,7 @@ def test_function_1(a, b):
     @arg b: An integer.
     """
 
-    x = 5 * 4
+    x = 5 * 4 #: x int
 
     print(a * b + x)
 
