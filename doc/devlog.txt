@@ -1,0 +1,11 @@
+10-19-2010
+==========
+Looked more into how assignments are managed in an AST. Started trying to
+generate a list of all variables assigned values, so I can eventually use that
+list to look in the docstrings to gather type information to check against.
+Docstrings that aren't available from the AST module shouldn't be hard to find,
+since I'll have access to line numbers. Not at a stage to test yet, still trying
+to get basic functions running (after which I'll make tests). Having lots of
+trouble parsing files in other directories: Python keeps throwing
+"AttributeError: 'module' object has no attribute 'suite" from code in the
+compiler class.
