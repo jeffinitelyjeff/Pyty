@@ -4,7 +4,7 @@ import ast
 from parser_helper import get_ast
 from parser_helper import AssignmentBuilder
 
-_PRACTICE_FILE = "practice/test.py"
+_PRACTICE_FILE = "test.py"
 
 def main(argv):
     try:

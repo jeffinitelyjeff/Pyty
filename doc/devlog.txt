@@ -9,3 +9,8 @@ to get basic functions running (after which I'll make tests). Having lots of
 trouble parsing files in other directories: Python keeps throwing
 "AttributeError: 'module' object has no attribute 'suite" from code in the
 compiler class.
+
+
+Things to talk about for 10-22
+==============================
+-Issues with compiler.parseFile() and paths <-- looks like it's not about paths, it just doesn't work AT ALL when in the src/ directory?
