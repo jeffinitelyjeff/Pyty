@@ -9,3 +9,29 @@ to get basic functions running (after which I'll make tests). Having lots of
 trouble parsing files in other directories: Python keeps throwing
 "AttributeError: 'module' object has no attribute 'suite" from code in the
 compiler class.
+
+10-21-2010
+==========
+When trying to write unit tests for the typechecking rules, starting to run into
+the issue of not really knowing how the program is going to be organized -- what
+kind of interface should the program have for the unit testing to call upon?
+Interface is something I hadn't thought about until now; might have to ask
+Danner for help with where to start.
+How will type information be stored? When I check whether an invert expression
+typechecks, it can't just refer to the AST for its expr argument and recurse 
+down until it can determine its type; that would be type inference, not type
+checking. I need to store some kind of parsing information -- like, "I've looked
+at these variables and determined that they are this type." I think I can
+achieve this by simply adding a "type" instance variable to each node object.
+But then where does this fit in to unit testing? My idea is this: have a parse
+function which takes an AST and inserts type information into it, then each unit
+test could just call the parse function on the node it's interested in (so the
+invert unit test would call it on the AST subtree beginning at the invert node);
+but then wouldn't every unit test become an almost trivial 
+assertTrue(parse(...)) or assertFalse(parse(...)), assuming parse returns a
+boolean representing if it typechecked successfully? Maybe that isn't a problem. 
+
+
+Things to talk about for 10-22
+==============================
+-Issues with compiler.parseFile() and paths <-- looks like it's not about paths, it just doesn't work AT ALL when in the src/ directory?

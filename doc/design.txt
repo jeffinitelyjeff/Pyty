@@ -1,10 +1,12 @@
-Tasks for 10/1
-==============
-- X Write design documentation in reStructuredText.
-- X Specify the fragment of Python to use for first run of PyTy.
-- X Define what it means for each type to typecheck.
-- Look into testing framework (unittest).
-- Look into how to parse epytext docstrings to obtain typechecking info.
+Basic Architecture
+==================
+-src/
+  -parser_helper.py <-- helper functions for loading, traversing AST
+  -type_checker.py <-- meat of the program, checks typing
+  -test/
+    -parser_helper_tests.py <-- unit testing of methods of parser_helper
+    -type_tests.py <-- unit testing of type checker
+    -sample_code.py <-- source code file to use for unit tests in type_tests
 
 
 Goals for First Run
@@ -54,6 +56,8 @@ unaryop
 -------
 - Invert
 - Not
+- Uadd (this is like in x = +5)
+- Usub (this is like in x = -5)
 
 
 Typechecking "Rules"
@@ -64,11 +68,6 @@ Typechecking "Rules"
 - BoolOp(boolop op, expr* values) typechecks as an expr if op and values have
   their correct types. 
 - Seems really basic and self-explanatory from the AST definitions...
-
-Notes on Epydoc Parsing
-=======================
-
-
 
 Important Links
 ===============

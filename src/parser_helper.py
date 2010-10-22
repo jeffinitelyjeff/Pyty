@@ -68,10 +68,24 @@ def ast_type(node):
     """Returns the type of the AST node C{node}.
 
     @type node: an AST node.
-    @paraam node: an AST node.
+    @param node: an AST node.
     @rtype: C{str}
     @return: C{str} representation of the type of C{node}.ast.
     """
 
     # The string representation for AST nodes contains the type of node.
     return node.__repr__().split('(')[0]
+
+def find_node(ast0, node_type):
+    """Returns the first instance of a C{node_type} node in AST C{ast0} found by
+    traversing C{ast0}.
+
+    @type ast0: an AST (technically a node of an AST).
+    @param ast0: an AST.
+    @type node_type: C{str}.
+    @param node_type: C{str} representation of type of desired node, in the same
+        format as L{ast_node} returns.
+    """
+
+    # TODO
+
