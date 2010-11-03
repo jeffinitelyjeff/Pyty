@@ -33,9 +33,16 @@ boolean representing if it typechecked successfully? Maybe that isn't a problem.
 
 11-3-2010
 =========
-Suffering grave consequences from taking time off from working on this project.
-Have forgotten some details from my discussion with Danner on 10/22. I remember
-there was some discussion about what types an environment dictionary should
-store; for now, I'm going to naively assume both variable names and type names
-should be stored as strings, though I recall there was some discussion about
-type names possibly being stored as an enumerated type or some class structure.
+- Suffering grave consequences from taking time off from working on this 
+  project. Have forgotten some details from my discussion with Danner on 10/22.
+  I remember there was some discussion about what types an environment 
+  dictionary should store; for now, I'm going to naively assume both variable 
+  names and type names should be stored as strings, though I recall there was 
+  some discussion about type names possibly being stored as an enumerated type
+  or some class structure.
+- I am also afraid that we talked about the typechecking function having 3
+  parameters, not 2, and am afraid I'm forgetting something...
+- Just realized that typecheck() should possbily return an environment, not a
+  boolean, assuming it typechecks properly, and should throw a DoesNotTypecheck
+  error if it doesn't typecheck. that way typecheck() itself could be used to build up
+  the environment.

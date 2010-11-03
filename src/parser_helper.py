@@ -87,5 +87,16 @@ def find_node(ast0, node_type):
         format as L{ast_node} returns.
     """
 
-    # TODO
+    # TODO: implement
+
+def find_node_by_line(tree, line_no):
+    """Returns the most general node found on line number C{line_no}.
+
+    @type tree: an AST.
+    @param tree: an AST.
+    @type line_no: C{int}.
+    @param line_no: line number.
+    """
+
+    # TODO: implement
 
