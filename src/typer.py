@@ -60,3 +60,4 @@ def typecheck(tree, env):
     # TODO: Implement function
     return true
 
+def typecheck_and_upadte(tree, env):

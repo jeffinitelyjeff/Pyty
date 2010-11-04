@@ -65,4 +65,13 @@ boolean representing if it typechecked successfully? Maybe that isn't a problem.
   each call of typecheck, since it seems like there should be a unique
   environment for each AST node, but then there are issues of backtracking and
   removing elements from the environment...
-  
+* Now wondering what exactly I want an environment to be. Before, I was going
+  off the normal definiton of environment, mapping variables to types, but
+  then I realized that I don't just want to be keeping track of variables. Say
+  that I'm typechecking y = 3*(5+4); when typechecking the assignment
+  operator, don't I want the environment to be some mapping showing that
+  3*(5+4) is an int; when typechecking the * operator, don't I want the
+  environment to be some mapping showing that 3 is an int and 5+4 is an int?
+  So do I need to create some way to index AST nodes; that is, do I need to
+  find some way to identify 3*(5+4) and 5+4? I could add a field to each AST
+  node that is just some distinct integer...
