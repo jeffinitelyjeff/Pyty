@@ -39,10 +39,30 @@ boolean representing if it typechecked successfully? Maybe that isn't a problem.
   dictionary should store; for now, I'm going to naively assume both variable 
   names and type names should be stored as strings, though I recall there was 
   some discussion about type names possibly being stored as an enumerated type
-  or some class structure.
+  or some class structure. I envision this won't be terribly detrimental until
+  I start to consider subtyping.
 - I am also afraid that we talked about the typechecking function having 3
   parameters, not 2, and am afraid I'm forgetting something...
 - Just realized that typecheck() should possbily return an environment, not a
   boolean, assuming it typechecks properly, and should throw a DoesNotTypecheck
   error if it doesn't typecheck. that way typecheck() itself could be used to build up
   the environment.
+
+11-4-2010
+=========
+- Decided to make typecheck() return a type value, and then will make a helper
+  function which adds that type to the environment dictionary.
+- Unsure about whether to make two different error cases for whether the
+  incorrect typing occurs at the root node for the AST or in some subtree.
+  Actually, that can be stored as data in the DoesNotTypecheck exception.
+* Wondering whether environments can change with time, and how that would
+  complicate things... It seems like something I should consider, but also
+  something that would only arise due to bad practice (using a variable for one
+  type in one place, and then for another type in another place). Then again,
+  it should arise whenever using looping or local dummy variables, so it does
+  seem like a real issue. Now wondering how to handle that... I think it is
+  handled implicitly by passing around an environment which is morphed with
+  each call of typecheck, since it seems like there should be a unique
+  environment for each AST node, but then there are issues of backtracking and
+  removing elements from the environment...
+  
