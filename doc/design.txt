@@ -1,12 +1,30 @@
 Basic Architecture
 ==================
 -src/
-  -parser_helper.py <-- helper functions for loading, traversing AST
-  -type_checker.py <-- meat of the program, checks typing
+  -parser_helper.py <-- helper functions for leading, traversing AST.
+  -typer.py <-- meat of the program, checks typing.
   -test/
-    -parser_helper_tests.py <-- unit testing of methods of parser_helper
-    -type_tests.py <-- unit testing of type checker
-    -sample_code.py <-- source code file to use for unit tests in type_tests
+    -parser_helper_tests.py <-- unit testing of methods of parser_helper.
+    -basic_tests.py <-- unit testing of typechecking basic operations.
+    -basic_file.py <-- source code file to use for basic_tests.py
+
+
+Basic Flow
+==========
+Epydoc parsing will be used to build up an initial type environment (env0)
+mapping variable and function names to types defined in user comments. The rest
+of typing procedure will then utilize ASTs. Each AST node will be assigned a
+unique ID (probably stored in the AST data structure?), and then env0 will be
+converted to an environment mapping AST node IDs to types. A list (to_check) 
+of all AST node IDs will be constructed; every time an AST node is successfully
+typechecked, its ID will be removed from to_check. Nodes which already have
+types defined in env0 will eventually be typechecked to confirm they actually
+have the specified type, so at any point before that they can be assumed to
+have the specified type. In order to typecheck a program, does_typecheck()
+will be run on the entire file, with environment env0. Every time the type
+for an AST node is determined, that information will be added to the
+running environment (ie, the environmetn which is then passed along to further
+recursive calls of typecheck()).
 
 
 Goals for First Run

@@ -48,9 +48,9 @@ def typecheck(tree, env):
 
     @type tree: an AST node.
     @param tree: an AST to typecheck.
-    @type env: c{dict} {C{str} : C{str]].
+    @type env: C{dict} {C{str} : C{str}}.
     @param env: an environment mapping variable names to types.
-    @rtype: {str}.
+    @rtype: C{str}.
     @return: the type of C{tree}.
     @raise UnsatisfactoryEnvironment: if the C{env} doesn't contain enough
         type information to determine the type of C{tree}.
@@ -60,4 +60,65 @@ def typecheck(tree, env):
     # TODO: Implement function
     return true
 
-def typecheck_and_upadte(tree, env):
+def does_typecheck(tree, env):
+    """Returns a boolean value for whether an AST C{tree} with environment
+    C{env} typechecks properly. Abstracts away the errors thrown by typecheck().
+
+    @type tree: an AST node.
+    @param tree: an AST to typecheck.
+    @type env: C{dict} {C{str} : C{str}}.
+    @param env: an environment mapping variable names to types.
+    @rtype: C{bool}.
+    @return: whether C{tree} typechecks properly.
+    """
+
+    try:
+        typecheck(tree, env)
+    except UnsatisfactoryEnvironment, DoesNotTypecheck:
+        return false
+    else:
+        return true
+
+# MIGHT NOT WANT THIS; ABSTRACTING AWAY IN THIS SENSE COULD JUST MAKE MORE WORK,
+# MIGHT AS WELL JUST USE THE ERROR INFORMATION.
+def satisfactory_environment(tree, env):
+    """Returns a boolean value for whether C{env} is a satisfactory
+    environment for typechecking AST C{tree}. Abstracts away the errors thrown
+    by typecheck().
+
+    @type tree: an AST node.
+    @param tree: an AST to typecheck.
+    @type env: C{dict} {C{str} : C{str}}.
+    @param env: an environment mapping variable names to types.
+    @rtype: C{bool}.
+    @return: whether C{env} is a satisfactory environment to typecheck C{tree}.
+    """
+
+    try:
+        typecheck(tree, env)
+    except UnsatisfactoryEnvironment:
+        return false
+    else:
+        return true
+
+def typecheck_and_update(tree, env):
+    """Updates and returns env to include the type of AST C{tree}, assuming it
+    typechecks properly.
+
+    @type tree: an AST node.
+    @param tree: an AST to typecheck.
+    @type env: C{dict} {C{str} : C{str}}.
+    @param env: an environment mapping variable names to types.
+    @rtype: {str}.
+    @retrun: the type of C{tree}.
+    @raise UnsatisfactoryEnvironment: if the C{env} doesn't contain enough type
+        information to determine the type of C{tree}.
+    @raise DoesNotTypecheck: if something doesn't typecheck within C{tree}.
+    """
+
+    # TODO: implement
+    # call typecheck and create an entry in env to store the type returned by
+    # typecheck.
+    # NOTE: this doesn't entirely make sense unless environments contain
+    # information about every AST node and not just variables.
+    return env
