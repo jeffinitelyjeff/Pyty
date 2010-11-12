@@ -49,8 +49,16 @@ class PytyTests(unittest.TestCase):
         self.assertEqual(expected, typecheck({}, tree, "Module"))
        
 
-    ##### Generated unit tests will go here
-    #####
+    ##### Generated unit tests will go below here
+    def test_one_line1.py(self):
+        _check_file("test_files/one_line1.py")
+
+    def test_one_line2.py(self):
+        _check_file("test_files/one_line2.py")
+
+    def test_one_line3.py(self):
+        _check_file("test_files/one_line3.py")
+    ##### Generated unit tests will go above here
 
 if __name__ == '__main__':
     unittest.main()
