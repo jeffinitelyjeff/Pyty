@@ -36,8 +36,48 @@ the PyTy type checker will use epydoc to parse the docstrings and look for
 apporpriate type definitions for every variable instantiated.
 
 
-Types
-=====
+Current Goal for Type Hierarchy
+===============================
+
+Note: There seems to be considerable (and confusing) difference between th
+edocumentation on ASTs and the actual module, so the following specification
+will be taken loosely. For instance, in the AST documentation it mentions that
+there are 5 builtin types (identifiers, int, string, object, bool), but there
+does not seem to be any way to trace in the documentation how an expr is ever
+classified as an int, string, or bool. Also, there seems to be no mention of
+any type for module when actually querying AST objects; the AST is just
+stored as a list of statements. I'm not sure at this point whether this is
+going to cause any issues down the road.
+
+mod
+---
+- Module(stmt* body)
+
+stmt
+----
+- Assign(expr* targets, expr value)
+- Expr(expr value)
+
+expr
+----
+- BoolOp(boolop op, expr* values)
+- BinOp(expr left, operator op, expr right)
+
+boolop
+------
+- And
+- Or
+
+operator
+--------
+- Add
+- Sub
+- Mult
+- Div
+- Mod
+
+Old Goal for Type Hierarchy
+===========================
 
 stmt
 ----
