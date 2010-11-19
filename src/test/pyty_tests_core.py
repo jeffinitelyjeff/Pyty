@@ -46,7 +46,7 @@ class PytyTests(unittest.TestCase):
 
             tree = ast.parse(f.read())
 
-        self.assertEqual(expected, typecheck({}, tree, "Module"))
+        self.assertEqual(expected, typecheck({}, tree, "mod"))
        
 
     ##### Generated unit tests will go below here

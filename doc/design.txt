@@ -39,6 +39,7 @@ going to cause any issues down the road.
 mod
 ---
 - Module(stmt* body)
+- Expression(expr body)
 
 stmt
 ----

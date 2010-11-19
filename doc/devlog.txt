@@ -114,6 +114,22 @@ boolean representing if it typechecked successfully? Maybe that isn't a problem.
   issues because I'd gone a while without committing and then only committed
   after accidentally deleting the contents of the file I'd worked on. That
   should be all fixed now, though.
-* Wondering whether, instead of just adding text into pyty_tests, there should
+- Wondering whether, instead of just adding text into pyty_tests, there should
   be something like a pyty_tests_core and a 'compiled' version that includes
   the unit tests but isn't included in version control.
+
+11-19-2010
+==========
+- Wondering what to do for typechecks with identical structure; for the sake
+  of not making redundant code, it seems like I should just check if a node is
+  an add, sub, or mult node and then do the same thing for each, but this
+  seems to violate the spirit of typechecking rules.
+- On that note, really need to start typing up typechecking rules.
+- Better name than VariableTypeUnspecifiedError?
+* Not sure what to do about binary operators... the AST stores a binary
+  operation as a binop node, with an op field that distinguishes it as a
+  specific operation. should I essentially ignore that organization and say
+  "if it's a binop node, then do this if it's add,sub,mult or do this if it's
+  div or do this if it's mod"? this is trivial at this stage, since I'm only
+  concerning myself with ints, and all binops have the same typechecking
+  rules when only ints are considered.
