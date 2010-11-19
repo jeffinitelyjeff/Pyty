@@ -1,52 +1,58 @@
-10-19-2010
+11-19-2010
 ==========
-Looked more into how assignments are managed in an AST. Started trying to
-generate a list of all variables assigned values, so I can eventually use that
-list to look in the docstrings to gather type information to check against.
-Docstrings that aren't available from the AST module shouldn't be hard to find,
-since I'll have access to line numbers. Not at a stage to test yet, still trying
-to get basic functions running (after which I'll make tests). Having lots of
-trouble parsing files in other directories: Python keeps throwing
-"AttributeError: 'module' object has no attribute 'suite" from code in the
-compiler class.
+- Wondering what to do for typechecks with identical structure; for the sake
+  of not making redundant code, it seems like I should just check if a node is
+  an add, sub, or mult node and then do the same thing for each, but this
+  seems to violate the spirit of typechecking rules.
+- On that note, really need to start typing up typechecking rules.
+- Better name than VariableTypeUnspecifiedError?
+* Not sure what to do about binary operators... the AST stores a binary
+  operation as a binop node, with an op field that distinguishes it as a
+  specific operation. should I essentially ignore that organization and say
+  "if it's a binop node, then do this if it's add,sub,mult or do this if it's
+  div or do this if it's mod"? this is trivial at this stage, since I'm only
+  concerning myself with ints, and all binops have the same typechecking
+  rules when only ints are considered.
 
-10-21-2010
+11-12-2010
 ==========
-When trying to write unit tests for the typechecking rules, starting to run into
-the issue of not really knowing how the program is going to be organized -- what
-kind of interface should the program have for the unit testing to call upon?
-Interface is something I hadn't thought about until now; might have to ask
-Danner for help with where to start.
-How will type information be stored? When I check whether an invert expression
-typechecks, it can't just refer to the AST for its expr argument and recurse 
-down until it can determine its type; that would be type inference, not type
-checking. I need to store some kind of parsing information -- like, "I've looked
-at these variables and determined that they are this type." I think I can
-achieve this by simply adding a "type" instance variable to each node object.
-But then where does this fit in to unit testing? My idea is this: have a parse
-function which takes an AST and inserts type information into it, then each unit
-test could just call the parse function on the node it's interested in (so the
-invert unit test would call it on the AST subtree beginning at the invert node);
-but then wouldn't every unit test become an almost trivial 
-assertTrue(parse(...)) or assertFalse(parse(...)), assuming parse returns a
-boolean representing if it typechecked successfully? Maybe that isn't a problem. 
+- Had issues with bzr and pull causing conflicts even though I was just
+  pulling onto an earlier revision, but maybe that was a fluke. Had more
+  issues because I'd gone a while without committing and then only committed
+  after accidentally deleting the contents of the file I'd worked on. That
+  should be all fixed now, though.
+- Wondering whether, instead of just adding text into pyty_tests, there should
+  be something like a pyty_tests_core and a 'compiled' version that includes
+  the unit tests but isn't included in version control.
 
-11-3-2010
+11-5-2010
 =========
-- Suffering grave consequences from taking time off from working on this 
-  project. Have forgotten some details from my discussion with Danner on 10/22.
-  I remember there was some discussion about what types an environment 
-  dictionary should store; for now, I'm going to naively assume both variable 
-  names and type names should be stored as strings, though I recall there was 
-  some discussion about type names possibly being stored as an enumerated type
-  or some class structure. I envision this won't be terribly detrimental until
-  I start to consider subtyping.
-- I am also afraid that we talked about the typechecking function having 3
-  parameters, not 2, and am afraid I'm forgetting something...
-- Just realized that typecheck() should possbily return an environment, not a
-  boolean, assuming it typechecks properly, and should throw a DoesNotTypecheck
-  error if it doesn't typecheck. that way typecheck() itself could be used to build up
-  the environment.
+- Split up unit tests on a per-line basis. I think this is the correct
+  approach to use for them, but we'll see.
+* Asserting that a typecheck fails is slightly more complicated than I thought
+  it'd be. typecheck() either throws an UnsatisfactoryEnvironment error or a
+  DoesNotTypecheck error, so I'd want unit tests which check if typecheck()
+  raises UnsatisfactoryEnvironment or DoesNotTypecheck errors based on the
+  context. assertRaises seems like the obvious choice, but assertRaises does
+  not fail if a different error is raised, which is the behavior I want. I
+  think this is easily fixed with try...except blocks, but I think that kind
+  of defeats the purpose. I've implemented it this way for test_line_5, but it
+  seems hackish to have to uncoditionally fail and include an error message.
+- Realized that having z = x + y and z = a + x both in tested code was
+  slightly more complicated than intended.
+* With the way I've set up unit tests so far, it seems a little artificial to
+  test for UnsatisfactoryEnvironment errors since I build up the environment
+  in each case... Instead of building up the environment for lines 4 and 5
+  myself, should I typecheck the appropriate lines to get the environments?
+  Even that still feels artificial, if I'm telling it which lines to
+  typecheck; should there be a "search for type definition" function? What
+  would such a function do? Would it be as simple as checking if it's in the
+  list of nodes defined with types in epydoc or wherever it appears on the
+  left side of an assignment?
+= Danner answered all these questions. Unit tests should be based on
+  files of source code snippets. The way I was planning to implement type
+  checking was making things much more complicated than they should be, and
+  was encroaching on type inference.
 
 11-4-2010
 =========
@@ -78,58 +84,54 @@ boolean representing if it typechecked successfully? Maybe that isn't a problem.
   node to a type, not a variable name to a type, then the previous * is pretty
   much irrelevent.
 
-11-5-2010
+11-3-2010
 =========
-- Split up unit tests on a per-line basis. I think this is the correct
-  approach to use for them, but we'll see.
-* Asserting that a typecheck fails is slightly more complicated than I thought
-  it'd be. typecheck() either throws an UnsatisfactoryEnvironment error or a
-  DoesNotTypecheck error, so I'd want unit tests which check if typecheck()
-  raises UnsatisfactoryEnvironment or DoesNotTypecheck errors based on the
-  context. assertRaises seems like the obvious choice, but assertRaises does
-  not fail if a different error is raised, which is the behavior I want. I
-  think this is easily fixed with try...except blocks, but I think that kind
-  of defeats the purpose. I've implemented it this way for test_line_5, but it
-  seems hackish to have to uncoditionally fail and include an error message.
-- Realized that having z = x + y and z = a + x both in tested code was
-  slightly more complicated than intended.
-* With the way I've set up unit tests so far, it seems a little artificial to
-  test for UnsatisfactoryEnvironment errors since I build up the environment
-  in each case... Instead of building up the environment for lines 4 and 5
-  myself, should I typecheck the appropriate lines to get the environments?
-  Even that still feels artificial, if I'm telling it which lines to
-  typecheck; should there be a "search for type definition" function? What
-  would such a function do? Would it be as simple as checking if it's in the
-  list of nodes defined with types in epydoc or wherever it appears on the
-  left side of an assignment?
-= Danner answered all these questions. Unit tests should be based on
-  files of source code snippets. The way I was planning to implement type
-  checking was making things much more complicated than they should be, and
-  was encroaching on type inference.
+- Suffering grave consequences from taking time off from working on this 
+  project. Have forgotten some details from my discussion with Danner on 10/22.
+  I remember there was some discussion about what types an environment 
+  dictionary should store; for now, I'm going to naively assume both variable 
+  names and type names should be stored as strings, though I recall there was 
+  some discussion about type names possibly being stored as an enumerated type
+  or some class structure. I envision this won't be terribly detrimental until
+  I start to consider subtyping.
+- I am also afraid that we talked about the typechecking function having 3
+  parameters, not 2, and am afraid I'm forgetting something...
+- Just realized that typecheck() should possbily return an environment, not a
+  boolean, assuming it typechecks properly, and should throw a DoesNotTypecheck
+  error if it doesn't typecheck. that way typecheck() itself could be used to build up
+  the environment.
 
-11-12-2010
+10-21-2010
 ==========
-- Had issues with bzr and pull causing conflicts even though I was just
-  pulling onto an earlier revision, but maybe that was a fluke. Had more
-  issues because I'd gone a while without committing and then only committed
-  after accidentally deleting the contents of the file I'd worked on. That
-  should be all fixed now, though.
-- Wondering whether, instead of just adding text into pyty_tests, there should
-  be something like a pyty_tests_core and a 'compiled' version that includes
-  the unit tests but isn't included in version control.
+When trying to write unit tests for the typechecking rules, starting to run into
+the issue of not really knowing how the program is going to be organized -- what
+kind of interface should the program have for the unit testing to call upon?
+Interface is something I hadn't thought about until now; might have to ask
+Danner for help with where to start.
+How will type information be stored? When I check whether an invert expression
+typechecks, it can't just refer to the AST for its expr argument and recurse 
+down until it can determine its type; that would be type inference, not type
+checking. I need to store some kind of parsing information -- like, "I've looked
+at these variables and determined that they are this type." I think I can
+achieve this by simply adding a "type" instance variable to each node object.
+But then where does this fit in to unit testing? My idea is this: have a parse
+function which takes an AST and inserts type information into it, then each unit
+test could just call the parse function on the node it's interested in (so the
+invert unit test would call it on the AST subtree beginning at the invert node);
+but then wouldn't every unit test become an almost trivial 
+assertTrue(parse(...)) or assertFalse(parse(...)), assuming parse returns a
+boolean representing if it typechecked successfully? Maybe that isn't a problem. 
 
-11-19-2010
+10-19-2010
 ==========
-- Wondering what to do for typechecks with identical structure; for the sake
-  of not making redundant code, it seems like I should just check if a node is
-  an add, sub, or mult node and then do the same thing for each, but this
-  seems to violate the spirit of typechecking rules.
-- On that note, really need to start typing up typechecking rules.
-- Better name than VariableTypeUnspecifiedError?
-* Not sure what to do about binary operators... the AST stores a binary
-  operation as a binop node, with an op field that distinguishes it as a
-  specific operation. should I essentially ignore that organization and say
-  "if it's a binop node, then do this if it's add,sub,mult or do this if it's
-  div or do this if it's mod"? this is trivial at this stage, since I'm only
-  concerning myself with ints, and all binops have the same typechecking
-  rules when only ints are considered.
+Looked more into how assignments are managed in an AST. Started trying to
+generate a list of all variables assigned values, so I can eventually use that
+list to look in the docstrings to gather type information to check against.
+Docstrings that aren't available from the AST module shouldn't be hard to find,
+since I'll have access to line numbers. Not at a stage to test yet, still trying
+to get basic functions running (after which I'll make tests). Having lots of
+trouble parsing files in other directories: Python keeps throwing
+"AttributeError: 'module' object has no attribute 'suite" from code in the
+compiler class.
+
+
