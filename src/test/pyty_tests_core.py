@@ -1,6 +1,6 @@
 import unittest
-from ast import parse
-from typer import typecheck
+from ast import parse, literal_eval
+from typecheck import typecheck
 
 """
 This is just the core of the unit testing file. generate_tests.py must be run
@@ -34,19 +34,18 @@ class PytyTests(unittest.TestCase):
 
         with open(filename, 'r') as f:
 
-            expected_str = f.readline().split('### ')[1].split('\n')[0]
+            expected_str = f.readline().strip('###').strip()
 
-            if expected_str == 'True':
-                expected = True
-            elif expected_str == 'False':
-                expected = False
-            else:
+            # expected_str needs to be either 'True' or 'False'
+            try:
+                expected_bool = literal_eval(expected_str)
+            except ValueError:
                 raise TestFileFormatError("Expected test value not specified \
                 properly")
-
+            
             tree = ast.parse(f.read())
 
-        self.assertEqual(expected, typecheck({}, tree, "mod"))
+        self.assertEqual(expected_bool, typecheck({}, tree, "mod"))
        
 
     ##### Generated unit tests will go below here

@@ -1,3 +1,8 @@
+11-28-2010
+==========
+- How to deal with things in test/ needing access to things in the directory
+  above? 
+
 11-19-2010
 ==========
 - Wondering what to do for typechecks with identical structure; for the sake
