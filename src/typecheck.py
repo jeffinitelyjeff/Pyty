@@ -1,9 +1,6 @@
 """
 Location for main typechecking function. Will probably import lots of
 functions from parser.py.
-
-NOTE: Currently, types are stored as strings. This will eventually be replaced
-with a class hierarchy representing types eventually.
 """
 
 def typecheck(env, node, t):
@@ -18,17 +15,16 @@ def typecheck(env, node, t):
     @param t: a type.
     """
     
-    node_info = get_node_info(node)
-    
-    if t == "mod":
+    if isinstance(t, PytyMod):
         # typecheck as a module if the node is a valid expression node or a
         # list of valid statement nodes.
         # -- implement --
 
-    if t == "stmt":
-        if node_info['node_type'] == "Assign":
-            targets = node_info['targets']
-            expr = node_info['value']
+    if isinstance(t, PytyStmt):
+        # this isinstance doesn't actually work
+        if isinstance(node, Assign):
+            targets = node.targets
+            expr = node.value
 
             targets_typecheck = True
 
@@ -47,20 +43,22 @@ def typecheck(env, node, t):
         # -- check if valid expression node --
                 
 
-    if t == "int":
-        if node_info['node_type'] == "Num":
-            value = node_info['n']
-            return type(value) is int
+    if isinstance(t, PytyInt):
+        # this isinstance doesn't actaully work
+        if isinstance(node, Num):
+            value = node.n
+            return isinstance(value, int)
 
-        if node_info['node_type'] == "BinOp":
+        # this isinstance doesn't actually work
+        if isinstance(node, BinOp):
             # this only works when just ints are considered, because all
             # binary operations have the same typechecking rules in that case;
             # will have to greatly expand this once floats are considered.
-            left = node_info[1]
-            right = node_info[2]
+            left = node.left
+            right = node.right
             return typecheck(env, left, "int") and typecheck(env, right, "int")
 
-    if t == "bool":
+    if isinstance(t, PytyBool):
         # typecheck as a bool if the node is and or or and both arguments are
         # also bools.
         # -- implement --

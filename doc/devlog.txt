@@ -1,7 +1,11 @@
 11-28-2010
 ==========
 - How to deal with things in test/ needing access to things in the directory
-  above? 
+  above?
+- Can't remember what Danner suggested to use for checking types of AST 
+  nodes...
+- Goals: - implement type class hierarchy (w/ singleton pattern)
+         - write some typechecking rules, code them up!
 
 11-19-2010
 ==========
