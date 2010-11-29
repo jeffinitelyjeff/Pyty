@@ -6,8 +6,32 @@
   nodes...
 - Using http://code.activestate.com/recipes/52558/ as a reference for the
   singleton pattern.
-- Goals: - implement type class hierarchy (w/ singleton pattern)
-         - write some typechecking rules, code them up!
+- Werid directory structure error:
+
+jruberg@wisdom:~/code/pyty/trunk$ cd src/
+jruberg@wisdom:~/code/pyty/trunk/src$ python
+Python 2.6.6 (r266:84292, Sep 15 2010, 15:52:39) 
+[GCC 4.4.5] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import compiler
+>>> compiler.parse("typecheck.py")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python2.6/compiler/transformer.py", line 51, in parse
+    return Transformer().parsesuite(buf)
+  File "/usr/lib/python2.6/compiler/transformer.py", line 128, in parsesuite
+    return self.transform(parser.suite(text))
+AttributeError: 'module' object has no attribute 'suite'
+>>> quit()
+jruberg@wisdom:~/code/pyty/trunk/src$ cd test
+jruberg@wisdom:~/code/pyty/trunk/src/test$ python
+Python 2.6.6 (r266:84292, Sep 15 2010, 15:52:39) 
+[GCC 4.4.5] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import compiler
+>>> compiler.parse("pyty_tests.py")
+Module(None, Stmt([Discard(Getattr(Name('pyty_tests'), 'py'))]))
+
 
 11-19-2010
 ==========
