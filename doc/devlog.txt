@@ -4,6 +4,8 @@
   above?
 - Can't remember what Danner suggested to use for checking types of AST 
   nodes...
+- Using http://code.activestate.com/recipes/52558/ as a reference for the
+  singleton pattern.
 - Goals: - implement type class hierarchy (w/ singleton pattern)
          - write some typechecking rules, code them up!
 
