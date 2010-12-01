@@ -1,3 +1,5 @@
+from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool
+
 """
 Location for main typechecking function. Will probably import lots of
 functions from parser.py.
@@ -19,7 +21,7 @@ def typecheck(env, node, t):
         # typecheck as a module if the node is a valid expression node or a
         # list of valid statement nodes.
         # -- implement --
-        pass
+        return False # XXX
 
     if isinstance(t, PytyStmt):
         # this isinstance doesn't actually work
@@ -42,6 +44,7 @@ def typecheck(env, node, t):
             return targets_typecheck
 
         # -- check if valid expression node --
+        return False # XXX
                 
 
     if isinstance(t, PytyInt):
@@ -63,7 +66,7 @@ def typecheck(env, node, t):
         # typecheck as a bool if the node is and or or and both arguments are
         # also bools.
         # -- implement --
-        pass
+        return False # XXX
 
 
     # are these really only the 4 different types that would be typechecked

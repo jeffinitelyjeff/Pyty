@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, '../src')
 
 from typecheck import typecheck
+from pyty_types import PytyMod
 
 """
 This is just the core of the unit testing file. generate_tests.py must be run
@@ -35,6 +36,9 @@ class TestFileFormatError(Exception):
 
 class PytyTests(unittest.TestCase):
 
+    def setUp(self):
+        self.pyty_mod_obj = PytyMod()
+
     def _check_file(self, filename):
 
         with open(filename, 'r') as f:
@@ -50,15 +54,15 @@ class PytyTests(unittest.TestCase):
             
             tree = parse(f.read())
 
-        self.assertEqual(expected_bool, typecheck({}, tree, "mod"))
+        self.assertEqual(expected_bool, typecheck({}, tree, self.pyty_mod_obj))
        
 
     ##### Generated unit tests will go below here
-    def test_one_line1(self):
-        self._check_file("test_files/one_line1.py")
-
     def test_one_line2(self):
         self._check_file("test_files/one_line2.py")
+
+    def test_one_line1(self):
+        self._check_file("test_files/one_line1.py")
 
     def test_one_line3(self):
         self._check_file("test_files/one_line3.py")
