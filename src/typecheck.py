@@ -19,6 +19,7 @@ def typecheck(env, node, t):
         # typecheck as a module if the node is a valid expression node or a
         # list of valid statement nodes.
         # -- implement --
+        pass
 
     if isinstance(t, PytyStmt):
         # this isinstance doesn't actually work
@@ -34,7 +35,7 @@ def typecheck(env, node, t):
                 # is always the same type, so the targets should all have the
                 # same type, but it should handle the case when expr is 5 and
                 # one target is specified as an int and one as a float.
-                raise VariableTypeUnspecifiedError if target not in env
+                if target not in env: raise VariableTypeUnspecifiedError()
                 expected_type = env[target]
                 targets_typecheck &= typecheck(env, expr, expected_type)
 
@@ -62,6 +63,7 @@ def typecheck(env, node, t):
         # typecheck as a bool if the node is and or or and both arguments are
         # also bools.
         # -- implement --
+        pass
 
 
     # are these really only the 4 different types that would be typechecked
