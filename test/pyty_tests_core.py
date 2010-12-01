@@ -1,5 +1,10 @@
 import unittest
 from ast import parse, literal_eval
+import sys
+
+# Include src in the Python search path.
+sys.path.insert(0, '../src')
+
 from typecheck import typecheck
 
 """
@@ -43,7 +48,7 @@ class PytyTests(unittest.TestCase):
                 raise TestFileFormatError("Expected test value not specified \
                 properly")
             
-            tree = ast.parse(f.read())
+            tree = parse(f.read())
 
         self.assertEqual(expected_bool, typecheck({}, tree, "mod"))
        

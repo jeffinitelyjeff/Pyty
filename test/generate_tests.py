@@ -16,10 +16,10 @@ file_names = os.listdir(_TEST_FILE_DIR)
 
 # for each file, insert a unit test
 for file_name in file_names:
-    file_name = file_name.split(".")[0]
+    base_file_name = file_name.split(".")[0]
 
-    tests = tests + "    def test_%s(self):\n" % file_name
-    tests = tests + "        _check_file(\"%s/%s\")\n" % (_TEST_FILE_DIR,
+    tests = tests + "    def test_%s(self):\n" % base_file_name
+    tests = tests + "        self._check_file(\"%s/%s\")\n" % (_TEST_FILE_DIR,
             file_name)
     tests = tests + "\n"
 
