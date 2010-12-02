@@ -19,57 +19,78 @@ def typecheck(env, node, t):
     @type t: C{str}.
     @param t: a type.
     """
+
+    int_type = PytyInt()
+    bool_type = PytyBool()
     
     if isinstance(t, PytyMod):
-        if not isinstance(node, ast.Module): return False
+        
+        if isinstance(node, ast.Module):
+            # If node is a module, then it must have a list of statements
+            # which must typecheck as statements.
+            statements = node.body
+            statements_typecheck = True
+            stmt_type = PytyStmt()
 
-        statements = node.body
-        statements_typecheck = True
-        stmt_type = PytyStmt()
+            for statement in statements:
+                statements_typecheck &= typecheck(env, statement, stmt_type)
 
-        for statement in statements:
-            statements_typecheck &= typecheck(env, statement, stmt_type)
+            return statements_typecheck
 
-        return statements_typecheck
+        else:
+            # If node is not a module, then it's not a module... this seems a
+            # little stupid. 
+            return False
 
     if isinstance(t, PytyStmt):
-        # this isinstance doesn't actually work
+        
         if isinstance(node, ast.Assign):
+            # If node is an assign, then the expression must correctly
+            # typecheck as the types of each of the assign targets.
             targets = node.targets
             expr = node.value
 
             targets_typecheck = True
 
             for target in targets:
-                # this checks if the expression typechecks as the type of each
-                # target. this seems a little redundant, since the expression
-                # is always the same type, so the targets should all have the
-                # same type, but it should handle the case when expr is 5 and
-                # one target is specified as an int and one as a float.
                 if target not in env: raise VariableTypeUnspecifiedError()
                 expected_type = env[target]
                 targets_typecheck &= typecheck(env, expr, expected_type)
 
             return targets_typecheck
 
-        # -- check if valid expression node --
-        return False # XXX
+        if isinstance(node, ast.Expr):
+            # If node is an expression, then its value must either typecheck 
+            # as an int or as a bool.
+            val = node.value
+            if typecheck(env, val, int_type):
+                return True
+            elif typecheck(env, val, bool_type):
+                return True
+            else:
+                return False
+
+        else:
+            # If the node isn't an assign or an expression, it's not a
+            # statement.
+            return False
                 
 
     if isinstance(t, PytyInt):
         # this isinstance doesn't actaully work
-        if isinstance(node, Num):
+        if isinstance(node, ast.Num):
             value = node.n
             return isinstance(value, int)
 
         # this isinstance doesn't actually work
-        if isinstance(node, BinOp):
+        if isinstance(node, ast.BinOp):
             # this only works when just ints are considered, because all
             # binary operations have the same typechecking rules in that case;
             # will have to greatly expand this once floats are considered.
             left = node.left
             right = node.right
-            return typecheck(env, left, "int") and typecheck(env, right, "int")
+            return typecheck(env, left, int_type) and typecheck(env, right,
+                    int_type)
 
     if isinstance(t, PytyBool):
         # typecheck as a bool if the node is and or or and both arguments are
