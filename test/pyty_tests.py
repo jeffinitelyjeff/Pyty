@@ -58,6 +58,12 @@ class PytyTests(unittest.TestCase):
        
 
     ##### Generated unit tests will go below here
+    def test_one_line5(self):
+        self._check_file("test_files/one_line5.py")
+
+    def test_one_line4(self):
+        self._check_file("test_files/one_line4.py")
+
     def test_one_line2(self):
         self._check_file("test_files/one_line2.py")
 
@@ -66,6 +72,9 @@ class PytyTests(unittest.TestCase):
 
     def test_one_line3(self):
         self._check_file("test_files/one_line3.py")
+
+    def test_one_line6(self):
+        self._check_file("test_files/one_line6.py")
     ##### Generated unit tests will go above here
 
 if __name__ == '__main__':
