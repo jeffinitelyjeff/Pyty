@@ -1,3 +1,6 @@
+import ast
+
+from pyty_errors import VariableTypeUnspecifiedError
 from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool
 
 """
@@ -18,14 +21,20 @@ def typecheck(env, node, t):
     """
     
     if isinstance(t, PytyMod):
-        # typecheck as a module if the node is a valid expression node or a
-        # list of valid statement nodes.
-        # -- implement --
-        return False # XXX
+        if not isinstance(node, ast.Module): return False
+
+        statements = node.body
+        statements_typecheck = True
+        stmt_type = PytyStmt()
+
+        for statement in statements:
+            statements_typecheck &= typecheck(env, statement, stmt_type)
+
+        return statements_typecheck
 
     if isinstance(t, PytyStmt):
         # this isinstance doesn't actually work
-        if isinstance(node, Assign):
+        if isinstance(node, ast.Assign):
             targets = node.targets
             expr = node.value
 

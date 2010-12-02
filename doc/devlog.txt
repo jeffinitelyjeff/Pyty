@@ -1,3 +1,14 @@
+12-1-2010
+=========
+- According to the compiler documentation, there should be an ast.Stmt type,
+  but there doesn't seem to actually be one. Not sure how this is going to
+  affect me, since I'll be creating my own PytyStmt type.
+- According to all documentation, there should be a distinct case for when a
+  module is just a single expression. Instead, the actual AST code seems to
+  implement this just as the single expression being the only element in a
+  list of statements.
+
+
 11-28-2010
 ==========
 - How to deal with things in test/ needing access to things in the directory

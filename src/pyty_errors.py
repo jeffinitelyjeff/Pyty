@@ -1,0 +1,5 @@
+
+
+class VariableTypeUnspecifiedError(Exception):
+    pass
+    

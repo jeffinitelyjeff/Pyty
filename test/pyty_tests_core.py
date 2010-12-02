@@ -1,5 +1,5 @@
 import unittest
-from ast import parse, literal_eval
+import ast
 import sys
 
 # Include src in the Python search path.
@@ -47,12 +47,12 @@ class PytyTests(unittest.TestCase):
 
             # expected_str needs to be either 'True' or 'False'
             try:
-                expected_bool = literal_eval(expected_str)
+                expected_bool = ast.literal_eval(expected_str)
             except ValueError:
                 raise TestFileFormatError("Expected test value not specified \
                 properly")
             
-            tree = parse(f.read())
+            tree = ast.parse(f.read())
 
         self.assertEqual(expected_bool, typecheck({}, tree, self.pyty_mod_obj))
        
