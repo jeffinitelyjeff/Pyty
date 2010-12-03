@@ -29,7 +29,6 @@ def parse_type_declarations(filename):
     environment = {}
 
     for var in d.variables:
-        
         # this seems to be the most straightforward way of checking whether a
         # variable has a docstring or not.
         if 'docstring' in d.variables[var].__dict__:
@@ -42,6 +41,8 @@ def parse_type_declarations(filename):
                 environment[var] = int_type
             elif specified_str == "bool":
                 environment[var] = bool_type
+            else:
+                raise VariableTypeSpecifiedIncorrectly()
 
 
     return environment

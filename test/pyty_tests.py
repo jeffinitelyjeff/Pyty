@@ -5,7 +5,7 @@ import sys
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from typecheck import typecheck
+from typecheck import typecheck, parse_type_declarations
 from pyty_types import PytyMod
 from pyty_errors import VariableTypeUnspecifiedError
 
@@ -16,7 +16,7 @@ code file in the test_files directory).
 
 Test file format:
 
-### True|False
+### True|False|ErrorName
 
 <Python code>
 """
@@ -42,8 +42,11 @@ class PytyTests(unittest.TestCase):
 
     def _check_file(self, filename):
 
-        with open(filename, 'r') as f:
+        env = parse_type_declarations(filename)
+        print env
 
+        with open(filename, 'r') as f:
+            
             expected_str = f.readline().strip('###').strip()
 
             a = ast.parse(f.read())
@@ -52,7 +55,7 @@ class PytyTests(unittest.TestCase):
                 # test if it's looking for a true or false value.
                 exp = ast.literal_eval(expected_str)
 
-                self.assertEqual(exp, typecheck({}, a, self.pyty_mod_obj))
+                self.assertEqual(exp, typecheck(env, a, self.pyty_mod_obj))
 
             elif expected_str == "VariableTypeUnspecifiedError":
                 # test if it's looking for a VariableTypeUnspecifiedError. if
@@ -60,7 +63,7 @@ class PytyTests(unittest.TestCase):
                 # generalize this, but if there are only going to be a couple,
                 # might as well just include each case explicitly.
                 self.assertRaises(VariableTypeUnspecifiedError, typecheck,
-                        {}, a, self.pyty_mod_obj)
+                        env, a, self.pyty_mod_obj)
 
             else:
                 raise TestFileFormatError("Expected test value or error not \

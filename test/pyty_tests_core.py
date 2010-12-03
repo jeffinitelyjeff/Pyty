@@ -42,10 +42,10 @@ class PytyTests(unittest.TestCase):
 
     def _check_file(self, filename):
 
+        env = parse_type_declarations(filename)
+
         with open(filename, 'r') as f:
-
-            env = parse_type_declarations(filename)
-
+            
             expected_str = f.readline().strip('###').strip()
 
             a = ast.parse(f.read())
