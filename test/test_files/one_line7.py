@@ -1,4 +1,4 @@
-### False
+### VariableTypeUnspecifiedError
 
 a = True
 

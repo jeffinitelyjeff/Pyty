@@ -10,6 +10,8 @@
   will only say a general "true" or "false," but I want to eventually be able
   to say which thing specifically doesn't typecheck to make this at all
   user-friendly.
+* Wondering whether test files should specify the errors they should create,
+  like "### VariableTypeUnspecifiedError"
 
 12-1-2010
 =========

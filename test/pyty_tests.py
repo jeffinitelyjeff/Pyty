@@ -7,6 +7,7 @@ sys.path.insert(0, '../src')
 
 from typecheck import typecheck
 from pyty_types import PytyMod
+from pyty_errors import VariableTypeUnspecifiedError
 
 """
 This is just the core of the unit testing file. generate_tests.py must be run
@@ -45,17 +46,26 @@ class PytyTests(unittest.TestCase):
 
             expected_str = f.readline().strip('###').strip()
 
-            # expected_str needs to be either 'True' or 'False'
-            try:
-                expected_bool = ast.literal_eval(expected_str)
-            except ValueError:
-                raise TestFileFormatError("Expected test value not specified \
-                properly")
-            
-            tree = ast.parse(f.read())
+            a = ast.parse(f.read())
 
-        self.assertEqual(expected_bool, typecheck({}, tree, self.pyty_mod_obj))
-       
+            if expected_str == "True" or expected_str == "False":
+                # test if it's looking for a true or false value.
+                exp = ast.literal_eval(expected_str)
+
+                self.assertEqual(exp, typecheck({}, a, self.pyty_mod_obj))
+
+            elif expected_str == "VariableTypeUnspecifiedError":
+                # test if it's looking for a VariableTypeUnspecifiedError. if
+                # there end up being a lot of possible errors, might want to
+                # generalize this, but if there are only going to be a couple,
+                # might as well just include each case explicitly.
+                self.assertRaises(VariableTypeUnspecifiedError, typecheck,
+                        {}, a, self.pyty_mod_obj)
+
+            else:
+                raise TestFileFormatError("Expected test value or error not \
+                specified properly")
+
 
     ##### Generated unit tests will go below here
     def test_one_line7(self):
