@@ -12,6 +12,8 @@
   user-friendly.
 * Wondering whether test files should specify the errors they should create,
   like "### VariableTypeUnspecifiedError"
+* Should talk about what kind of test cases to create.
+* Why does adding functions work..?
 
 12-1-2010
 =========

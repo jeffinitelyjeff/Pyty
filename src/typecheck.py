@@ -20,20 +20,29 @@ def parse_type_declarations(filename):
     @param filename: name of file to be parsed.
     """
 
-    # XXX CURRENTLY ONLY DEALS WITH "#:" DOCSTRINGS
+    # XXX CURRENTLY ONLY DEALS WITH "#:" DOCSTRINGS (WILL ALSO GET MESSED UP
+    # CUZ FUNCTIONS ARE CONSIDERED VARIABLES BY EPYDOC)
 
     d = docparser.parse_docs(filename)
+
 
     environment = {}
 
     for var in d.variables:
-        # docstrings are of the form: "x : int"
-        specified_str = var.docstring.strip(var.name).strip(u':').strip()
+        
+        # this seems to be the most straightforward way of checking whether a
+        # variable has a docstring or not.
+        if 'docstring' in d.variables[var].__dict__:
+           
+            # docstrings are of the form: "x : int"
+            specified_str = \
+              d.variables[var].docstring.strip(var).strip().strip(':').strip()
 
-        if specified_str == "int":
-            environment[var.name] = int_type
-        elif specified_str == "bool":
-            environment[var.name] = bool_type
+            if specified_str == "int":
+                environment[var] = int_type
+            elif specified_str == "bool":
+                environment[var] = bool_type
+
 
     return environment
 
@@ -82,7 +91,8 @@ def typecheck(env, node, t):
                 # target (the name of the variable).
                 target_name = target.id
 
-                if target_name not in env: raise VariableTypeUnspecifiedError()
+                if target_name not in env: 
+                    raise VariableTypeUnspecifiedError()
                 expected_type = env[target_name]
                 targets_typecheck &= typecheck(env, expr, expected_type)
 
