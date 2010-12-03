@@ -54,8 +54,12 @@ class PytyTests(unittest.TestCase):
             
             tree = ast.parse(f.read())
 
-        self.assertEqual(expected_bool, typecheck({}, tree, self.pyty_mod_obj))
-       
+        try:
+            typechecks = typecheck({}, tree, self.pyty_mod_obj);
+            self.assertEqual(expected_bool, typechecks)
+        except VariableTypeUnspecifiedError:
+            self.assertEqual(expected_bool, False)
+
 
     ##### Generated unit tests will go below here
     ##### Generated unit tests will go above here
