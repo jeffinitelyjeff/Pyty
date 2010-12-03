@@ -1,3 +1,16 @@
+12-2-2010
+=========
+- Boolean operators are stored oddly. The expression "a and b and c" is stored
+  as one boolean operation, but the expression "a and b or c" is stored as the
+  or boolean operation applied to "a and b" and "c" (because and has
+  precedence). Note: apparently I'm stupid and BoolOp was never specified as a
+  binary operation. This really doesn't make things any more complicated; we
+  just need to check that all the values typecheck as bools.
+- Just realized the way I check things with &='s is probably not ideal: this
+  will only say a general "true" or "false," but I want to eventually be able
+  to say which thing specifically doesn't typecheck to make this at all
+  user-friendly.
+
 12-1-2010
 =========
 - According to the compiler documentation, there should be an ast.Stmt type,
