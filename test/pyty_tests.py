@@ -58,6 +58,9 @@ class PytyTests(unittest.TestCase):
        
 
     ##### Generated unit tests will go below here
+    def test_one_line7(self):
+        self._check_file("test_files/one_line7.py")
+
     def test_one_line5(self):
         self._check_file("test_files/one_line5.py")
 

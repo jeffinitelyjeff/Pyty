@@ -1,7 +1,7 @@
 import ast
 
-from errors import VariableTypeUnspecifiedError
-from types import PytyMod, PytyStmt, PytyInt, PytyBool
+from pyty_errors import VariableTypeUnspecifiedError
+from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool
 
 """
 Location for main typechecking function. Will probably import lots of
@@ -16,7 +16,7 @@ def typecheck(env, node, t):
     @param env: an environment (mapping variable identifiers to types)
     @type node: AST node.
     @param node: an AST node.
-    @type t: C{str}.
+    @type t: L{types.PytyType}.
     @param t: a type.
     """
 
