@@ -1,4 +1,5 @@
 import ast
+from epydoc import docparser
 
 from pyty_errors import VariableTypeUnspecifiedError
 from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool
@@ -7,6 +8,34 @@ from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool
 Location for main typechecking function. Will probably import lots of
 functions from parser.py.
 """
+
+int_type = PytyInt()
+bool_type = PytyBool()
+
+def parse_type_declarations(filename):
+    """Returns a dictionary mapping variables in file filenmae with their
+    types defined in docstrings.
+
+    @type filename: C{str}.
+    @param filename: name of file to be parsed.
+    """
+
+    # XXX CURRENTLY ONLY DEALS WITH "#:" DOCSTRINGS
+
+    d = docparser.parse_docs(filename)
+
+    environment = {}
+
+    for var in d.variables:
+        # docstrings are of the form: "x : int"
+        specified_str = var.docstring.strip(var.name).strip(u':').strip()
+
+        if specified_str == "int":
+            environment[var.name] = int_type
+        elif specified_str == "bool":
+            environment[var.name] = bool_type
+
+    return environment
 
 def typecheck(env, node, t):
     """Checks whether the AST tree with C{node} as its root typechecks as type
@@ -19,9 +48,6 @@ def typecheck(env, node, t):
     @type t: L{types.PytyType}.
     @param t: a type.
     """
-
-    int_type = PytyInt()
-    bool_type = PytyBool()
     
     if isinstance(t, PytyMod):
         
