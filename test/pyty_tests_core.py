@@ -51,10 +51,13 @@ class PytyTests(unittest.TestCase):
             a = ast.parse(f.read())
 
             if expected_str == "True" or expected_str == "False":
-                # test if it's looking for a true or false value.
-                exp = ast.literal_eval(expected_str)
+                try:
+                    # test if it's looking for a true or false value.
+                    exp = ast.literal_eval(expected_str)
 
-                self.assertEqual(exp, typecheck(env, a, self.pyty_mod_obj))
+                    self.assertEqual(exp, typecheck(env, a, self.pyty_mod_obj))
+                except VariableTypeUnspecifiedError:
+                    self.fail("A variable type was not specified")
 
             elif expected_str == "VariableTypeUnspecifiedError":
                 # test if it's looking for a VariableTypeUnspecifiedError. if
