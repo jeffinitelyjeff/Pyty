@@ -1,0 +1,129 @@
+---
+one_line2.py
+### True
+#: x : int
+x = 4 + 3
+---
+one_line3.py
+### False
+#: x : int
+x = 4 + 3.0
+---
+one_line4.py
+### True
+4
+---
+one_line5.py
+### True
+4*6
+---
+one_line6.py
+### True
+((4*6+8)-2)%3
+---
+one_line7.py
+### VariableTypeUnspecifiedError
+a = True
+---
+
+
+
+one_line_add1.py
+### True
+5 + 4
+---
+one_line_add2.py
+### False
+4 + True
+---
+one_line_add3.py
+### False
+False + 2
+---
+one_line_add4.py
+### False
+True + False
+---
+one_line_sub1.py
+### True
+9 - 2
+---
+one_line_sub2.py
+### False
+True - 2
+---
+one_line_sub3.py
+### False
+3 - False
+---
+one_line_sub4.py
+### False
+True - True
+---
+one_line_mult1.py
+### True
+2 * 15
+---
+one_line_mult2.py
+### False
+2 * False
+---
+one_line_mult3.py
+### False
+True * 6
+---
+one_line_mult4.py
+### False
+False * True
+---
+one_line_div1.py
+### True
+6 / 2
+---
+one_line_div2.py
+### True
+5 / 3
+---
+one_line_div3.py
+### True
+1 / 6
+---
+one_line_div4.py
+### False
+1 / False
+---
+one_line_div5.py
+### False
+True / 9
+---
+one_line_div6.py
+### False
+True / False
+---
+one_line_mod1.py
+### True
+6 % 2
+---
+one_line_mod2.py
+### True
+7 % 2
+---
+one_line_mod3.py
+### True
+1 % 4
+---
+one_line_mod4.py
+### False
+True % 4
+---
+one_line_mod5.py
+### False
+3 % False
+---
+one_line_mod6.py
+### False
+True % True
+---
+one_line_mod7.py
+### False
+False % True

@@ -1,3 +1,0 @@
-### VariableTypeUnspecifiedError
-
-a = True

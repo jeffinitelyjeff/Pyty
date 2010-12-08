@@ -73,26 +73,98 @@ class PytyTests(unittest.TestCase):
 
 
     ##### Generated unit tests will go below here
+    def test_one_line_sub1(self):
+        self._check_file("test_files/one_line_sub1.py")
+
+    def test_one_line_add2(self):
+        self._check_file("test_files/one_line_add2.py")
+
+    def test_one_line_mod7(self):
+        self._check_file("test_files/one_line_mod7.py")
+
+    def test_one_line_mod6(self):
+        self._check_file("test_files/one_line_mod6.py")
+
+    def test_one_line_add4(self):
+        self._check_file("test_files/one_line_add4.py")
+
+    def test_one_line_sub2(self):
+        self._check_file("test_files/one_line_sub2.py")
+
     def test_one_line7(self):
         self._check_file("test_files/one_line7.py")
+
+    def test_one_line_mod4(self):
+        self._check_file("test_files/one_line_mod4.py")
+
+    def test_one_line_mult2(self):
+        self._check_file("test_files/one_line_mult2.py")
+
+    def test_one_line_mult1(self):
+        self._check_file("test_files/one_line_mult1.py")
+
+    def test_one_line_mult4(self):
+        self._check_file("test_files/one_line_mult4.py")
+
+    def test_one_line_div1(self):
+        self._check_file("test_files/one_line_div1.py")
+
+    def test_one_line_mod3(self):
+        self._check_file("test_files/one_line_mod3.py")
 
     def test_one_line5(self):
         self._check_file("test_files/one_line5.py")
 
+    def test_one_line_mod1(self):
+        self._check_file("test_files/one_line_mod1.py")
+
     def test_one_line4(self):
         self._check_file("test_files/one_line4.py")
+
+    def test_one_line_add1(self):
+        self._check_file("test_files/one_line_add1.py")
+
+    def test_one_line_div5(self):
+        self._check_file("test_files/one_line_div5.py")
 
     def test_one_line2(self):
         self._check_file("test_files/one_line2.py")
 
-    def test_one_line1(self):
-        self._check_file("test_files/one_line1.py")
+    def test_one_line_div4(self):
+        self._check_file("test_files/one_line_div4.py")
 
     def test_one_line3(self):
         self._check_file("test_files/one_line3.py")
 
+    def test_one_line_div6(self):
+        self._check_file("test_files/one_line_div6.py")
+
+    def test_one_line_mod2(self):
+        self._check_file("test_files/one_line_mod2.py")
+
+    def test_one_line_div3(self):
+        self._check_file("test_files/one_line_div3.py")
+
+    def test_one_line_mod5(self):
+        self._check_file("test_files/one_line_mod5.py")
+
+    def test_one_line_sub4(self):
+        self._check_file("test_files/one_line_sub4.py")
+
     def test_one_line6(self):
         self._check_file("test_files/one_line6.py")
+
+    def test_one_line_div2(self):
+        self._check_file("test_files/one_line_div2.py")
+
+    def test_one_line_mult3(self):
+        self._check_file("test_files/one_line_mult3.py")
+
+    def test_one_line_add3(self):
+        self._check_file("test_files/one_line_add3.py")
+
+    def test_one_line_sub3(self):
+        self._check_file("test_files/one_line_sub3.py")
     ##### Generated unit tests will go above here
 
 if __name__ == '__main__':
