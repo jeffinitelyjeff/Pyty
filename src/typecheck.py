@@ -1,7 +1,8 @@
 import ast
 from epydoc import docparser
 
-from pyty_errors import VariableTypeUnspecifiedError
+from pyty_errors import TypeUnspecifiedError, \
+                        TypeIncorrectlySpecifiedError
 from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool
 
 """
@@ -32,17 +33,20 @@ def parse_type_declarations(filename):
         # this seems to be the most straightforward way of checking whether a
         # variable has a docstring or not.
         if 'docstring' in d.variables[var].__dict__:
-           
-            # docstrings are of the form: "x : int"
-            specified_str = \
-              d.variables[var].docstring.strip(var).strip().strip(':').strip()
+          
+            # get string of form 'var_name : type'
+            specified_str = d.variables[var].docstring.strip()
+            # get string of form ': type'
+            specified_str = specified_str[len(var):].strip()
+            # get string of form 'type'
+            specified_str = specified_str[1:].strip()
 
             if specified_str == "int":
                 environment[var] = int_type
             elif specified_str == "bool":
                 environment[var] = bool_type
             else:
-                raise VariableTypeSpecifiedIncorrectly()
+                raise TypeIncorrectlySpecifiedError()
 
 
     return environment
@@ -69,7 +73,8 @@ def typecheck(env, node, t):
             stmt_type = PytyStmt()
 
             for statement in statements:
-                statements_typecheck &= typecheck(env, statement, stmt_type)
+                if not typecheck(env, statement, stmt_type):
+                    statements_typecheck = False
 
             return statements_typecheck
 
@@ -93,9 +98,10 @@ def typecheck(env, node, t):
                 target_name = target.id
 
                 if target_name not in env: 
-                    raise VariableTypeUnspecifiedError()
+                    raise TypeUnspecifiedError()
                 expected_type = env[target_name]
-                targets_typecheck &= typecheck(env, expr, expected_type)
+                if not typecheck(env, expr, expected_type):
+                    targets_typecheck = False
 
             return targets_typecheck
 
@@ -152,7 +158,7 @@ def typecheck(env, node, t):
 
             valid_operators = (ast.And, ast.Or)
 
-            if not isinstance(node,op, valid_operators):
+            if not isinstance(node.op, valid_operators):
                 # operator is invalid.
                 return False
             else:
@@ -160,7 +166,8 @@ def typecheck(env, node, t):
                 values_typecheck = True
 
                 for value in node.values:
-                    values_typecheck &= typecheck(env, value, bool_type)
+                    if not typecheck(env, value, bool_type):
+                        values_typecheck = False
 
                 return values_typecheck
             

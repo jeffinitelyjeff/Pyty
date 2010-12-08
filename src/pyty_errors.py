@@ -1,6 +1,6 @@
-class VariableTypeSpecifiedIncorrectly(Exception):
+class TypeIncorrectlySpecifiedError(Exception):
     pass
 
-class VariableTypeUnspecifiedError(Exception):
+class TypeUnspecifiedError(Exception):
     pass
     

@@ -22,7 +22,7 @@ one_line6.py
 ((4*6+8)-2)%3
 ---
 one_line7.py
-### VariableTypeUnspecifiedError
+### TypeUnspecifiedError
 a = True
 ---
 
@@ -200,3 +200,132 @@ one_line_mod10.py
 ### False
 32.8 % True
 ---
+
+---
+one_line_assign1.py
+### True
+#: x : int
+x = 4
+---
+one_line_assign2.py
+### True
+#: anthoeuhu : int
+anthoeuhu = 92
+---
+one_line_assign3.py
+### True
+#: b : bool
+b = True
+---
+one_line_assign4.py
+### False
+#: b : bool
+b = 4
+---
+one_line_assign5.py
+### False
+#: i : int
+i = True
+---
+one_line_assign6.py
+### False
+#: i : int
+i = 5.2
+---
+one_line_assign7.py
+### False
+#: b : bool
+b = 4
+---
+one_line_assign8.py
+### False
+#: b : bool
+b = 4.2
+---
+one_line_assign9.py
+### TypeUnspecifiedError
+a = True
+---
+one_line_assign10.py
+### TypeUnspecifiedError
+q = 4
+---
+one_line_assign11.py
+### TypeIncorrectlySpecifiedError
+#: b : boolean
+b = True
+---
+one_line_assign12.py
+### TypeIncorrectlySpecifiedError
+#: b : Bool
+b = False
+---
+one_line_assign13.py
+### TypeIncorrectlySpecifiedError
+#: i : Integer
+i = 52
+---
+
+---
+one_line_complicated1.py
+### True
+#: x : int
+x = 4 + (3 - 11 / 2) % 2
+---
+one_line_complicated2.py
+### False
+#: x : int
+x = 4.2 + (3 - 11 / 2) % 2
+---
+one_line_complicated3.py
+### False
+#: x : bool
+x = 4 + (3 - 11 / 2) % 2
+---
+one_line_complicated4.py
+### False
+#: x : int
+x = 4 + (3 - 11 / 2) % 2.2
+---
+one_line_complicated5.py
+### False
+#: x : bool
+x = 4 + (3.0 - 11 / 2) % 2
+---
+one_line_complicated6.py
+### True
+#: y : bool
+y = True and False
+---
+one_line_complicated7.py
+### True
+#: y : bool
+y = (True and False) or (False and False)
+---
+one_line_complicated8.py
+### False
+#: y : int
+y = (True and False) or (False and False)
+---
+one_line_complicated9.py
+### False
+#: y : bool
+y = (True and False) or (False and 3)
+---
+one_line_complicated10.py
+### TypeUnspecifiedError
+x = 4 + (3 - 11 / 2) % 2
+---
+one_line_complicated11.py
+### TypeUnspecifiedError
+x = 4 + (3 - 11 / 2) % 2.0
+---
+one_line_complicated12.py
+### TypeUnspecifiedError
+y = (True and False) or (False and False)
+---
+one_line_complicated13.py
+### TypeUnspecifiedError
+y = (True and False) or 4
+---
+

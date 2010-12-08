@@ -21,7 +21,7 @@ with open(_ONE_LINERS_SOURCE, 'r') as f:
 
             # for somer reason file_datum.strip('\n'+filen_name+'\n') went
             # crazy here and would remove 'e\n' or 'ue\n' from the end.
-            file_body = file_datum.split(file_name + '\n')[1]
+            file_body = file_datum.split(file_name + '\n')[1] + '\n'
 
             with open(_TEST_FILE_DIR + '/' + file_name, 'w') as g:
                 g.write(file_body)
