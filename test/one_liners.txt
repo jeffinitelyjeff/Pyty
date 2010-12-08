@@ -27,7 +27,7 @@ a = True
 ---
 
 
-
+---
 one_line_add1.py
 ### True
 5 + 4
@@ -43,6 +43,24 @@ False + 2
 one_line_add4.py
 ### False
 True + False
+---
+one_line_add5.py
+### False
+4 + 3.2
+---
+one_line_add6.py
+### False
+4 + 3.0
+---
+one_line_add7.py
+### False
+3.0 + 7.0
+---
+one_line_add8.py
+### False
+False + 8.2
+---
+
 ---
 one_line_sub1.py
 ### True
@@ -60,6 +78,20 @@ one_line_sub4.py
 ### False
 True - True
 ---
+one_line_sub5.py
+### False
+4 - 8.3
+---
+one_line_sub6.py
+### False
+4 - 8.0
+---
+one_line_sub7.py
+### False
+False - 25.3
+---
+
+---
 one_line_mult1.py
 ### True
 2 * 15
@@ -75,6 +107,20 @@ True * 6
 one_line_mult4.py
 ### False
 False * True
+---
+one_line_mult5.py
+### False
+8.3 * 2
+---
+one_line_mult6.py
+### False
+9.0 * 25
+---
+one_line_mult7.py
+### False
+False * 3.3
+---
+
 ---
 one_line_div1.py
 ### True
@@ -99,6 +145,20 @@ True / 9
 one_line_div6.py
 ### False
 True / False
+---
+one_line_div7.py
+### False
+2.8 * 3
+---
+one_line_div8.py
+### False
+2.0 * 1
+---
+one_line_div9.py
+### False
+True * 1.3
+---
+
 ---
 one_line_mod1.py
 ### True
@@ -127,3 +187,16 @@ True % True
 one_line_mod7.py
 ### False
 False % True
+---
+one_line_mod8.py
+### False
+3.2 % 3
+---
+one_line_mod9.py
+### False
+3 % 2.0
+---
+one_line_mod10.py
+### False
+32.8 % True
+---

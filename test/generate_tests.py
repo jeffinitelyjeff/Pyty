@@ -15,14 +15,16 @@ with open(_ONE_LINERS_SOURCE, 'r') as f:
     file_data = f.read().split("---")[1:]
     for file_datum in file_data:
         file_datum = file_datum.strip('\n')
-        file_name = file_datum.split('\n')[0]
 
-        # for somer reason file_datum.strip('\n'+filen_name+'\n') went crazy
-        # here and would remove 'e\n' or 'ue\n' from the end.
-        file_body = file_datum.split(file_name + '\n')[1]
+        if file_datum != '':
+            file_name = file_datum.split('\n')[0]
 
-        with open(_TEST_FILE_DIR + '/' + file_name, 'w') as g:
-            g.write(file_body)
+            # for somer reason file_datum.strip('\n'+filen_name+'\n') went
+            # crazy here and would remove 'e\n' or 'ue\n' from the end.
+            file_body = file_datum.split(file_name + '\n')[1]
+
+            with open(_TEST_FILE_DIR + '/' + file_name, 'w') as g:
+                g.write(file_body)
 
 tests = ""
 

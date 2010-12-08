@@ -79,11 +79,17 @@ class PytyTests(unittest.TestCase):
     def test_one_line_add2(self):
         self._check_file("test_files/one_line_add2.py")
 
+    def test_one_line_mod10(self):
+        self._check_file("test_files/one_line_mod10.py")
+
     def test_one_line_mod7(self):
         self._check_file("test_files/one_line_mod7.py")
 
     def test_one_line_mod6(self):
         self._check_file("test_files/one_line_mod6.py")
+
+    def test_one_line_div9(self):
+        self._check_file("test_files/one_line_div9.py")
 
     def test_one_line_add4(self):
         self._check_file("test_files/one_line_add4.py")
@@ -97,6 +103,9 @@ class PytyTests(unittest.TestCase):
     def test_one_line_mod4(self):
         self._check_file("test_files/one_line_mod4.py")
 
+    def test_one_line_mod9(self):
+        self._check_file("test_files/one_line_mod9.py")
+
     def test_one_line_mult2(self):
         self._check_file("test_files/one_line_mult2.py")
 
@@ -109,8 +118,17 @@ class PytyTests(unittest.TestCase):
     def test_one_line_div1(self):
         self._check_file("test_files/one_line_div1.py")
 
+    def test_one_line_add7(self):
+        self._check_file("test_files/one_line_add7.py")
+
     def test_one_line_mod3(self):
         self._check_file("test_files/one_line_mod3.py")
+
+    def test_one_line_sub5(self):
+        self._check_file("test_files/one_line_sub5.py")
+
+    def test_one_line_add5(self):
+        self._check_file("test_files/one_line_add5.py")
 
     def test_one_line5(self):
         self._check_file("test_files/one_line5.py")
@@ -124,8 +142,14 @@ class PytyTests(unittest.TestCase):
     def test_one_line_add1(self):
         self._check_file("test_files/one_line_add1.py")
 
+    def test_one_line_add8(self):
+        self._check_file("test_files/one_line_add8.py")
+
     def test_one_line_div5(self):
         self._check_file("test_files/one_line_div5.py")
+
+    def test_one_line_add6(self):
+        self._check_file("test_files/one_line_add6.py")
 
     def test_one_line2(self):
         self._check_file("test_files/one_line2.py")
@@ -136,8 +160,14 @@ class PytyTests(unittest.TestCase):
     def test_one_line3(self):
         self._check_file("test_files/one_line3.py")
 
+    def test_one_line_sub6(self):
+        self._check_file("test_files/one_line_sub6.py")
+
     def test_one_line_div6(self):
         self._check_file("test_files/one_line_div6.py")
+
+    def test_one_line_mult6(self):
+        self._check_file("test_files/one_line_mult6.py")
 
     def test_one_line_mod2(self):
         self._check_file("test_files/one_line_mod2.py")
@@ -145,8 +175,20 @@ class PytyTests(unittest.TestCase):
     def test_one_line_div3(self):
         self._check_file("test_files/one_line_div3.py")
 
+    def test_one_line_mult7(self):
+        self._check_file("test_files/one_line_mult7.py")
+
+    def test_one_line_div7(self):
+        self._check_file("test_files/one_line_div7.py")
+
+    def test_one_line_mult5(self):
+        self._check_file("test_files/one_line_mult5.py")
+
     def test_one_line_mod5(self):
         self._check_file("test_files/one_line_mod5.py")
+
+    def test_one_line_div8(self):
+        self._check_file("test_files/one_line_div8.py")
 
     def test_one_line_sub4(self):
         self._check_file("test_files/one_line_sub4.py")
@@ -156,6 +198,12 @@ class PytyTests(unittest.TestCase):
 
     def test_one_line_div2(self):
         self._check_file("test_files/one_line_div2.py")
+
+    def test_one_line_mod8(self):
+        self._check_file("test_files/one_line_mod8.py")
+
+    def test_one_line_sub7(self):
+        self._check_file("test_files/one_line_sub7.py")
 
     def test_one_line_mult3(self):
         self._check_file("test_files/one_line_mult3.py")
