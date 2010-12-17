@@ -80,7 +80,6 @@ def typecheck(env, node, t):
             # which must typecheck as statements.
             statements = node.body
             statements_typecheck = True
-            stmt_type = PytyStmt()
 
             for statement in statements:
                 if not typecheck(env, statement, stmt_type):

@@ -7,24 +7,29 @@ fill in unit tests for the current contents of test_files.
 """
 
 _ONE_LINERS_SOURCE = "one_liners.txt"
+_CONTROL_SOURCE = "control.txt"
 _UNIT_TEST_CORE = "pyty_tests_core.py"
 _UNIT_TEST_OUTPUT = "pyty_tests.py"
 _TEST_FILE_DIR = "test_files"
 
-with open(_ONE_LINERS_SOURCE, 'r') as f:
-    file_data = f.read().split("---")[1:]
-    for file_datum in file_data:
-        file_datum = file_datum.strip('\n')
+def create_source_files(source):
+    with open(source, 'r') as f:
+        file_data = f.read().split("---")[1:]
+        for file_datum in file_data:
+            file_datum = file_datum.strip('\n')
 
-        if file_datum != '':
-            file_name = file_datum.split('\n')[0]
+            if file_datum != '':
+                file_name = file_datum.split('\n')[0]
 
-            # for somer reason file_datum.strip('\n'+filen_name+'\n') went
-            # crazy here and would remove 'e\n' or 'ue\n' from the end.
-            file_body = file_datum.split(file_name + '\n')[1] + '\n'
+                # for somer reason file_datum.strip('\n'+filen_name+'\n') went
+                # crazy here and would remove 'e\n' or 'ue\n' from the end.
+                file_body = file_datum.split(file_name + '\n')[1] + '\n'
 
-            with open(_TEST_FILE_DIR + '/' + file_name, 'w') as g:
-                g.write(file_body)
+                with open(_TEST_FILE_DIR + '/' + file_name, 'w') as g:
+                    g.write(file_body)
+
+create_source_files(_ONE_LINERS_SOURCE)
+create_source_files(_CONTROL_SOURCE)
 
 tests = ""
 
