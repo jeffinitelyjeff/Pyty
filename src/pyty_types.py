@@ -28,4 +28,5 @@ class PytyMod(PytyType):
 class PytyStmt(PytyType):
     pass
 
-
+class PytyExpr(PytyType):
+    pass

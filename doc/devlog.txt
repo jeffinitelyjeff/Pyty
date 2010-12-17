@@ -1,3 +1,8 @@
+12-17-2010
+==========
+- What's the point of having a for target be an expression? Shouldn't it just
+  be a variable identifier?
+
 12-2-2010
 =========
 - Boolean operators are stored oddly. The expression "a and b and c" is stored

@@ -43,6 +43,7 @@ mod
 
 stmt
 ----
+- For(expr target, expr iter, stmt* body, stmt* orelse)
 - Assign(expr* targets, expr value)
 - Expr(expr value)
 

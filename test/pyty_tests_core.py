@@ -45,14 +45,11 @@ class PytyTests(unittest.TestCase):
         with open(filename, 'r') as f:
             
             expected_str = f.readline().strip('###').strip()
-            print filename + ": " + \
-            expected_str + "|" 
 
             if expected_str == "TypeIncorrectlySpecifiedError":
-                print "hi"
                 self.assertRaises(TypeIncorrectlySpecifiedError,   
                     parse_type_declarations, filename)
-                print "just asserted!"
+                return
 
             env = parse_type_declarations(filename)
             

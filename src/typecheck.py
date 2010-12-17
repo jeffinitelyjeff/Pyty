@@ -3,7 +3,7 @@ from epydoc import docparser
 
 from pyty_errors import TypeUnspecifiedError, \
                         TypeIncorrectlySpecifiedError
-from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool
+from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool, PytyExpr
 
 """
 Location for main typechecking function. Will probably import lots of
@@ -12,6 +12,8 @@ functions from parser.py.
 
 int_type = PytyInt()
 bool_type = PytyBool()
+expr_type = PytyExpr()
+stmt_type = PytyStmt()
 
 def parse_type_declarations(filename):
     """Returns a dictionary mapping variables in file filenmae with their
@@ -51,18 +53,26 @@ def parse_type_declarations(filename):
 
     return environment
 
+def is_varibale(node):
+    """Returns whether AST node C{node} is a variable."""
+
+    # this is how the AST seems to mark variables
+    return isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)
+
 def typecheck(env, node, t):
     """Checks whether the AST tree with C{node} as its root typechecks as type
     C{t} given environment C{env}.
 
-    @type env: C{dict} {C{str}:C{str}}.
+    @type env: C{dict} {C{str}:L{types.PytyType}}.
     @param env: an environment (mapping variable identifiers to types)
     @type node: AST node.
     @param node: an AST node.
     @type t: L{types.PytyType}.
     @param t: a type.
     """
-    
+
+    # mod
+    # - module(stmt* body)
     if isinstance(t, PytyMod):
         
         if isinstance(node, ast.Module):
@@ -83,6 +93,12 @@ def typecheck(env, node, t):
             # little stupid. 
             return False
 
+    # stmt
+    # - assign(expr* targets, expr value)
+    # - expr(expr value)
+    # - if(expr test, stmt* body, stmt* orelse)
+    # - while(bool test, stmt* body, stmt* orelse)
+    # - for(variable target, expr iter, stmt* body, stmt* orelse)
     elif isinstance(t, PytyStmt):
         
         if isinstance(node, ast.Assign):
@@ -105,22 +121,32 @@ def typecheck(env, node, t):
 
             return targets_typecheck
 
+        elif isinstance(node, ast.If):
+            return typecheck(env, node.test, bool_type) and typecheck(env,
+                node.body, stmt_type) and typecheck(env, node.orelse,
+                stmt_type)
+
+        elif isinstance(node, ast.While):
+            return typecheck(env, node.test, bool_type) and typecheck(env,
+                node.body, stmt_type) and typecheck(env, node.orelse,
+                stmt_type)
+
+        elif isinstance(node, ast.For):
+            return is_variable(node.target) and typecheck(env, node.iter,
+                expr_type) and typecheck_list(env, node.body, stmt_type) \
+                and typecheck_list(env, node.orelse, stmt_type)
+
         elif isinstance(node, ast.Expr):
-            # If node is an expression, then its value must either typecheck 
-            # as an int or as a bool.
-            val = node.value
-            if typecheck(env, val, int_type):
-                return True
-            elif typecheck(env, val, bool_type):
-                return True
-            else:
-                return False
+            return typecheck(env, node.value, expr_type)
 
         else:
-            # If the node isn't an assign or an expression, it's not a
-            # statement.
             return False
-                
+               
+
+    elif isinstance(t, PytyExpr):
+        return typecheck(env, node, int_type) \
+                or typecheck(env, node, bool_type)
+
 
     elif isinstance(t, PytyInt):
         
@@ -144,6 +170,7 @@ def typecheck(env, node, t):
             # if the node isn't a number literal or a binary operation,
             # then it's not an int.
             return False
+
 
     elif isinstance(t, PytyBool):
         
@@ -175,4 +202,21 @@ def typecheck(env, node, t):
             # if the node isn't a bool literal or a boolean operation, then
             # it's not a bool.
             return False
+
+def typecheck_list(env, l, t):
+    """Checks whether every node in list C{l} typechecks as type C{t} given
+    environment C{env}.
+
+    @type env: C{dict} {{C{str}:C{PytyType}}.
+    @param env: an environment (mapping variable identifiers to types).
+    @type l: C{list} [AST node]
+    @param l: a list of AST nodes.
+    @type t: L{types.PytyType}.
+    @param t: a type.
+    """
+    
+    for node in l:
+        if not typecheck(env, node, t): return False
+
+    return True
 
