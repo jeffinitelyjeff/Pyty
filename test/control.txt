@@ -1,0 +1,97 @@
+---
+if1.py
+### True
+
+if True:
+    5    
+---
+if2.py
+### True
+
+if True:
+    4*3/2+592
+---
+if3.py
+### True
+
+if True:
+    #: x : int
+    x = 25
+---
+if4.py
+### True
+
+#: b : bool
+b = False
+
+if b:
+    42
+---
+if5.py
+### True
+
+#: b : bool
+b = True
+
+if b:
+    #: a : int
+    a = 5*42
+---
+if6.py
+### False
+
+if 5:
+    3
+---
+if7.py
+### False
+
+#: x : int
+x = 4
+
+if x:
+    2
+---
+if8.py
+### False
+
+if True:
+    #: a : int
+    a = True
+---
+if9.py
+### False
+
+if False:
+    #: a : int
+    a = True
+---
+if10.py
+### True
+
+if True:
+    #: x : int
+    x = 3
+else:
+    #: x : int
+    x = 2
+---
+if11.py
+### True
+
+#: x : int
+x = 3
+
+if x == 1:
+    #: y : bool
+    y = True
+elif x == 2:
+    #: y : bool
+    y = False
+elif x == 3:
+    #: y : bool
+    y = True
+else:
+    #: y : bool
+    y = False
+---
