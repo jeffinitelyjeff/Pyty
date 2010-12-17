@@ -5,7 +5,7 @@ import sys
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from typecheck import typecheck, parse_type_declarations
+from typecheck import typecheck, parse_type_declarations, debug
 from pyty_types import PytyMod
 from pyty_errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 
@@ -41,6 +41,7 @@ class PytyTests(unittest.TestCase):
         self.pyty_mod_obj = PytyMod()
 
     def _check_file(self, filename):
+        debug("Checking %s" % filename)
 
         with open(filename, 'r') as f:
             
@@ -131,6 +132,9 @@ class PytyTests(unittest.TestCase):
     def test_one_line_div6(self):
         self._check_file("test_files/one_line_div6.py")
 
+    def test_if9(self):
+        self._check_file("test_files/if9.py")
+
     def test_one_line_add5(self):
         self._check_file("test_files/one_line_add5.py")
 
@@ -139,6 +143,9 @@ class PytyTests(unittest.TestCase):
 
     def test_one_line_complicated10(self):
         self._check_file("test_files/one_line_complicated10.py")
+
+    def test_if6(self):
+        self._check_file("test_files/if6.py")
 
     def test_one_line_add3(self):
         self._check_file("test_files/one_line_add3.py")
@@ -154,6 +161,9 @@ class PytyTests(unittest.TestCase):
 
     def test_one_line3(self):
         self._check_file("test_files/one_line3.py")
+
+    def test_if8(self):
+        self._check_file("test_files/if8.py")
 
     def test_one_line_mult3(self):
         self._check_file("test_files/one_line_mult3.py")
@@ -185,11 +195,17 @@ class PytyTests(unittest.TestCase):
     def test_one_line_complicated3(self):
         self._check_file("test_files/one_line_complicated3.py")
 
+    def test_if5(self):
+        self._check_file("test_files/if5.py")
+
     def test_one_line_sub1(self):
         self._check_file("test_files/one_line_sub1.py")
 
     def test_if3(self):
         self._check_file("test_files/if3.py")
+
+    def test_if11(self):
+        self._check_file("test_files/if11.py")
 
     def test_one_line_complicated8(self):
         self._check_file("test_files/one_line_complicated8.py")
@@ -205,6 +221,9 @@ class PytyTests(unittest.TestCase):
 
     def test_one_line_add1(self):
         self._check_file("test_files/one_line_add1.py")
+
+    def test_if10(self):
+        self._check_file("test_files/if10.py")
 
     def test_one_line_mod5(self):
         self._check_file("test_files/one_line_mod5.py")
@@ -238,6 +257,9 @@ class PytyTests(unittest.TestCase):
 
     def test_one_line_assign9(self):
         self._check_file("test_files/one_line_assign9.py")
+
+    def test_if7(self):
+        self._check_file("test_files/if7.py")
 
     def test_one_line_complicated12(self):
         self._check_file("test_files/one_line_complicated12.py")

@@ -10,10 +10,33 @@ Location for main typechecking function. Will probably import lots of
 functions from parser.py.
 """
 
+_DEBUG = True
+
 int_type = PytyInt()
 bool_type = PytyBool()
 expr_type = PytyExpr()
 stmt_type = PytyStmt()
+
+def debug(string):
+    """Prints string if global variable _DEBUG is true, otherwise
+    does nothing
+    
+    @type string: C{str}.
+    @param string: a string.
+    """
+
+    if (_DEBUG): print string
+
+def debug_c(test, string):
+    """Prints string if debugging is on and test is C{True}.
+
+    @type test: C{bool}.
+    @param test: a boolean test.
+    @type string: C{str}.
+    @param string: a string.
+    """
+
+    if (test): debug(string)
 
 def parse_type_declarations(filename):
     """Returns a dictionary mapping variables in file filenmae with their
@@ -121,18 +144,26 @@ def typecheck(env, node, t):
             return targets_typecheck
 
         elif isinstance(node, ast.If):
-            return typecheck(env, node.test, bool_type) and typecheck(env,
-                node.body, stmt_type) and typecheck(env, node.orelse,
-                stmt_type)
+            debug("test: %s" % typecheck(env, node.test, bool_type))
+            debug("body: %s" % typecheck_list(env, node.body, stmt_type))
+            debug("orelse: %s" % typecheck_list(env, node.orelse, stmt_type))
+
+            return \
+                typecheck(env, node.test, bool_type) \
+                and typecheck_list(env, node.body, stmt_type) \
+                and typecheck_list(env, node.orelse, stmt_type)
 
         elif isinstance(node, ast.While):
-            return typecheck(env, node.test, bool_type) and typecheck(env,
-                node.body, stmt_type) and typecheck(env, node.orelse,
-                stmt_type)
+            return \
+                typecheck(env, node.test, bool_type) \
+                and typecheck_list(env, node.body, stmt_type) \
+                and typecheck_list(env, node.orelse, stmt_type)
 
         elif isinstance(node, ast.For):
-            return is_variable(node.target) and typecheck(env, node.iter,
-                expr_type) and typecheck_list(env, node.body, stmt_type) \
+            return \
+                is_variable(node.target) \
+                and typecheck(env, node.iter, expr_type) \
+                and typecheck_list(env, node.body, stmt_type) \
                 and typecheck_list(env, node.orelse, stmt_type)
 
         elif isinstance(node, ast.Expr):
@@ -143,8 +174,9 @@ def typecheck(env, node, t):
                
 
     elif isinstance(t, PytyExpr):
-        return typecheck(env, node, int_type) \
-                or typecheck(env, node, bool_type)
+        return \
+            typecheck(env, node, int_type) \
+            or typecheck(env, node, bool_type)
 
 
     elif isinstance(t, PytyInt):
@@ -184,19 +216,23 @@ def typecheck(env, node, t):
 
             valid_operators = (ast.And, ast.Or)
 
-            if not isinstance(node.op, valid_operators):
-                # operator is invalid.
-                return False
-            else:
-                # operator is valid.
-                values_typecheck = True
+            return \
+                isinstance(node.op, valid_operators) \
+                and typecheck_list(env, node.values, bool_type)
+           
+        elif isinstance(node, ast.Compare):
+            # right now, we're only handling the case of compares with just
+            # two expressions (like x > y, x == y, etc.)
 
-                for value in node.values:
-                    if not typecheck(env, value, bool_type):
-                        values_typecheck = False
+            valid_operators = (ast.Gt, ast.GtE, ast.Lt, ast.LtE, ast.Eq)
 
-                return values_typecheck
-            
+            return \
+                isinstance(node.ops[0], valid_operators) \
+                and (typecheck(env, node.left, int_type)
+                     and typecheck(env, node.comparators[0], int_type)) \
+                or (typecheck(env, node.left, bool_type)
+                     and typecheck(env, node.comparators[0], bool_type))
+
         else:
             # if the node isn't a bool literal or a boolean operation, then
             # it's not a bool.

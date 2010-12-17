@@ -5,7 +5,7 @@ import sys
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from typecheck import typecheck, parse_type_declarations
+from typecheck import typecheck, parse_type_declarations, debug
 from pyty_types import PytyMod
 from pyty_errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 
@@ -41,6 +41,7 @@ class PytyTests(unittest.TestCase):
         self.pyty_mod_obj = PytyMod()
 
     def _check_file(self, filename):
+        debug("Checking %s" % filename)
 
         with open(filename, 'r') as f:
             
