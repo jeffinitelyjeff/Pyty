@@ -25,7 +25,8 @@ def debug(string):
     @param string: a string.
     """
 
-    if (_DEBUG): print string
+    if _DEBUG: 
+        print string
 
 def debug_c(test, string):
     """Prints string if debugging is on and test is C{True}.
@@ -36,7 +37,8 @@ def debug_c(test, string):
     @param string: a string.
     """
 
-    if (test): debug(string)
+    if test and _DEBUG: 
+        debug(string)
 
 def parse_type_declarations(filename):
     """Returns a dictionary mapping variables in file filenmae with their
@@ -143,6 +145,9 @@ def typecheck(env, node, t):
 
             return targets_typecheck
 
+        """
+        Crude implementation of conditionals / blocks.
+
         elif isinstance(node, ast.If):
             debug("test: %s" % typecheck(env, node.test, bool_type))
             debug("body: %s" % typecheck_list(env, node.body, stmt_type))
@@ -165,6 +170,7 @@ def typecheck(env, node, t):
                 and typecheck(env, node.iter, expr_type) \
                 and typecheck_list(env, node.body, stmt_type) \
                 and typecheck_list(env, node.orelse, stmt_type)
+        """
 
         elif isinstance(node, ast.Expr):
             return typecheck(env, node.value, expr_type)
