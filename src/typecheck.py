@@ -75,12 +75,13 @@ def parse_type_declarations(filename):
             elif specified_str == "bool":
                 environment[var] = bool_type
             else:
-                raise TypeIncorrectlySpecifiedError()
+                raise TypeIncorrectlySpecifiedError("Type incorrectly " + 
+                    "specified as: " + specified_str)
 
 
     return environment
 
-def is_varibale(node):
+def is_variable(node):
     """Returns whether AST node C{node} is a variable."""
 
     # this is how the AST seems to mark variables
@@ -144,7 +145,7 @@ def typecheck(env, node, t):
                 target_name = target.id
 
                 if target_name not in env: 
-                    raise TypeUnspecifiedError()
+                    raise TypeUnspecifiedError(var = target_name)
                 expected_type = env[target_name]
                 if not typecheck(env, expr, expected_type):
                     targets_typecheck = False

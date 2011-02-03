@@ -62,12 +62,12 @@ class PytyTests(unittest.TestCase):
                     exp = ast.literal_eval(expected_str)
 
                     self.assertEqual(exp, typecheck(env, a, self.pyty_mod_obj))
-                except TypeUnspecifiedError:
-                    self.fail("A variable type was not specified, but the " +
-                           "program is either supposed to typecheck or " +
-                            "be checked with no errors.")
+                except TypeUnspecifiedError as e:
+                    self.fail("A variable type (" + e.var + ") was not " + 
+                        "specified somewhere, but the program is either " + 
+                        "supposed to typecheck be checked with no errors.")
 
-            elif expected_str == "TypeUnspecifiedError":
+            elif expected_str == "TypeUnspecifiedError": 
                 # test if it's looking for a TypeUnspecifiedError. if
                 # there end up being a lot of possible errors, might want to
                 # generalize this, but if there are only going to be a couple,

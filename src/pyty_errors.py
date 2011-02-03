@@ -2,5 +2,6 @@ class TypeIncorrectlySpecifiedError(Exception):
     pass
 
 class TypeUnspecifiedError(Exception):
-    pass
-    
+    def __init__(self, msg = None, var = None):
+        super(TypeUnspecifiedError, self).__init__(msg)
+        self.var = var
