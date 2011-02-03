@@ -3,7 +3,7 @@ from epydoc import docparser
 
 from pyty_errors import TypeUnspecifiedError, \
                         TypeIncorrectlySpecifiedError
-from pyty_types import PytyMod, PytyStmt, PytyInt, PytyFloat, PytyBool,
+from pyty_types import PytyMod, PytyStmt, PytyInt, PytyFloat, PytyBool, \
                        PytyExpr
 
 """
@@ -71,7 +71,7 @@ def parse_type_declarations(filename):
             if specified_str == "int":
                 environment[var] = int_type
             elif specified_str == "float":
-                environment[var] = float_type
+                environment[var] = flt_type
             elif specified_str == "bool":
                 environment[var] = bool_type
             else:
@@ -205,7 +205,7 @@ def typecheck(env, node, t):
             # is a subclass of int, so it will first check if the operand
             # typechecks as an int, and then (if it doesn't typechecks as an
             # int) see if it typechecks as a float.
-            valid_operators = (ast.Add, ast.Sub, ast.Mult,t ast.Div, ast.Mod)
+            valid_operators = (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod)
 
             if isinstance(node.op, valid_operators):
                 return typecheck(env, node.left, flt_type) and \
@@ -291,7 +291,7 @@ def typechecks_as_one_of(env, node, ts):
     """
 
     for t in ts:
-        if typecheck(env, node t): return True
+        if typecheck(env, node, t): return True
 
     # if we're here, then it didn't typecheck as any of the types in ts.
     return False

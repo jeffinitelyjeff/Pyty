@@ -1,4 +1,46 @@
 ---
+one_line_flt1.py
+### True
+5 + 5.3
+---
+one_line_flt2.py
+### True
+#: f : float
+f = 3 * 5.9
+---
+one_line_flt3.py
+### True
+#: f : float
+f = 3 * 2
+---
+one_line_flt4.py
+### True
+#: f : float
+f = 32.9 % 2
+---
+one_line_flt5.py
+### False
+#: i : int
+i = 3.2 / 5.8
+---
+one_line_flt6.py
+### True
+#: i : int
+i = 2 * 3
+#: f : float
+f = 9 * i
+---
+one_line_flt7.py
+### False
+3.2 * False
+---
+one_line_flt8.py
+### False
+#: f : float
+4.09 and True
+---
+
+---
 one_line_add1.py
 ### True
 5 + 4
