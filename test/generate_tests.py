@@ -7,7 +7,6 @@ fill in unit tests for the current contents of test_files.
 """
 
 _ONE_LINERS_SOURCE = "one_liners.txt"
-_CONTROL_SOURCE = "control.txt"
 _UNIT_TEST_CORE = "pyty_tests_core.py"
 _UNIT_TEST_OUTPUT = "pyty_tests.py"
 _TEST_FILE_DIR = "test_files"
