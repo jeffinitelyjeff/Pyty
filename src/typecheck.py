@@ -27,8 +27,7 @@ def debug(string):
     @param string: a string.
     """
 
-    if _DEBUG: 
-        print string
+    if _DEBUG: print string
 
 def debug_c(test, string):
     """Prints string if debugging is on and test is C{True}.
@@ -39,8 +38,7 @@ def debug_c(test, string):
     @param string: a string.
     """
 
-    if test and _DEBUG: 
-        debug(string)
+    if test and _DEBUG: debug(string)
 
 def parse_type_declarations(filename):
     """Returns a dictionary mapping variables in file filenmae with their
@@ -98,6 +96,10 @@ def typecheck(env, node, t):
     @param node: an AST node.
     @type t: L{types.PytyType}.
     @param t: a type.
+    
+    @rtype: C{bool}.
+    @return: C{True} if the AST C{node} typechecks as type C{t} given
+        environment C{env}.
     """
 
     # mod
@@ -148,50 +150,18 @@ def typecheck(env, node, t):
                     targets_typecheck = False
 
             return targets_typecheck
-
-        """
-        Crude implementation of conditionals / blocks.
-
-        elif isinstance(node, ast.If):
-            debug("test: %s" % typecheck(env, node.test, bool_type))
-            debug("body: %s" % typecheck_list(env, node.body, stmt_type))
-            debug("orelse: %s" % typecheck_list(env, node.orelse, stmt_type))
-
-            return \
-                typecheck(env, node.test, bool_type) \
-                and typecheck_list(env, node.body, stmt_type) \
-                and typecheck_list(env, node.orelse, stmt_type)
-
-        elif isinstance(node, ast.While):
-            return \
-                typecheck(env, node.test, bool_type) \
-                and typecheck_list(env, node.body, stmt_type) \
-                and typecheck_list(env, node.orelse, stmt_type)
-
-        elif isinstance(node, ast.For):
-            return \
-                is_variable(node.target) \
-                and typecheck(env, node.iter, expr_type) \
-                and typecheck_list(env, node.body, stmt_type) \
-                and typecheck_list(env, node.orelse, stmt_type)
-        """
-
-        elif isinstance(node, ast.Expr):
-            return typecheck(env, node.value, expr_type)
-
+        
+        # for now, we will treat everything that's not an assignment within a
+        # statement as an expression. this replaces the old check of
+        # isinstance(node, ast.Expr) which I'm pretty sure did not work as I'd
+        # hoped it to, since an expression would actually be represented as a
+        # BinOp or BoolOp or w/e in the AST.
         else:
-            return False
-               
-
-    elif isinstance(t, PytyExpr):
-        return \
-            typecheck(env, node, int_type) \
-            typecheck(env, node, flt_type) \
-            or typecheck(env, node, bool_type)
-
+            return typechecks_as_one_of(env, node.value, [int_type, flt_type,
+                bool_type])
 
     elif isinstance(t, PytyInt):
-        # To typecheck as na integer, must be a number, a binary operation
+        # To typecheck as an integer, must be a number, a binary operation
         # expression, or the result of a function.
         
         if isinstance(node, ast.Num):
@@ -212,6 +182,7 @@ def typecheck(env, node, t):
 
         # TODO
         # elif isinstance(node, function...?)
+        # elif isinstance(node, unaryOp...?)
 
         else:
             # if the node isn't a number literal or a binary operation,
@@ -228,10 +199,24 @@ def typecheck(env, node, t):
             return isinstance(value, float)
 
         elif isinstance(node, ast.BinOp):
-            ...
+            # if the node is a binary operation, then it typechecks if both
+            # operands typecheck as floats or ints. Note: because of the type 
+            # hierarchy, we check if each operand typechecks as a float, float
+            # is a subclass of int, so it will first check if the operand
+            # typechecks as an int, and then (if it doesn't typechecks as an
+            # int) see if it typechecks as a float.
+            valid_operators = (ast.Add, ast.Sub, ast.Mult,t ast.Div, ast.Mod)
+
+            if isinstance(node.op, valid_operators):
+                return typecheck(env, node.left, flt_type) and \
+                       typecheck(env, node.right, flt_type)
+            
+            else:
+                return False
 
         # TODO
-        # elif isinstance9node, funcction, ...?)
+        # elif isinstance(node, funcction, ...?)
+        # elif isinstane(node, unaryOp...?)
 
 
     elif isinstance(t, PytyBool):
@@ -249,7 +234,7 @@ def typecheck(env, node, t):
 
             return \
                 isinstance(node.op, valid_operators) \
-                and typecheck_list(env, node.values, bool_type)
+                and typecheck_each(env, node.values, bool_type)
            
         elif isinstance(node, ast.Compare):
             # right now, we're only handling the case of compares with just
@@ -269,7 +254,7 @@ def typecheck(env, node, t):
             # it's not a bool.
             return False
 
-def typecheck_list(env, l, t):
+def typecheck_each(env, l, t):
     """Checks whether every node in list C{l} typechecks as type C{t} given
     environment C{env}.
 
@@ -279,6 +264,10 @@ def typecheck_list(env, l, t):
     @param l: a list of AST nodes.
     @type t: L{types.PytyType}.
     @param t: a type.
+    
+    @rtype: C{bool}.
+    @return: C{True} if every node in C{l} typechceks as type C{t} given
+        environment C{env}.
     """
     
     for node in l:
@@ -286,3 +275,23 @@ def typecheck_list(env, l, t):
 
     return True
 
+def typechecks_as_one_of(env, node, ts):
+    """Checks whether C{node} typechecks as one of the types in the list C{ts}.
+    
+    @type env: C{dict} {{C{str}:C{PytyType}}.
+    @param env: an environment (mapping variable identifiers to types).
+    @type node: AST node.
+    @param node: an AST node.
+    @type ts: C{list} [L{types.PytyType}].
+    @param ts: a list of types.
+    
+    @rtype: C{bool}.
+    @return: C{True} if C{node} typechecks as one of the types in C{ts} given
+        environmetn C{env}.
+    """
+
+    for t in ts:
+        if typecheck(env, node t): return True
+
+    # if we're here, then it didn't typecheck as any of the types in ts.
+    return False

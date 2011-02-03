@@ -15,12 +15,6 @@ class PytyType(object):
 
         # Store instance reference as the only member in the handle
         self.__dict__['_PytyType__instance'] = PytyType.__instance
-            
-class PytyInt(PytyType):
-    pass
-
-class PytyBool(PytyType):
-    pass
 
 class PytyMod(PytyType):
     pass
@@ -30,3 +24,13 @@ class PytyStmt(PytyType):
 
 class PytyExpr(PytyType):
     pass
+
+class PytyFloat(PytyExpr):
+    pass
+
+class PytyInt(PytyFloat):
+    pass
+
+class PytyBool(PytyExpr):
+    pass
+
