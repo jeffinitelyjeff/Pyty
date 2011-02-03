@@ -3,7 +3,8 @@ from epydoc import docparser
 
 from pyty_errors import TypeUnspecifiedError, \
                         TypeIncorrectlySpecifiedError
-from pyty_types import PytyMod, PytyStmt, PytyInt, PytyBool, PytyExpr
+from pyty_types import PytyMod, PytyStmt, PytyInt, PytyFloat, PytyBool,
+                       PytyExpr
 
 """
 Location for main typechecking function. Will probably import lots of
@@ -13,6 +14,7 @@ functions from parser.py.
 _DEBUG = True
 
 int_type = PytyInt()
+flt_type = PytyFloat()
 bool_type = PytyBool()
 expr_type = PytyExpr()
 stmt_type = PytyStmt()
@@ -70,6 +72,8 @@ def parse_type_declarations(filename):
 
             if specified_str == "int":
                 environment[var] = int_type
+            elif specified_str == "float":
+                environment[var] = float_type
             elif specified_str == "bool":
                 environment[var] = bool_type
             else:
@@ -182,10 +186,13 @@ def typecheck(env, node, t):
     elif isinstance(t, PytyExpr):
         return \
             typecheck(env, node, int_type) \
+            typecheck(env, node, flt_type) \
             or typecheck(env, node, bool_type)
 
 
     elif isinstance(t, PytyInt):
+        # To typecheck as na integer, must be a number, a binary operation
+        # expression, or the result of a function.
         
         if isinstance(node, ast.Num):
             # number literals are stored as ast.Num objects.
@@ -203,10 +210,28 @@ def typecheck(env, node, t):
             else:
                 return False
 
+        # TODO
+        # elif isinstance(node, function...?)
+
         else:
             # if the node isn't a number literal or a binary operation,
-            # then it's not an int.
+            # or function, then it's not an int.
             return False
+
+    elif isinstance(t, PytyFloat):
+        # To typecheck as a float, must be a number, a binary operation
+        # expression, or the result of a function.
+
+        if isinstance(node, ast.Num):
+            # Num literals are stored as ast.Num objects.
+            value = node.n
+            return isinstance(value, float)
+
+        elif isinstance(node, ast.BinOp):
+            ...
+
+        # TODO
+        # elif isinstance9node, funcction, ...?)
 
 
     elif isinstance(t, PytyBool):
