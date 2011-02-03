@@ -58,15 +58,15 @@ one_line_add4.py
 True + False
 ---
 one_line_add5.py
-### False
+### True
 4 + 3.2
 ---
 one_line_add6.py
-### False
+### True
 4 + 3.0
 ---
 one_line_add7.py
-### False
+### True
 3.0 + 7.0
 ---
 one_line_add8.py
