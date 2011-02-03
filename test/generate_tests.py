@@ -28,7 +28,6 @@ def create_source_files(source):
                     g.write(file_body)
 
 create_source_files(_ONE_LINERS_SOURCE)
-create_source_files(_CONTROL_SOURCE)
 
 tests = ""
 
