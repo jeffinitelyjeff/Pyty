@@ -5,7 +5,7 @@ import sys
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from typecheck import typecheck, parse_type_declarations, debug
+from typecheck import typecheck, parse_type_declarations
 from pyty_types import PytyMod
 from pyty_errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 
@@ -16,10 +16,33 @@ code file in the test_files directory).
 
 Test file format:
 
-### True|False|ErrorName
+### True|False|[ErrorName]
 
 <Python code>
 """
+
+_DEBUG = False
+
+def debug(string):
+    """Prints string if global variable _DEBUG is true, otherwise
+    does nothing
+    
+    @type string: C{str}.
+    @param string: a string.
+    """
+
+    if _DEBUG: print string
+
+def debug_c(test, string):
+    """Prints string if debugging is on and test is C{True}.
+
+    @type test: C{bool}.
+    @param test: a boolean test.
+    @type string: C{str}.
+    @param string: a string.
+    """
+
+    if test and _DEBUG: debug(string)
 
 class TestFileFormatError(Exception):
     """Exception subclass for error encountered when a test file is not
@@ -59,13 +82,19 @@ class PytyTests(unittest.TestCase):
             if expected_str == "True" or expected_str == "False":
                 try:
                     # test if it's looking for a true or false value.
-                    exp = ast.literal_eval(expected_str)
+                    expection = ast.literal_eval(expected_str)
+                    
+                    if expection:
+                        fail_msg = "Should typecheck, but does not."
+                    else:
+                        fail_msg = "Shouldn't typecheck, but does."
 
-                    self.assertEqual(exp, typecheck(env, a, self.pyty_mod_obj))
+                    self.assertEqual(expection, 
+                        typecheck(env, a, self.pyty_mod_obj), fail_msg)
                 except TypeUnspecifiedError as e:
                     self.fail("A variable type (" + e.var + ") was not " + 
                         "specified somewhere, but the program is either " + 
-                        "supposed to typecheck be checked with no errors.")
+                        "supposed to typecheck or be checked with no errors.")
 
             elif expected_str == "TypeUnspecifiedError": 
                 # test if it's looking for a TypeUnspecifiedError. if
@@ -76,8 +105,8 @@ class PytyTests(unittest.TestCase):
                         env, a, self.pyty_mod_obj)
 
             else:
-                raise TestFileFormatError("Expected test value or error " +
-                        "specified improperly")
+                raise TestFileFormatError("Expected test value or expected " +
+                    "error specified improperly")
 
 
     ##### Generated unit tests will go below here
@@ -305,8 +334,17 @@ class PytyTests(unittest.TestCase):
 
     def test_one_line_flt8(self):
         self._check_file("test_files/one_line_flt8.py")
+
+    def test_one_line_flt9(self):
+        self._check_file("test_files/one_line_flt9.py")
     ##### Generated unit tests will go above here
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == "d":
+        _DEBUG = True
+        del sys.argv[1]     # this is becasue unittest gets mad if there are 
+                            # command line arguments it doesn't understand
+
     unittest.main()
 
+ 

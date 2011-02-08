@@ -25,12 +25,12 @@ class PytyStmt(PytyType):
 class PytyExpr(PytyType):
     pass
 
-class PytyFloat(PytyExpr):
+class PytyFloat(PytyType):
     pass
 
 class PytyInt(PytyFloat):
     pass
 
-class PytyBool(PytyExpr):
+class PytyBool(PytyType):
     pass
 

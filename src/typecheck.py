@@ -11,34 +11,11 @@ Location for main typechecking function. Will probably import lots of
 functions from parser.py.
 """
 
-_DEBUG = True
-
 int_type = PytyInt()
 flt_type = PytyFloat()
 bool_type = PytyBool()
 expr_type = PytyExpr()
 stmt_type = PytyStmt()
-
-def debug(string):
-    """Prints string if global variable _DEBUG is true, otherwise
-    does nothing
-    
-    @type string: C{str}.
-    @param string: a string.
-    """
-
-    if _DEBUG: print string
-
-def debug_c(test, string):
-    """Prints string if debugging is on and test is C{True}.
-
-    @type test: C{bool}.
-    @param test: a boolean test.
-    @type string: C{str}.
-    @param string: a string.
-    """
-
-    if test and _DEBUG: debug(string)
 
 def parse_type_declarations(filename):
     """Returns a dictionary mapping variables in file filenmae with their
@@ -162,6 +139,9 @@ def typecheck(env, node, t):
                 bool_type])
 
     elif isinstance(t, PytyInt):
+        # This must be checked before the float check, since every integer is
+        # also classified as a float
+        #
         # To typecheck as an integer, must be a number, a binary operation
         # expression, or the result of a function.
         
@@ -197,7 +177,12 @@ def typecheck(env, node, t):
         if isinstance(node, ast.Num):
             # Num literals are stored as ast.Num objects.
             value = node.n
-            return isinstance(value, float)
+
+            # We want ints to typecheck as floats, but this type hierarchy
+            # isn't built into python primitives, so isinstance(3, float)
+            # returns false.
+            return isinstance(value, float) or isinstance(value, int)
+                
 
         elif isinstance(node, ast.BinOp):
             # if the node is a binary operation, then it typechecks if both

@@ -1,3 +1,8 @@
+2-8-2011
+========
+- Should possibly include some data structure to track when typecheck starts
+  failing? Not sure
+
 12-17-2010
 ==========
 - What's the point of having a for target be an expression? Shouldn't it just

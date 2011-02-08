@@ -25,10 +25,8 @@ i = 3.2 / 5.8
 ---
 one_line_flt6.py
 ### True
-#: i : int
-i = 2 * 3
 #: f : float
-f = 9 * i
+f = 2 * 3 + 3.2 / 2
 ---
 one_line_flt7.py
 ### False
@@ -38,6 +36,11 @@ one_line_flt8.py
 ### False
 #: f : float
 4.09 and True
+---
+one_line_flt9.py
+### True
+#: f : float
+f = 1 + 2
 ---
 
 ---
@@ -92,11 +95,11 @@ one_line_sub4.py
 True - True
 ---
 one_line_sub5.py
-### False
+### True
 4 - 8.3
 ---
 one_line_sub6.py
-### False
+### True
 4 - 8.0
 ---
 one_line_sub7.py
@@ -122,11 +125,11 @@ one_line_mult4.py
 False * True
 ---
 one_line_mult5.py
-### False
+### True
 8.3 * 2
 ---
 one_line_mult6.py
-### False
+### True
 9.0 * 25
 ---
 one_line_mult7.py
@@ -160,11 +163,11 @@ one_line_div6.py
 True / False
 ---
 one_line_div7.py
-### False
+### True
 2.8 * 3
 ---
 one_line_div8.py
-### False
+### True
 2.0 * 1
 ---
 one_line_div9.py
@@ -202,11 +205,11 @@ one_line_mod7.py
 False % True
 ---
 one_line_mod8.py
-### False
+### True
 3.2 % 3
 ---
 one_line_mod9.py
-### False
+### True
 3 % 2.0
 ---
 one_line_mod10.py
