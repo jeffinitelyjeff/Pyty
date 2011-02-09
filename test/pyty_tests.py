@@ -110,6 +110,33 @@ class PytyTests(unittest.TestCase):
 
 
     ##### Generated unit tests will go below here
+    def test_one_line_flt1(self):
+        self._check_file("test_files/one_line_flt1.py")
+
+    def test_one_line_flt2(self):
+        self._check_file("test_files/one_line_flt2.py")
+
+    def test_one_line_flt3(self):
+        self._check_file("test_files/one_line_flt3.py")
+
+    def test_one_line_flt4(self):
+        self._check_file("test_files/one_line_flt4.py")
+
+    def test_one_line_flt5(self):
+        self._check_file("test_files/one_line_flt5.py")
+
+    def test_one_line_flt6(self):
+        self._check_file("test_files/one_line_flt6.py")
+
+    def test_one_line_flt7(self):
+        self._check_file("test_files/one_line_flt7.py")
+
+    def test_one_line_flt8(self):
+        self._check_file("test_files/one_line_flt8.py")
+
+    def test_one_line_flt9(self):
+        self._check_file("test_files/one_line_flt9.py")
+
     def test_one_line_add1(self):
         self._check_file("test_files/one_line_add1.py")
 
@@ -310,33 +337,6 @@ class PytyTests(unittest.TestCase):
 
     def test_one_line_complicated13(self):
         self._check_file("test_files/one_line_complicated13.py")
-
-    def test_one_line_flt1(self):
-        self._check_file("test_files/one_line_flt1.py")
-
-    def test_one_line_flt2(self):
-        self._check_file("test_files/one_line_flt2.py")
-
-    def test_one_line_flt3(self):
-        self._check_file("test_files/one_line_flt3.py")
-
-    def test_one_line_flt4(self):
-        self._check_file("test_files/one_line_flt4.py")
-
-    def test_one_line_flt5(self):
-        self._check_file("test_files/one_line_flt5.py")
-
-    def test_one_line_flt6(self):
-        self._check_file("test_files/one_line_flt6.py")
-
-    def test_one_line_flt7(self):
-        self._check_file("test_files/one_line_flt7.py")
-
-    def test_one_line_flt8(self):
-        self._check_file("test_files/one_line_flt8.py")
-
-    def test_one_line_flt9(self):
-        self._check_file("test_files/one_line_flt9.py")
     ##### Generated unit tests will go above here
 
 if __name__ == '__main__':

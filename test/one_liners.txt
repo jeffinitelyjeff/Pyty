@@ -1,347 +1,271 @@
 ---
-flt1
-### True
+flt1 - True
 5 + 5.3
 ---
-flt2
-### True
+flt2 - True
 #: f : float
 f = 3 * 5.9
 ---
-flt3
-### True
+flt3 - True
 #: f : float
 f = 3 * 2
 ---
-flt4
-### True
+flt4 - True
 #: f : float
 f = 32.9 % 2
 ---
-flt5
-### False
+flt5 - False
 #: i : int
 i = 3.2 / 5.8
 ---
-flt6
-### True
+flt6 - True
 #: f : float
 f = 2 * 3 + 3.2 / 2
 ---
-flt7
-### False
+flt7 - False
 3.2 * False
 ---
-flt8
-### False
+flt8 - False
 #: f : float
 4.09 and True
 ---
-flt9
-### True
+flt9 - True
 #: f : float
 f = 1 + 2
 ---
 
 ---
-add1
-### True
+add1 - True
 5 + 4
 ---
-add2
-### False
+add2 - False
 4 + True
 ---
-add3
-### False
+add3 - False
 False + 2
 ---
-add4
-### False
+add4 - False
 True + False
 ---
-add5
-### True
+add5 - True
 4 + 3.2
 ---
-add6
-### True
+add6 - True
 4 + 3.0
 ---
-add7
-### True
+add7 - True
 3.0 + 7.0
 ---
-add8
-### False
+add8 - False
 False + 8.2
 ---
 
 ---
-sub1
-### True
+sub1 - True
 9 - 2
 ---
-sub2
-### False
+sub2 - False
 True - 2
 ---
-sub3
-### False
+sub3 - False
 3 - False
 ---
-sub4
-### False
+sub4 - False
 True - True
 ---
-sub5
-### True
+sub5 - True
 4 - 8.3
 ---
-sub6
-### True
+sub6 - True
 4 - 8.0
 ---
-sub7
-### False
+sub7 - False
 False - 25.3
 ---
 
 ---
-mult1
-### True
+mult1 - True
 2 * 15
 ---
-mult2
-### False
+mult2 - False
 2 * False
 ---
-mult3
-### False
+mult3 - False
 True * 6
 ---
-mult4
-### False
+mult4 - False
 False * True
 ---
-mult5
-### True
+mult5 - True
 8.3 * 2
 ---
-mult6
-### True
+mult6 - True
 9.0 * 25
 ---
-mult7
-### False
+mult7 - False
 False * 3.3
 ---
 
 ---
-div1
-### True
+div1 - True
 6 / 2
 ---
-div2
-### True
+div2 - True
 5 / 3
 ---
-div3
-### True
+div3 - True
 1 / 6
 ---
-div4
-### False
+div4 - False
 1 / False
 ---
-div5
-### False
+div5 - False
 True / 9
 ---
-div6
-### False
+div6 - False
 True / False
 ---
-div7
-### True
+div7 - True
 2.8 * 3
 ---
-div8
-### True
+div8 - True
 2.0 * 1
 ---
-div9
-### False
+div9 - False
 True * 1.3
 ---
 
 ---
-mod1
-### True
+mod1 - True
 6 % 2
 ---
-mod2
-### True
+mod2 - True
 7 % 2
 ---
-mod3
-### True
+mod3 - True
 1 % 4
 ---
-mod4
-### False
+mod4 - False
 True % 4
 ---
-mod5
-### False
+mod5 - False
 3 % False
 ---
-mod6
-### False
+mod6 - False
 True % True
 ---
-mod7
-### False
+mod7 - False
 False % True
 ---
-mod8
-### True
+mod8 - True
 3.2 % 3
 ---
-mod9
-### True
+mod9 - True
 3 % 2.0
 ---
-mod10
-### False
+mod10 - False
 32.8 % True
 ---
 
 ---
-assign1
-### True
+assign1 - True
 #: x : int
 x = 4
 ---
-assign2
-### True
+assign2 - True
 #: anthoeuhu : int
 anthoeuhu = 92
 ---
-assign3
-### True
+assign3 - True
 #: b : bool
 b = True
 ---
-assign4
-### False
+assign4 - False
 #: b : bool
 b = 4
 ---
-assign5
-### False
+assign5 - False
 #: i : int
 i = True
 ---
-assign6
-### False
+assign6 - False
 #: i : int
 i = 5.2
 ---
-assign7
-### False
+assign7 - False
 #: b : bool
 b = 4
 ---
-assign8
-### False
+assign8 - False
 #: b : bool
 b = 4.2
 ---
-assign9
-### TypeUnspecifiedError
+assign9 - TypeUnspecifiedError
 a = True
 ---
-assign10
-### TypeUnspecifiedError
+assign10 - TypeUnspecifiedError
 q = 4
 ---
-assign11
-### TypeIncorrectlySpecifiedError
+assign11 - TypeIncorrectlySpecifiedError
 #: b : boolean
 b = True
 ---
-assign12
-### TypeIncorrectlySpecifiedError
+assign12 - TypeIncorrectlySpecifiedError
 #: b : Bool
 b = False
 ---
-assign13
-### TypeIncorrectlySpecifiedError
+assign13 - TypeIncorrectlySpecifiedError
 #: i : Integer
 i = 52
 ---
 
 ---
-complicated1
-### True
+complicated1 - True
 #: x : int
 x = 4 + (3 - 11 / 2) % 2
 ---
-complicated2
-### False
+complicated2 - False
 #: x : int
 x = 4.2 + (3 - 11 / 2) % 2
 ---
-complicated3
-### False
+complicated3 - False
 #: x : bool
 x = 4 + (3 - 11 / 2) % 2
 ---
-complicated4
-### False
+complicated4 - False
 #: x : int
 x = 4 + (3 - 11 / 2) % 2.2
 ---
-complicated5
-### False
+complicated5 - False
 #: x : bool
 x = 4 + (3.0 - 11 / 2) % 2
 ---
-complicated6
-### True
+complicated6 - True
 #: y : bool
 y = True and False
 ---
-complicated7
-### True
+complicated7 - True
 #: y : bool
 y = (True and False) or (False and False)
 ---
-complicated8
-### False
+complicated8 - False
 #: y : int
 y = (True and False) or (False and False)
 ---
-complicated9
-### False
+complicated9 - False
 #: y : bool
 y = (True and False) or (False and 3)
 ---
-complicated10
-### TypeUnspecifiedError
+complicated10 - TypeUnspecifiedError
 x = 4 + (3 - 11 / 2) % 2
 ---
-complicated11
-### TypeUnspecifiedError
+complicated11 - TypeUnspecifiedError
 x = 4 + (3 - 11 / 2) % 2.0
 ---
-complicated12
-### TypeUnspecifiedError
+complicated12 - TypeUnspecifiedError
 y = (True and False) or (False and False)
 ---
-complicated13
-### TypeUnspecifiedError
+complicated13 - TypeUnspecifiedError
 y = (True and False) or 4
 ---
 
