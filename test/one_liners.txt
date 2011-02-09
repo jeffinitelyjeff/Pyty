@@ -1,346 +1,346 @@
 ---
-one_line_flt1.py
+flt1
 ### True
 5 + 5.3
 ---
-one_line_flt2.py
+flt2
 ### True
 #: f : float
 f = 3 * 5.9
 ---
-one_line_flt3.py
+flt3
 ### True
 #: f : float
 f = 3 * 2
 ---
-one_line_flt4.py
+flt4
 ### True
 #: f : float
 f = 32.9 % 2
 ---
-one_line_flt5.py
+flt5
 ### False
 #: i : int
 i = 3.2 / 5.8
 ---
-one_line_flt6.py
+flt6
 ### True
 #: f : float
 f = 2 * 3 + 3.2 / 2
 ---
-one_line_flt7.py
+flt7
 ### False
 3.2 * False
 ---
-one_line_flt8.py
+flt8
 ### False
 #: f : float
 4.09 and True
 ---
-one_line_flt9.py
+flt9
 ### True
 #: f : float
 f = 1 + 2
 ---
 
 ---
-one_line_add1.py
+add1
 ### True
 5 + 4
 ---
-one_line_add2.py
+add2
 ### False
 4 + True
 ---
-one_line_add3.py
+add3
 ### False
 False + 2
 ---
-one_line_add4.py
+add4
 ### False
 True + False
 ---
-one_line_add5.py
+add5
 ### True
 4 + 3.2
 ---
-one_line_add6.py
+add6
 ### True
 4 + 3.0
 ---
-one_line_add7.py
+add7
 ### True
 3.0 + 7.0
 ---
-one_line_add8.py
+add8
 ### False
 False + 8.2
 ---
 
 ---
-one_line_sub1.py
+sub1
 ### True
 9 - 2
 ---
-one_line_sub2.py
+sub2
 ### False
 True - 2
 ---
-one_line_sub3.py
+sub3
 ### False
 3 - False
 ---
-one_line_sub4.py
+sub4
 ### False
 True - True
 ---
-one_line_sub5.py
+sub5
 ### True
 4 - 8.3
 ---
-one_line_sub6.py
+sub6
 ### True
 4 - 8.0
 ---
-one_line_sub7.py
+sub7
 ### False
 False - 25.3
 ---
 
 ---
-one_line_mult1.py
+mult1
 ### True
 2 * 15
 ---
-one_line_mult2.py
+mult2
 ### False
 2 * False
 ---
-one_line_mult3.py
+mult3
 ### False
 True * 6
 ---
-one_line_mult4.py
+mult4
 ### False
 False * True
 ---
-one_line_mult5.py
+mult5
 ### True
 8.3 * 2
 ---
-one_line_mult6.py
+mult6
 ### True
 9.0 * 25
 ---
-one_line_mult7.py
+mult7
 ### False
 False * 3.3
 ---
 
 ---
-one_line_div1.py
+div1
 ### True
 6 / 2
 ---
-one_line_div2.py
+div2
 ### True
 5 / 3
 ---
-one_line_div3.py
+div3
 ### True
 1 / 6
 ---
-one_line_div4.py
+div4
 ### False
 1 / False
 ---
-one_line_div5.py
+div5
 ### False
 True / 9
 ---
-one_line_div6.py
+div6
 ### False
 True / False
 ---
-one_line_div7.py
+div7
 ### True
 2.8 * 3
 ---
-one_line_div8.py
+div8
 ### True
 2.0 * 1
 ---
-one_line_div9.py
+div9
 ### False
 True * 1.3
 ---
 
 ---
-one_line_mod1.py
+mod1
 ### True
 6 % 2
 ---
-one_line_mod2.py
+mod2
 ### True
 7 % 2
 ---
-one_line_mod3.py
+mod3
 ### True
 1 % 4
 ---
-one_line_mod4.py
+mod4
 ### False
 True % 4
 ---
-one_line_mod5.py
+mod5
 ### False
 3 % False
 ---
-one_line_mod6.py
+mod6
 ### False
 True % True
 ---
-one_line_mod7.py
+mod7
 ### False
 False % True
 ---
-one_line_mod8.py
+mod8
 ### True
 3.2 % 3
 ---
-one_line_mod9.py
+mod9
 ### True
 3 % 2.0
 ---
-one_line_mod10.py
+mod10
 ### False
 32.8 % True
 ---
 
 ---
-one_line_assign1.py
+assign1
 ### True
 #: x : int
 x = 4
 ---
-one_line_assign2.py
+assign2
 ### True
 #: anthoeuhu : int
 anthoeuhu = 92
 ---
-one_line_assign3.py
+assign3
 ### True
 #: b : bool
 b = True
 ---
-one_line_assign4.py
+assign4
 ### False
 #: b : bool
 b = 4
 ---
-one_line_assign5.py
+assign5
 ### False
 #: i : int
 i = True
 ---
-one_line_assign6.py
+assign6
 ### False
 #: i : int
 i = 5.2
 ---
-one_line_assign7.py
+assign7
 ### False
 #: b : bool
 b = 4
 ---
-one_line_assign8.py
+assign8
 ### False
 #: b : bool
 b = 4.2
 ---
-one_line_assign9.py
+assign9
 ### TypeUnspecifiedError
 a = True
 ---
-one_line_assign10.py
+assign10
 ### TypeUnspecifiedError
 q = 4
 ---
-one_line_assign11.py
+assign11
 ### TypeIncorrectlySpecifiedError
 #: b : boolean
 b = True
 ---
-one_line_assign12.py
+assign12
 ### TypeIncorrectlySpecifiedError
 #: b : Bool
 b = False
 ---
-one_line_assign13.py
+assign13
 ### TypeIncorrectlySpecifiedError
 #: i : Integer
 i = 52
 ---
 
 ---
-one_line_complicated1.py
+complicated1
 ### True
 #: x : int
 x = 4 + (3 - 11 / 2) % 2
 ---
-one_line_complicated2.py
+complicated2
 ### False
 #: x : int
 x = 4.2 + (3 - 11 / 2) % 2
 ---
-one_line_complicated3.py
+complicated3
 ### False
 #: x : bool
 x = 4 + (3 - 11 / 2) % 2
 ---
-one_line_complicated4.py
+complicated4
 ### False
 #: x : int
 x = 4 + (3 - 11 / 2) % 2.2
 ---
-one_line_complicated5.py
+complicated5
 ### False
 #: x : bool
 x = 4 + (3.0 - 11 / 2) % 2
 ---
-one_line_complicated6.py
+complicated6
 ### True
 #: y : bool
 y = True and False
 ---
-one_line_complicated7.py
+complicated7
 ### True
 #: y : bool
 y = (True and False) or (False and False)
 ---
-one_line_complicated8.py
+complicated8
 ### False
 #: y : int
 y = (True and False) or (False and False)
 ---
-one_line_complicated9.py
+complicated9
 ### False
 #: y : bool
 y = (True and False) or (False and 3)
 ---
-one_line_complicated10.py
+complicated10
 ### TypeUnspecifiedError
 x = 4 + (3 - 11 / 2) % 2
 ---
-one_line_complicated11.py
+complicated11
 ### TypeUnspecifiedError
 x = 4 + (3 - 11 / 2) % 2.0
 ---
-one_line_complicated12.py
+complicated12
 ### TypeUnspecifiedError
 y = (True and False) or (False and False)
 ---
-one_line_complicated13.py
+complicated13
 ### TypeUnspecifiedError
 y = (True and False) or 4
 ---
