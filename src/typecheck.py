@@ -62,7 +62,9 @@ def is_variable(node):
     """Returns whether AST node C{node} is a variable."""
 
     # this is how the AST seems to mark variables
-    return isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)
+    return isinstance(node, ast.Name) and \
+           isinstance(node.ctx, (ast.Store, ast.Load)) and \
+           node.id != 'True' and node.id != 'False'
 
 def typecheck(env, node, t):
     """Checks whether the AST tree with C{node} as its root typechecks as type
@@ -150,6 +152,9 @@ def typecheck(env, node, t):
             value = node.n
             return isinstance(value, int)
 
+        if is_variable(node):
+            return isinstance(env[node.id], PytyInt)
+
         elif isinstance(node, ast.BinOp):
             # if the node is a binary operation, then it typechecks if
             # both operands typecheck as ints.
@@ -182,7 +187,11 @@ def typecheck(env, node, t):
             # isn't built into python primitives, so isinstance(3, float)
             # returns false.
             return isinstance(value, float) or isinstance(value, int)
-                
+               
+        elif is_variable(node):
+            # Since PytyInt is a subclass of PytyFloat, this will cover ints
+            # too.
+            return isinstance(env[node.id], PytyFloat)
 
         elif isinstance(node, ast.BinOp):
             # if the node is a binary operation, then it typechecks if both
@@ -221,7 +230,8 @@ def typecheck(env, node, t):
             return \
                 isinstance(node.op, valid_operators) \
                 and typecheck_each(env, node.values, bool_type)
-           
+        
+        # TODO These need to be tested
         elif isinstance(node, ast.Compare):
             # right now, we're only handling the case of compares with just
             # two expressions (like x > y, x == y, etc.)

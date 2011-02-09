@@ -110,6 +110,33 @@ class PytyTests(unittest.TestCase):
 
 
     ##### Generated unit tests will go below here
+    def test_one_line_multiline1(self):
+        self._check_file("test_files/one_line_multiline1.py")
+
+    def test_one_line_multiline2(self):
+        self._check_file("test_files/one_line_multiline2.py")
+
+    def test_one_line_multiline3(self):
+        self._check_file("test_files/one_line_multiline3.py")
+
+    def test_one_line_multiline4(self):
+        self._check_file("test_files/one_line_multiline4.py")
+
+    def test_one_line_multiline5(self):
+        self._check_file("test_files/one_line_multiline5.py")
+
+    def test_one_line_multiline6(self):
+        self._check_file("test_files/one_line_multiline6.py")
+
+    def test_one_line_multiline7(self):
+        self._check_file("test_files/one_line_multiline7.py")
+
+    def test_one_line_multiline8(self):
+        self._check_file("test_files/one_line_multiline8.py")
+
+    def test_one_line_multiline9(self):
+        self._check_file("test_files/one_line_multiline9.py")
+
     def test_one_line_flt1(self):
         self._check_file("test_files/one_line_flt1.py")
 

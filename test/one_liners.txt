@@ -1,4 +1,60 @@
 ---
+multiline1 - True
+#: i : int
+i = 2 * 3
+
+#: f : float
+f = 3.2 * i
+---
+multiline2 - False
+#: i : int
+i = 2 * 3.2
+
+#: f : float
+f = 3.2 * i
+---
+multiline3 - False
+#: i : int
+i = 2 * 3
+#: f : int
+f = 3.2 * i
+---
+multiline4 - True
+#: i : int 
+i = 2 * 3
+#: j : int
+j = 3 * i
+---
+multiline5 - TypeIncorrectlySpecifiedError
+#: i : int
+i = 2 * 3
+#: j : floatint
+j = 3 * i
+---
+multiline6 - TypeIncorrectlySpecifiedError
+#: i
+i = 2 * 3
+#: j : float
+j = 3.2 * 1
+---
+multiline7 - TypeIncorrectlySpecifiedError
+#: i : int
+i = 2 * 3
+#:
+j = 2 * i
+---
+multiline8 - TypeUnspecifiedError
+i = 2 * 3
+#: f : float
+f = 32.2 * i
+---
+multiline9 - TypeUnspecifiedError
+#: i : int
+i = 2 * 3
+f = 0.3 * i
+---
+
+---
 flt1 - True
 5 + 5.3
 ---

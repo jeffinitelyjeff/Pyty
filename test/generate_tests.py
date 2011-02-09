@@ -5,6 +5,14 @@ Uses the specification of the files in C{_TEST_SPECS} to generate lots of
 individual python source code files which are all placed in the directory
 specified by C{_TEST_FILE_DIR}.
 Then generates a unit test for every individual python source file created.
+
+Note: In test specification documents, files will be specified as:
+[Name of test] - [Expected typecheck behavior]
+[Source code]
+but in the generated python source files (with file name
+[KindOfTest_NameOfTest]), this will be formatted as:
+### [Expected typecheck behavior]
+[Source code]
 """
 
 # Maps descriptions of kinds of tests to the spec documents.
