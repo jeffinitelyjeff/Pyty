@@ -145,32 +145,30 @@ def typecheck(env, node, t):
 
             return targets_typecheck
 
-        """
-        Crude implementation of conditionals / blocks.
+        # Crude implementation of conditionals / blocks.
 
-        elif isinstance(node, ast.If):
-            debug("test: %s" % typecheck(env, node.test, bool_type))
-            debug("body: %s" % typecheck_list(env, node.body, stmt_type))
-            debug("orelse: %s" % typecheck_list(env, node.orelse, stmt_type))
+        #elif isinstance(node, ast.If):
+        #    debug("test: %s" % typecheck(env, node.test, bool_type))
+        #    debug("body: %s" % typecheck_list(env, node.body, stmt_type))
+        #    debug("orelse: %s" % typecheck_list(env, node.orelse, stmt_type))
 
-            return \
-                typecheck(env, node.test, bool_type) \
-                and typecheck_list(env, node.body, stmt_type) \
-                and typecheck_list(env, node.orelse, stmt_type)
+        #    return \
+        #        typecheck(env, node.test, bool_type) \
+        #        and typecheck_list(env, node.body, stmt_type) \
+        #        and typecheck_list(env, node.orelse, stmt_type)
 
-        elif isinstance(node, ast.While):
-            return \
-                typecheck(env, node.test, bool_type) \
-                and typecheck_list(env, node.body, stmt_type) \
-                and typecheck_list(env, node.orelse, stmt_type)
+        #elif isinstance(node, ast.While):
+        #    return \
+        #        typecheck(env, node.test, bool_type) \
+        #        and typecheck_list(env, node.body, stmt_type) \
+        #        and typecheck_list(env, node.orelse, stmt_type)
 
-        elif isinstance(node, ast.For):
-            return \
-                is_variable(node.target) \
-                and typecheck(env, node.iter, expr_type) \
-                and typecheck_list(env, node.body, stmt_type) \
-                and typecheck_list(env, node.orelse, stmt_type)
-        """
+        #elif isinstance(node, ast.For):
+        #    return \
+        #        is_variable(node.target) \
+        #        and typecheck(env, node.iter, expr_type) \
+        #        and typecheck_list(env, node.body, stmt_type) \
+        #        and typecheck_list(env, node.orelse, stmt_type)
 
         elif isinstance(node, ast.Expr):
             return typecheck(env, node.value, expr_type)
