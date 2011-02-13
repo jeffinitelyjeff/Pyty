@@ -1,0 +1,3 @@
+test/test_files/*
+*.pyc
+test/pyty_tests.py

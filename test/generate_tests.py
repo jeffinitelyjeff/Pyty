@@ -1,48 +1,74 @@
 import os
 
 """
-Generates unit tests based on the current contents of the test_files
-directory. When executed, will remove all unit tests from pyty_tests.py and
-fill in unit tests for the current contents of test_files.  
+Uses the specification of the files in C{_TEST_SPECS} to generate lots of
+individual python source code files which are all placed in the directory
+specified by C{_TEST_FILE_DIR}.
+Then generates a unit test for every individual python source file created.
+
+Note: In test specification documents, files will be specified as:
+[Name of test] - [Expected typecheck behavior]
+[Source code]
+but in the generated python source files (with file name
+[KindOfTest_NameOfTest]), this will be formatted as:
+### [Expected typecheck behavior]
+[Source code]
 """
 
-_ONE_LINERS_SOURCE = "one_liners.txt"
-_CONTROL_SOURCE = "control.txt"
+# Maps descriptions of kinds of tests to the spec documents.
+_TEST_SPECS = {"one_line" : "one_liners.txt"}
+# File containing all the non-generated work of the unit tests.
 _UNIT_TEST_CORE = "pyty_tests_core.py"
+# File to store the test file with the generated unit tests.
 _UNIT_TEST_OUTPUT = "pyty_tests.py"
+# Directory to store individual python test source files.
 _TEST_FILE_DIR = "test_files"
 
-def create_source_files(source):
+# --- Helper Functions -------------------------------------------------------
+
+def create_source_files(source, prefix):
     with open(source, 'r') as f:
         file_data = f.read().split("---")[1:]
         for file_datum in file_data:
             file_datum = file_datum.strip('\n')
 
             if file_datum != '':
-                file_name = file_datum.split('\n')[0]
+                test_name = file_datum.split(' - ')[0]
 
-                # for somer reason file_datum.strip('\n'+filen_name+'\n') went
+                # for some reason file_datum.strip('\n'+filen_name+'\n') went
                 # crazy here and would remove 'e\n' or 'ue\n' from the end.
-                file_body = file_datum.split(file_name + '\n')[1] + '\n'
+                file_body = '### '+file_datum.split(test_name+' - ')[1]+'\n'
 
-                with open(_TEST_FILE_DIR + '/' + file_name, 'w') as g:
+                with open("%s/%s_%s.py" % 
+                          (_TEST_FILE_DIR, prefix, test_name), 'w') as g:
                     g.write(file_body)
 
-create_source_files(_ONE_LINERS_SOURCE)
-create_source_files(_CONTROL_SOURCE)
+def unit_test_code(test_file_name):
+    base_file_name = test_file_name.split(".")[0]
+
+    return "    def test_%s(self):\n" % base_file_name + \
+           "        self._check_file(\"%s/%s\")\n\n" % (_TEST_FILE_DIR,
+                test_file_name)
+
+
+# --- Create test files based on specification document ----------------------
+
+# clear out the previous contents of the test files directory.
+for file_name in os.listdir(_TEST_FILE_DIR):
+    os.remove(_TEST_FILE_DIR + '/' + file_name)
+
+# create new contents of the test file directory.
+for test_kind in _TEST_SPECS:
+    create_source_files(_TEST_SPECS[test_kind], test_kind)
+
+# --- Read test files and make unit tests ------------------------------------
 
 tests = ""
-
 file_names = os.listdir(_TEST_FILE_DIR)
 
-# for each file, insert a unit test
+# insert a unit test for each file
 for file_name in file_names:
-    base_file_name = file_name.split(".")[0]
-
-    tests = tests + "    def test_%s(self):\n" % base_file_name
-    tests = tests + "        self._check_file(\"%s/%s\")\n" % (_TEST_FILE_DIR,
-            file_name)
-    tests = tests + "\n"
+    tests = tests + unit_test_code(file_name)
 
 # remove the tailing newline
 tests = tests[0:-1]
@@ -57,3 +83,5 @@ replaced = core_text.replace(flag1+flag2, flag1+tests+flag2)
 
 with open(_UNIT_TEST_OUTPUT, 'w') as f:
     f.write(replaced)
+
+
