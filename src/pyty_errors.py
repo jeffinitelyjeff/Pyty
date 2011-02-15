@@ -6,7 +6,6 @@ class TypeUnspecifiedError(Exception):
         super(TypeUnspecifiedError, self).__init__(msg)
         self.var = var
 
-""" oops I don't think this helps at all
 class ASTTraversalError(Exception):
     def __init__(self, msg=None, missing_field=None, treated_as=None,
                  node=None):
@@ -14,5 +13,4 @@ class ASTTraversalError(Exception):
         self.missing_field = field
         self.treated_as = treated
         self.node = node
-"""
 
