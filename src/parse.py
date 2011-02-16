@@ -31,4 +31,10 @@ def parse_type_declarations(filename):
             # get str of form 'type'
             s = s[1:].strip()
 
+            if s in base_types:
+                env[v] = exec(s + "_type")
+            else:
+                raise TypeIncorrectlySpecifiedError("Type incorrectly " + 
+                    "specified as: " + specified_str)
             
+    return env
