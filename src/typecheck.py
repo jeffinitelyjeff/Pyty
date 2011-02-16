@@ -4,9 +4,14 @@ from epydoc import docparser
 from pyty_errors import TypeUnspecifiedError, \
                         TypeIncorrectlySpecifiedError, \
                         ASTTraversalError
-from pyty_types import PytyMod, PytyStmt, PytyInt, PytyFloat, PytyBool, \
-                       PytyExpr
+from types import base_types
 
+# creates an instance of each type defined in types.base_types.
+#   all have form like: int_type, float_type, bool_type.
+# this also handles importing the necessary type classes.
+for t in base_types:
+    exec("from types import Base" + t.capitalize())
+    exec(t + "_type = Base" + t.capitalize() + "()")
 
 def env_get(env, v):
     """Returns the type of the variable given by AST node C{v} in environment
@@ -131,9 +136,9 @@ def check_Assign_stmt(stmt, env):
 #   = Done ------------------------------------------------------------------
 #    - Num(object n)
 #    - Name(identifier id, expr_context ctx)
+#    - BinOp(expr left, operator op, expr right)
 #   = To Do -----------------------------------------------------------------
 #    - BoolOp(boolop op, expr* values)
-#    - BinOp(expr left, operator op, expr right)
 #    - UnaryOp(unaryop op, expr operand)
 #    - Lambda(arguments args, expr body)
 #    - IfExp(expr test, expr body, expr orelse)
@@ -146,11 +151,11 @@ def check_Assign_stmt(stmt, env):
 #       expr? kwargs)
 #    - Str(string s)
 
-def check_Num_expr(expr, t, env):
-    """Checks whether the AST expression node given by C{expr} typechecks as a
+def check_Num_expr(num, t, env):
+    """Checks whether the AST expression node given by C{num} typechecks as a
     num expression (ie, a numeric literal)."""
 
-    n = expr.n
+    n = num.n
 
     if isinstance(t, PytyInt):
         return isinstance(n, int)
@@ -159,31 +164,54 @@ def check_Num_expr(expr, t, env):
     else:
         return False
 
-def check_Name_expr(expr, t, env):
-    """Checks whether the AST expression node given by C{expr} typechecks as a
+def check_Name_expr(name, t, env):
+    """Checks whether the AST expression node given by C{name} typechecks as a
     name expression. Name expressions are used for variables and for boolean
     literals."""
 
-    if not isinstance(expr.ctx, ast.Load):
+    if not isinstance(name.ctx, ast.Load):
         raise ASTTraversalError(msg="Referenced variables or booleans do" +
             " not have proper ctx's")
     
-    id = expr.id
+    id = name.id
 
     # if checking for a boolean, say whether it's a bool literal 
     if isinstance(t, PytyBoolean):
         return id == 'True' or id == 'False'
 
     # if not checking for a boolean, then must be looking for a variable, so
-    # we need to see if the type in the environment matches.
-    return isinstance(env_get(env, expr), t)
+    # we need to see if it matches the type in the environment.
+    return isinstance(env_get(env, name), t)
 
-def check_BinOp_expr(expr, t, env):
+def check_BinOp_expr(binop, t, env):
     """Checks whether the AST expression node given by C{expr} typechecks as a
-    binary operation expression."""
+    binary operation expression. This will only typecheck if C{t} is an int
+    or a float."""
 
-    l = expr.left
-    r = expr.right
+    l = binop.left
+    r = binop.right
 
+    # the type needs to be an int or a float, and both expresions need to
+    # typecheck as that type.
     return isinstance(t, (PytyInt, PytyFloat)) and \
         check_expr(l, t, env) and check_expr(r, t, env)
+
+def check_Compare_expr(compare, t, env):
+    """Checks whethre the AST expression node given by C{compare} typechecks
+    as a compare expression. The specified C{t} must be a boolean for this to
+    typecheck correctly.
+    NOTE: Right now, this only handles binary comparisons. That is, it only
+    handles expressions of the form x>y or x==y, not x==y==z or x>y>z."""
+
+    # the Compare AST node anticipates expressions of the form x > y > z, in
+    # which case x would be left, y would be comparators[0], and z would be
+    # comparators[1]
+    l = compare.left
+    r = compare.comparators[0]
+
+    # will typecheck if both expressions typecheck as either an int or flt 
+    return (check_expr(l, int_type, env) and check_expr(r, int_type, env)) \
+        or (check_expr(l, float_type, env) and check_expr(r, float_type, env))
+
+
+

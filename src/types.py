@@ -16,21 +16,15 @@ class PytyType(object):
         # Store instance reference as the only member in the handle
         self.__dict__['_PytyType__instance'] = PytyType.__instance
 
-class PytyMod(PytyType):
+class BaseFloat(PytyType):
     pass
 
-class PytyStmt(PytyType):
+class BaseInt(PytyFloat):
     pass
 
-class PytyExpr(PytyType):
+class BaseBool(PytyType):
     pass
 
-class PytyFloat(PytyType):
-    pass
-
-class PytyInt(PytyFloat):
-    pass
-
-class PytyBool(PytyType):
-    pass
-
+# the strings in this list must be defined as the names of the defined
+# classes, but without Base- and decapitalized.
+base_types = ["int", "float", "bool"]
