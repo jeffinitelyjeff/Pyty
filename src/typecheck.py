@@ -3,15 +3,7 @@ from epydoc import docparser
 
 from errors import TypeUnspecifiedError, \
                    ASTTraversalError
-from base_types import base_types_list
-
-# creates an instance of each type defined in types.base_types_list.
-#   all have form like: int_type, float_type, bool_type.
-# this also handles importing the necessary type classes.
-for t in base_types_list:
-    exec("from base_types import Base" + t.capitalize())
-    exec(t + "_type = Base" + t.capitalize() + "()")
-
+from base_types import *
 
 # ---------------------------------------------------------------------------
 # HELPER FUNCTIONS ----------------------------------------------------------
