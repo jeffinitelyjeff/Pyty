@@ -66,7 +66,7 @@ def check_stmt(stmt, env):
     which typecheck C{node} as the specific kind of statement. The function to
     call is generated from the class name of C{node}."""
 
-    n = "check_" + stmt.__class__.__name__ + "_stmt"
+    n = get_stmt_func_name(stmt.__class__.__name__)
 
     # if we get a KeyError, then we're inspecting an AST node that is not in
     # the subset of the language we're considering (note: the subset is
@@ -83,7 +83,7 @@ def check_expr(expr, t, env):
     functions which typecheck C{code} as the specific kind of expression. The
     function to call is generated from the class name of C{node}."""
 
-    n = "check_" + expr.__class__.__name__ + "_expr"
+    n = get_expr_func_name(expr.__class__.__name__)
     
     # if we get a KeyError, then we're inspecting an AST node that is not in
     # the subset of the language we're considering (note: the subset is
@@ -121,6 +121,9 @@ def check_expr(expr, t, env):
 #    - Pass
 #    - Break
 #    - Continue
+
+def get_stmt_func_name(stmt_type):
+    return "check_%s_stmt" % stmt_type.capitalize()
 
 def check_Assign_stmt(stmt, env):
     """Checks whether the AST node given by C{node} typechecks as an
@@ -172,6 +175,9 @@ def check_Assign_stmt(stmt, env):
 #    - Call(expr func, expr* args, keyword* keywords, expr? starargs,
 #       expr? kwargs)
 #    - Str(string s)
+
+def get_expr_func_name(expr_type):
+    return "check_%s_expr" % expr_type.capitalize()
 
 def check_Num_expr(num, t, env):
     """Checks whether the AST expression node given by C{num} typechecks as a

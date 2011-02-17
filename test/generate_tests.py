@@ -15,60 +15,114 @@ but in the generated python source files (with file name
 [Source code]
 """
 
-# Maps descriptions of kinds of tests to the spec documents.
-_TEST_SPECS = {"one_line" : "one_liners.txt"}
-# File containing all the non-generated work of the unit tests.
-_UNIT_TEST_CORE = "unit_tests_core.py"
-# File to store the test file with the generated unit tests.
-_UNIT_TEST_OUTPUT = "_unit_tests_gen.py"
-# Directory to store individual python test source files.
-_TEST_FILE_DIR = "test_files"
+_SPEC_DIR = "spec"
+_SPEC_EXPR_PREFIX = "expr_"
+_SPEC_MOD_PREFIX = "mod_"
 
-# --- Helper Functions -------------------------------------------------------
+_TEST_CODE_DIR = "test_files"
+_UNIT_TEST_CORE = "unit_test_core.py"
+_UNIT_TEST_OUTPUT = "_unit_test_gen.py"
 
-def create_source_files(source, prefix):
-    with open(source, 'r') as f:
-        file_data = f.read().split("---")[1:]
-        for file_datum in file_data:
-            file_datum = file_datum.strip('\n')
+def create_expression_tests(file_name):
+    """Creates expression typechecking unit tests based on a specification
+    file of the following format.
 
-            if file_datum != '':
-                test_name = file_datum.split(' - ')[0]
+    spec mode: expr
+    expr type: expr_type
+    
+    ---pass---
+    expr1
+    expr2
+    ...
+    exprn
+    ---fail---
+    exprn+1
+    exprn+2
+    ...
+    exprn+m
 
-                # for some reason file_datum.strip('\n'+filen_name+'\n') went
-                # crazy here and would remove 'e\n' or 'ue\n' from the end.
-                file_body = '### '+file_datum.split(test_name+' - ')[1]+'\n'
+    where expr_type specifies what type of AST node the expression corresponds
+    to (capitalized or not), expr1-n should all typecheck correctly, and
+    exprn+1-m should not typecheck."""
 
-                with open("%s/%s_%s.py" % 
-                          (_TEST_FILE_DIR, prefix, test_name), 'w') as g:
-                    g.write(file_body)
+    tests = ""
+    test_count = 0
 
-def unit_test_code(test_file_name):
-    base_file_name = test_file_name.split(".")[0]
+    with open(file_name, 'r') as f:
+        text = f.read()
+        head = text.split('---pass---')[0]
+        pass_tests = text.split('---pass---')[1].split('---fail---')[0]
+        fail_tests = text.split('---fail---')[1]
 
-    return "    def test_%s(self):\n" % base_file_name + \
-           "        self._check_file(\"%s/%s\")\n\n" % (_TEST_FILE_DIR,
-                test_file_name)
+        expr_type = head.split('expr type: ')[1].strip()
 
+        test_template = "    def test_%s(self):\n" + \
+            "self._check_expr(\"%s\",\"%s\",\"%s\")\n\n"
 
-# --- Create test files based on specification document ----------------------
+        for l in pass_tests:
+            count += 1
+            t = test_template % (file_name+str(count), l, expr_type, "pass")
+            tests = tests + t
+        for l in fail_tests:
+            count += 1
+            t = test_template % (file_name+str(count), l, expr_type, "fail")
+            tests = tests + t
 
-# clear out the previous contents of the test files directory.
-for file_name in os.listdir(_TEST_FILE_DIR):
+    return tests
+
+def create_module_tests(file_name):
+    """Creates module typechecking unit tests based on a specification
+    file of the following format.
+
+    spec mode: module
+    
+    ---pass---
+    m
+    o
+    d
+    1
+    ---
+    ...
+    ---
+    m
+    o
+    d
+    n
+    ---fail---
+    m
+    o
+    d
+    n+1
+    ---
+    ...
+    m
+    o
+    d
+    n+m
+    ---
+
+    modules 1 through n should all typecheck correctly, and module n+1 through 
+    m should not."""
+
+    tests = ""
+
+    # TODO Implement!
+
+    return tests
+
+# remove generated test source code
+for file_name in os.listdir(_TEST_CODE_DIR):
     os.remove(_TEST_FILE_DIR + '/' + file_name)
 
-# create new contents of the test file directory.
-for test_kind in _TEST_SPECS:
-    create_source_files(_TEST_SPECS[test_kind], test_kind)
-
-# --- Read test files and make unit tests ------------------------------------
-
 tests = ""
-file_names = os.listdir(_TEST_FILE_DIR)
 
-# insert a unit test for each file
-for file_name in file_names:
-    tests = tests + unit_test_code(file_name)
+# create new tests (this generates the test source code for module tests as an
+# intermediate step)
+for file_name in os.listdir(_SPEC_DIR):
+    if file_name.startswith(_SPEC_EXPR_RPEFIX):
+        tests = tests + create_expression_tests(file_name)
+    elif file_name.starstwith(_SPEC_MOD_PREFIX):
+        tests = tests + create_module_tests(file_name)
 
 # remove the tailing newline
 tests = tests[0:-1]
@@ -83,5 +137,3 @@ replaced = core_text.replace(flag1+flag2, flag1+tests+flag2)
 
 with open(_UNIT_TEST_OUTPUT, 'w') as f:
     f.write(replaced)
-
-

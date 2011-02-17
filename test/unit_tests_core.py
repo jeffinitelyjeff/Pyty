@@ -5,7 +5,7 @@ import sys
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from typecheck import check_mod
+from typecheck import *
 from parse import  parse_type_declarations
 from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 
@@ -60,6 +60,22 @@ class TestFileFormatError(Exception):
 
 class PytyTests(unittest.TestCase):
 
+    def _check_expr(self, s, expr_type, expected):
+    """Typechecks the string C{s} as an C{expr_type} expression."""
+
+        a = ast.parse(s)
+
+        f = get_expr_func_name(expr_type)
+
+        if expected == "pass":
+            self.assertEqual(True, call_function(f, a, {}))
+        elif expected == "fail":
+            self.assertEqual(False, call_function(f, a, {}))
+        else:
+            raise TestFileFormatError("Expression tests can only be" +
+                "specified as passing or failing, but this test was" +
+                "specified as: " + expected)
+    
     def _check_file(self, filename):
         debug("Checking %s" % filename)
 
