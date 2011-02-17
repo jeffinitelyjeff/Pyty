@@ -1,5 +1,7 @@
 from epydoc import docparser
+
 from base_types import base_types_list
+from errors import TypeIncorrectlySpecifiedError
 
 # creates an instance of each type defined in types.base_types_list.
 #   all have form like: int_type, float_type, bool_type.
@@ -35,6 +37,6 @@ def parse_type_declarations(filename):
                 env[v] = eval("Base" + s.capitalize())
             else:
                 raise TypeIncorrectlySpecifiedError("Type incorrectly " + 
-                    "specified as: " + specified_str)
+                    "specified as: " + s)
             
     return env

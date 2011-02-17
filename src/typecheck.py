@@ -2,7 +2,6 @@ import ast
 from epydoc import docparser
 
 from errors import TypeUnspecifiedError, \
-                   TypeIncorrectlySpecifiedError, \
                    ASTTraversalError
 from base_types import base_types_list
 
@@ -12,6 +11,11 @@ from base_types import base_types_list
 for t in base_types_list:
     exec("from base_types import Base" + t.capitalize())
     exec(t + "_type = Base" + t.capitalize() + "()")
+
+
+# ---------------------------------------------------------------------------
+# HELPER FUNCTIONS ----------------------------------------------------------
+# ---------------------------------------------------------------------------
 
 def env_get(env, v):
     """Returns the type of the variable given by AST node C{v} in environment
@@ -36,6 +40,14 @@ def assert_node_type(node, ast_node_type):
 
     return True
 
+def call_function(fun_name, *args, **kwargs):
+    return globals()[fun_name](*args, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# GENERAL CHECKING FUNCTIONS ------------------------------------------------
+# ---------------------------------------------------------------------------
+
 def check_mod(node, env):
     """Checks whether the AST node given by C{node} typechecks as a module
     with environment C{env}."""
@@ -56,12 +68,13 @@ def check_stmt(stmt, env):
 
     n = "check_" + stmt.__class__.__name__ + "_stmt"
 
+    # if we get a KeyError, then we're inspecting an AST node that is not in
+    # the subset of the language we're considering (note: the subset is
+    # defined as whatever there are check function definitions for).
     try:
-        f = globals()[n]
+        return call_function(n, stmt, env)
     except KeyError:
         return False
-    else:
-        return f(stmt, env)
 
 def check_expr(expr, t, env):
     """Checks whether the AST expression node given by C{node} typechecks as
@@ -72,12 +85,13 @@ def check_expr(expr, t, env):
 
     n = "check_" + expr.__class__.__name__ + "_expr"
     
+    # if we get a KeyError, then we're inspecting an AST node that is not in
+    # the subset of the language we're considering (note: the subset is
+    # defined as whtaever there are check function definitions for).
     try:
-        f = globals()[n]
+        return call_function(n, expr, t, env)
     except KeyError:
         return False
-    else:
-        return f(expr, t, env)
     
 
 # ---------------------------------------------------------------------------
@@ -136,6 +150,7 @@ def check_Assign_stmt(stmt, env):
     # return True if we reached here, meaning that it matched with all targets
     return True
 
+
 # ---------------------------------------------------------------------------
 # EXPRESSION CHECKING FUNCTIONS ---------------------------------------------
 # ---------------------------------------------------------------------------
@@ -144,6 +159,7 @@ def check_Assign_stmt(stmt, env):
 #    - Num(object n)
 #    - Name(identifier id, expr_context ctx)
 #    - BinOp(expr left, operator op, expr right)
+#    - Compare(expr left, cmpop* ops, expr* comparators)
 #   = To Do -----------------------------------------------------------------
 #    - BoolOp(boolop op, expr* values)
 #    - UnaryOp(unaryop op, expr operand)
@@ -153,7 +169,6 @@ def check_Assign_stmt(stmt, env):
 #    - Set(expr* elts)
 #    - List(expr* elts, expr_context ctx)
 #    - Tuple(expr* elts, expr_context ctx)
-#    - Compare(expr left, cmpop* ops, expr* comparators)
 #    - Call(expr func, expr* args, keyword* keywords, expr? starargs,
 #       expr? kwargs)
 #    - Str(string s)
@@ -164,9 +179,9 @@ def check_Num_expr(num, t, env):
 
     n = num.n
 
-    if isinstance(t, PytyInt):
+    if isinstance(t, BaseInt):
         return isinstance(n, int)
-    elif isinstance(t, PytyFloat):
+    elif isinstance(t, BaseFloat):
         return isinstance(n, float)
     else:
         return False
@@ -183,7 +198,7 @@ def check_Name_expr(name, t, env):
     id = name.id
 
     # if checking for a boolean, say whether it's a bool literal 
-    if isinstance(t, PytyBoolean):
+    if isinstance(t, BaseBool):
         return id == 'True' or id == 'False'
 
     # if not checking for a boolean, then must be looking for a variable, so
@@ -200,7 +215,7 @@ def check_BinOp_expr(binop, t, env):
 
     # the type needs to be an int or a float, and both expresions need to
     # typecheck as that type.
-    return isinstance(t, (PytyInt, PytyFloat)) and \
+    return isinstance(t, (BaseInt, BaseFloat)) and \
         check_expr(l, t, env) and check_expr(r, t, env)
 
 def check_Compare_expr(compare, t, env):
