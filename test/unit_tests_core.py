@@ -5,9 +5,9 @@ import sys
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from typecheck import typecheck, parse_type_declarations
-from pyty_types import PytyMod
-from pyty_errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
+from typecheck import check_mod
+from parse import  parse_type_declarations
+from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 
 """
 This is just the core of the unit testing file. generate_tests.py must be run
@@ -60,9 +60,6 @@ class TestFileFormatError(Exception):
 
 class PytyTests(unittest.TestCase):
 
-    def setUp(self):
-        self.pyty_mod_obj = PytyMod()
-
     def _check_file(self, filename):
         debug("Checking %s" % filename)
 
@@ -90,7 +87,7 @@ class PytyTests(unittest.TestCase):
                         fail_msg = "Shouldn't typecheck, but does."
 
                     self.assertEqual(expection, 
-                        typecheck(env, a, self.pyty_mod_obj), fail_msg)
+                        check_mod(a, env), fail_msg)
                 except TypeUnspecifiedError as e:
                     self.fail("A variable type (" + e.var + ") was not " + 
                         "specified somewhere, but the program is either " + 
@@ -101,8 +98,8 @@ class PytyTests(unittest.TestCase):
                 # there end up being a lot of possible errors, might want to
                 # generalize this, but if there are only going to be a couple,
                 # might as well just include each case explicitly.
-                self.assertRaises(TypeUnspecifiedError, typecheck,
-                        env, a, self.pyty_mod_obj)
+                self.assertRaises(TypeUnspecifiedError, check_mod,
+                        a, env)
 
             else:
                 raise TestFileFormatError("Expected test value or expected " +

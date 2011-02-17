@@ -19,7 +19,7 @@ class PytyType(object):
 class BaseFloat(PytyType):
     pass
 
-class BaseInt(PytyFloat):
+class BaseInt(BaseFloat):
     pass
 
 class BaseBool(PytyType):
@@ -27,4 +27,4 @@ class BaseBool(PytyType):
 
 # the strings in this list must be defined as the names of the defined
 # classes, but without Base- and decapitalized.
-base_types = ["int", "float", "bool"]
+base_types_list = ["float", "int", "bool"]

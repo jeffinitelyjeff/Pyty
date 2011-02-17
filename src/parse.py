@@ -1,11 +1,11 @@
 from epydoc import docparser
-from types import base_types
+from base_types import base_types_list
 
-# creates an instance of each type defined in types.base_types.
+# creates an instance of each type defined in types.base_types_list.
 #   all have form like: int_type, float_type, bool_type.
 # this also handles importing the necessary type classes.
-for t in base_types:
-    exec("from types import Base" + t.capitalize())
+for t in base_types_list:
+    exec("from base_types import Base" + t.capitalize())
     exec(t + "_type = Base" + t.capitalize() + "()")
 
 def parse_type_declarations(filename):
@@ -31,8 +31,8 @@ def parse_type_declarations(filename):
             # get str of form 'type'
             s = s[1:].strip()
 
-            if s in base_types:
-                env[v] = exec(s + "_type")
+            if s in base_types_list:
+                env[v] = eval("Base" + s.capitalize())
             else:
                 raise TypeIncorrectlySpecifiedError("Type incorrectly " + 
                     "specified as: " + specified_str)

@@ -1,16 +1,16 @@
 import ast
 from epydoc import docparser
 
-from pyty_errors import TypeUnspecifiedError, \
-                        TypeIncorrectlySpecifiedError, \
-                        ASTTraversalError
-from types import base_types
+from errors import TypeUnspecifiedError, \
+                   TypeIncorrectlySpecifiedError, \
+                   ASTTraversalError
+from base_types import base_types_list
 
-# creates an instance of each type defined in types.base_types.
+# creates an instance of each type defined in types.base_types_list.
 #   all have form like: int_type, float_type, bool_type.
 # this also handles importing the necessary type classes.
-for t in base_types:
-    exec("from types import Base" + t.capitalize())
+for t in base_types_list:
+    exec("from base_types import Base" + t.capitalize())
     exec(t + "_type = Base" + t.capitalize() + "()")
 
 def env_get(env, v):
@@ -31,7 +31,7 @@ def assert_node_type(node, ast_node_type):
     C{ast_node_type}; otherwise, returns C{True}."""
 
     found = node.__class__.__name__
-    if found != ast_node_type
+    if found != ast_node_type:
         raise ASTTraversalError(expected=ast_node_type, found=found)
 
     return True
@@ -56,9 +56,12 @@ def check_stmt(stmt, env):
 
     n = "check_" + stmt.__class__.__name__ + "_stmt"
 
-    f = getattr(typecheck, n)
-
-    return f(stmt, env)
+    try:
+        f = globals()[n]
+    except KeyError:
+        return False
+    else:
+        return f(stmt, env)
 
 def check_expr(expr, t, env):
     """Checks whether the AST expression node given by C{node} typechecks as
@@ -68,10 +71,14 @@ def check_expr(expr, t, env):
     function to call is generated from the class name of C{node}."""
 
     n = "check_" + expr.__class__.__name__ + "_expr"
-
-    f = getattr(typecheck, n)
-
-    return f(expr, t, env)
+    
+    try:
+        f = globals()[n]
+    except KeyError:
+        return False
+    else:
+        return f(expr, t, env)
+    
 
 # ---------------------------------------------------------------------------
 # STATEMENT CHECKING FUNCTIONS ----------------------------------------------

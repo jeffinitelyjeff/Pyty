@@ -18,9 +18,9 @@ but in the generated python source files (with file name
 # Maps descriptions of kinds of tests to the spec documents.
 _TEST_SPECS = {"one_line" : "one_liners.txt"}
 # File containing all the non-generated work of the unit tests.
-_UNIT_TEST_CORE = "pyty_tests_core.py"
+_UNIT_TEST_CORE = "unit_tests_core.py"
 # File to store the test file with the generated unit tests.
-_UNIT_TEST_OUTPUT = "pyty_tests.py"
+_UNIT_TEST_OUTPUT = "_unit_tests_gen.py"
 # Directory to store individual python test source files.
 _TEST_FILE_DIR = "test_files"
 
