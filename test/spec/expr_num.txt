@@ -1,19 +1,16 @@
 spec mode: expr
-expr type: num
+expr type: Num
 
----pass---
-1
-0
--2.3
--4
--0
--10.31
-4e10
--4e43
+----pass----
+1 : int
+0 : int
+-2.3 : float
+-4 : int
+-0 : int
+-10.31 : float
 
----fail---
-True
-10F
-4*3
--4*2.3
-True*2
+----fail----
+True : int
+4*3 : int
+-4*2.3 : float
+True*2 : int

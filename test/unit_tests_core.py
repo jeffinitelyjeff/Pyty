@@ -7,18 +7,13 @@ sys.path.insert(0, '../src')
 
 from typecheck import *
 from parse import  parse_type_declarations
-from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
+from errors import *
+from generate_tests import _TEST_CODE_DIR
 
 """
 This is just the core of the unit testing file. generate_tests.py must be run
 to fill this file with the several unit tests (each of which tests one source
 code file in the test_files directory).
-
-Test file format:
-
-### True|False|[ErrorName]
-
-<Python code>
 """
 
 _DEBUG = False
@@ -44,83 +39,68 @@ def debug_c(test, string):
 
     if test and _DEBUG: debug(string)
 
-class TestFileFormatError(Exception):
-    """Exception subclass for error encountered when a test file is not
-    specified correctly.
-
-    @type msg: C{str}.
-    @ivar msg: message specifying what in test file isn't specified correctly.
-    """
-
-    def __init__(self, msg):
-       self.msg = msg
-
-    def __str__(self):
-        return self.msg
-
 class PytyTests(unittest.TestCase):
 
-    def _check_expr(self, s, expr_type, expected):
-    """Typechecks the string C{s} as an C{expr_type} expression."""
+    def _check_expr(self, s, expr_kind, type, expected):
+        """Typechecks the string C{s} as an C{expr_type} expression."""
 
-        a = ast.parse(s)
-
-        f = get_expr_func_name(expr_type)
+        a = ast.parse(s).body[0].value
+            
+        f = get_expr_func_name(expr_kind)
 
         if expected == "pass":
-            self.assertEqual(True, call_function(f, a, {}))
+            self.assertEqual(True, call_function(f, a, type, {}),
+                             "Should typecheck but does not (%s)." % s)
         elif expected == "fail":
-            self.assertEqual(False, call_function(f, a, {}))
+            self.assertEqual(False, call_function(f, a, type, {}),
+                             "Shouldn't typecheck but does. (%s)." % s)
+        elif issubclass(getattr(errors, expected), PytyError):
+            # if the expected value is an error, then make sure it
+            # raises the right error.
+            self.assertRaises(getattr(errors, expected), f, a, type, {})           
         else:
-            raise TestFileFormatError("Expression tests can only be" +
-                "specified as passing or failing, but this test was" +
-                "specified as: " + expected)
-    
-    def _check_file(self, filename):
-        debug("Checking %s" % filename)
+            raise TestFileFormatError("Expression tests can only be" + \
+                " specified as passing, failing, or raising an error " + \
+                " specified in errors.py, but this test was specified " + \
+                " as expecting: " + expected)
+
+    def _parse_and_check_mod(self, filename):
+        with open(filename, 'r') as f:
+            text = f.read()
+
+        a = ast.parse(text)
+        env = parse_type_declarations(filename)
+        return check_mod(a, env)
+
+    def _check_mod(self, filename):
+        """Typechecks the contents of file C{filename} as a
+        module. The file will contain a header of the form '### Pass'
+        to indicate whether the module is expected to pass or fail
+        typechecking or throw a specified error.
+        """
 
         with open(filename, 'r') as f:
-            
-            expected_str = f.readline().strip('###').strip()
+            expected = f.readline().strip('###').strip()
+            text = f.read()
 
-            if expected_str == "TypeIncorrectlySpecifiedError":
-                self.assertRaises(TypeIncorrectlySpecifiedError,   
-                    parse_type_declarations, filename)
-                return
-
-            env = parse_type_declarations(filename)
-            
-            a = ast.parse(f.read())
-            
-            if expected_str == "True" or expected_str == "False":
-                try:
-                    # test if it's looking for a true or false value.
-                    expection = ast.literal_eval(expected_str)
-                    
-                    if expection:
-                        fail_msg = "Should typecheck, but does not."
-                    else:
-                        fail_msg = "Shouldn't typecheck, but does."
-
-                    self.assertEqual(expection, 
-                        check_mod(a, env), fail_msg)
-                except TypeUnspecifiedError as e:
-                    self.fail("A variable type (" + e.var + ") was not " + 
-                        "specified somewhere, but the program is either " + 
-                        "supposed to typecheck or be checked with no errors.")
-
-            elif expected_str == "TypeUnspecifiedError": 
-                # test if it's looking for a TypeUnspecifiedError. if
-                # there end up being a lot of possible errors, might want to
-                # generalize this, but if there are only going to be a couple,
-                # might as well just include each case explicitly.
-                self.assertRaises(TypeUnspecifiedError, check_mod,
-                        a, env)
-
-            else:
-                raise TestFileFormatError("Expected test value or expected " +
-                    "error specified improperly")
-
+        if expected == "pass":
+            # the third parameter is a message displayed if assertion fails.
+            self.assertEqual(True, self._parse_and_check_mod(filename),
+                             "Should typecheck, but does not:\n%s" % text)
+        elif expected == "fail":
+            # the third parameter is a message displayed if assertion fails.
+            self.assertEqual(False, self._parse_and_check_mod(filename),
+                             "Shouldn't typecheck, but does:\n%s" % text)
+        elif issubclass(eval(expected), PytyError):
+            self.assertRaises(eval(expected),
+                              self._parse_and_check_mod, filename)
+        else:
+            # in generate_tests.py, we should have already ensured that the
+            # expecetd string is pass, fail, or a valid error name, so this case
+            # should never be reached, but this is here just in case.
+            raise Exception("Expected test result not specified with a " +
+                            "valid value")
+    
 
     ##### Generated unit tests will go below here
     ##### Generated unit tests will go above here

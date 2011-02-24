@@ -1,6 +1,6 @@
 from epydoc import docparser
 
-from base_types import *
+import base_types
 from errors import TypeIncorrectlySpecifiedError
 
 def parse_type_declarations(filename):
@@ -17,8 +17,7 @@ def parse_type_declarations(filename):
     for v in d.variables:
         # this seems to be the most straightforward way of checking whether a
         # variable has a docstring or not.
-        if hasattr(d.variables[v], 'docstring'):
-
+        if isinstance(d.variables[v].docstring, unicode):
             # get str of form 'var_name : type'
             s = d.variables[v].docstring.strip()
             # get str of form ': type'
@@ -26,10 +25,10 @@ def parse_type_declarations(filename):
             # get str of form 'type'
             s = s[1:].strip()
 
-            if s in base_types_list:
-                env[v] = eval("Base" + s.capitalize())
-            else:
-                raise TypeIncorrectlySpecifiedError("Type incorrectly " + 
+            try:
+                env[v] = getattr(base_types, s+'_type')
+            except AttributeError:
+                raise TypeIncorrectlySpecifiedError("Type incorrectly " +
                     "specified as: " + s)
             
     return env

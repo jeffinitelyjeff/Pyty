@@ -8,7 +8,9 @@ class PytyType:
 class BaseFloat(PytyType):
     class __impl(PytyType):
         """Implementation of BaseFloat class."""
-        pass
+
+        def __init__(self):
+            pass
 
     # storage for the instance reference
     __instance = None
@@ -19,39 +21,57 @@ class BaseFloat(PytyType):
         if BaseFloat.__instance is None:
             BaseFloat.__instance = BaseFloat.__impl()
 
-        # Store instance reference as the only member in the handle
+        # Store instance reference as the only member of the handle
         self.__dict__['_BaseFloat__instance'] = BaseFloat.__instance
 
 class BaseInt(BaseFloat):
-     class __impl(BaseFloat):
+    class __impl(BaseFloat):
         """Implementation of BaseInt class."""
         pass
 
-    # storage for the instance reference
     __instance = None
 
     def __init__(self):
         """Create reference to singleton instance."""
-        # Create and remember instance only if we don't already have one.
+
         if BaseInt.__instance is None:
             BaseInt.__instance = BaseInt.__impl()
 
-        # Store instance reference as the only member in the handle
         self.__dict__['_BaseInt__instance'] = BaseInt.__instance
-
+        
 class BaseBool(PytyType):
-     class __impl:
+    class __impl(PytyType):
         """Implementation of BaseBool class."""
-        pass
 
-    # storage for the instance reference
+        def __init__(self):
+            pass
+
     __instance = None
 
     def __init__(self):
         """Create reference to singleton instance."""
-        # Create and remember instance only if we don't already have one.
+
         if BaseBool.__instance is None:
             BaseBool.__instance = BaseBool.__impl()
 
-        # Store instance reference as the only member in the handle
         self.__dict__['_BaseBool__instance'] = BaseBool.__instance
+
+
+# These is_type methods abstract away the implementation of how types are
+# specified in the typechecker. Right now they are specified with strings,
+# but this should allow an interface such that they can easily be changed to
+# objects or something else to implement disjoint sum types.
+        
+def is_int(t):
+    return t == "int"
+
+def is_float(t):
+    return t == "float"
+
+def is_bool(t):
+    return t == "bool"
+
+int_type = "int"
+float_type = "float"
+bool_type = "bool"
+

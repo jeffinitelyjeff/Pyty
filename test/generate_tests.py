@@ -1,4 +1,11 @@
 import os
+import sys
+
+# Include src in the Python search path.
+sys.path.insert(0, '../src')
+
+from errors import *
+import typecheck
 
 """
 Uses the specification of the files in C{_TEST_SPECS} to generate lots of
@@ -20,109 +27,136 @@ _SPEC_EXPR_PREFIX = "expr_"
 _SPEC_MOD_PREFIX = "mod_"
 
 _TEST_CODE_DIR = "test_files"
-_UNIT_TEST_CORE = "unit_test_core.py"
-_UNIT_TEST_OUTPUT = "_unit_test_gen.py"
+_UNIT_TEST_CORE = "unit_tests_core.py"
+_UNIT_TEST_OUTPUT = "_unit_tests_gen.py"
 
-def create_expression_tests(file_name):
-    """Creates expression typechecking unit tests based on a specification
-    file of the following format.
+def _expr_test_function_def(test_name, expr_string, expr_kind,
+                            type, expected_result):
+    template = "    def test_%s(self):\n" + \
+               "        self._check_expr(\"%s\",\"%s\",\"%s\",\"%s\")\n\n"
+    return template % (test_name, expr_string, expr_kind, type, expected_result)
 
-    spec mode: expr
-    expr type: expr_type
-    
-    ---pass---
-    expr1
-    expr2
+# note: the expected result is not used in creating the test call because that
+#       information is stored in the file generated to hold the module.
+def _mod_test_function_def(file_name, file_name_path):
+    base_file_name = file_name.split('.')[0]
+    template = "    def test_%s(self):\n" + \
+               "        self._check_mod(\"%s\")\n\n"
+    return template % (base_file_name, file_name_path)
+
+def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
+    """Creates typechecking unit tests based on a specification file of the
+    following format:
+
+    HEADER
+    \result_delim{test_result_1}\result_delim
+    \test_delim\test_1\test_delim
+    \test_delim\test_2\test_delim
     ...
-    exprn
-    ---fail---
-    exprn+1
-    exprn+2
+    \result_delim{test_result_2}\result_delim
+    \test_delim\test_n+1\test_delim
     ...
-    exprn+m
-
-    where expr_type specifies what type of AST node the expression corresponds
-    to (capitalized or not), expr1-n should all typecheck correctly, and
-    exprn+1-m should not typecheck."""
+    """
 
     tests = ""
-    test_count = 0
+    count = 0
 
-    with open(file_name, 'r') as f:
+    with open(_SPEC_DIR + '/' + spec_file, 'r') as f:
         text = f.read()
-        head = text.split('---pass---')[0]
-        pass_tests = text.split('---pass---')[1].split('---fail---')[0]
-        fail_tests = text.split('---fail---')[1]
 
-        expr_type = head.split('expr type: ')[1].strip()
+    split_text = text.split(result_delim)
 
-        test_template = "    def test_%s(self):\n" + \
-            "self._check_expr(\"%s\",\"%s\",\"%s\")\n\n"
+    if expr_kind != "mod":
+        # If we're dealing with expression tests, make sure that there is a
+        # function in typecheck.py to actually deal with that kind of
+        # expression.
+        try:
+            getattr(typecheck, 'check_'+expr_kind+'_expr')
+        except AttributeError:
+            raise Exception("Expression test spec states that checking " +
+                            "against expressions of type " + check_type +
+                            ", but that functionality is not included " +
+                            "in PyTy (yet).")
 
-        for l in pass_tests:
-            count += 1
-            t = test_template % (file_name+str(count), l, expr_type, "pass")
-            tests = tests + t
-        for l in fail_tests:
-            count += 1
-            t = test_template % (file_name+str(count), l, expr_type, "fail")
-            tests = tests + t
+    # delete the stuff above the first test
+    del split_text[0] 
+
+    # go through each test specification
+    while len(split_text) > 0:
+        # split_text will be of form: [expected_result, tests, ...]
+        expected_result = split_text[0]
+        things_to_test = split_text[1]
+
+        # make sure a valid test result was specified
+        if not expected_result in ('pass', 'fail') \
+            and not issubclass(eval(expected_result), PytyError):
+            raise Exception("Test spec (for " + check_type +
+                            ") not of valid format")
+
+        split_things = things_to_test.split(test_delim)
+        
+        if expr_kind == "mod":
+
+            for mod in split_things:
+                if mod != '' and mod.strip('\n') != '':
+                    count += 1
+
+                    file_name = spec_file.split('.')[0]+str(count)+'.py'
+
+                    with open(_TEST_CODE_DIR + "/" + file_name, 'w') as g:
+                        g.write("### " + expected_result)
+                        g.write(mod)
+
+                    test = _mod_test_function_def(file_name,
+                                                  _TEST_CODE_DIR+'/'+file_name) 
+                    tests = tests + test
+
+        else:
+
+            for expr in split_things:
+                if expr != '':
+                    count += 1
+
+                    actual_expr = expr.split(':')[0].strip()
+                    type = expr.split(':')[1].strip()
+
+                    test_name = spec_file.split('.')[0]+str(count)
+                    
+                    test = _expr_test_function_def(test_name, actual_expr,
+                                                   expr_kind, type, expected_result)
+                    
+                    tests = tests + test
+
+        # get rid of this section of tests to proceed
+        del split_text[0]
+        del split_text[0]
 
     return tests
 
-def create_module_tests(file_name):
-    """Creates module typechecking unit tests based on a specification
-    file of the following format.
-
-    spec mode: module
+def create_expression_tests(spec_file):
+    with open(_SPEC_DIR + '/' + spec_file, 'r') as f:
+        text = f.read()
+        expr_type = text.split('expr type: ')[1].split('\n')[0].strip()
     
-    ---pass---
-    m
-    o
-    d
-    1
-    ---
-    ...
-    ---
-    m
-    o
-    d
-    n
-    ---fail---
-    m
-    o
-    d
-    n+1
-    ---
-    ...
-    m
-    o
-    d
-    n+m
-    ---
+    return _create_generic_tests(spec_file, '----', '\n', expr_type)
 
-    modules 1 through n should all typecheck correctly, and module n+1 through 
-    m should not."""
-
-    tests = ""
-
-    # TODO Implement!
-
-    return tests
+def create_module_tests(spec_file):
+    return _create_generic_tests(spec_file, '----', '---', "mod")
 
 # remove generated test source code
 for file_name in os.listdir(_TEST_CODE_DIR):
-    os.remove(_TEST_FILE_DIR + '/' + file_name)
+    os.remove(_TEST_CODE_DIR + '/' + file_name)
 
 tests = ""
 
-# create new tests (this generates the test source code for module tests as an
-# intermediate step)
+# create new tests (this creates files to contain the module tests as an
+# intermediate step). 
 for file_name in os.listdir(_SPEC_DIR):
-    if file_name.startswith(_SPEC_EXPR_RPEFIX):
-        tests = tests + create_expression_tests(file_name)
-    elif file_name.starstwith(_SPEC_MOD_PREFIX):
-        tests = tests + create_module_tests(file_name)
+    if not file_name.endswith('~'):
+        if file_name.startswith(_SPEC_EXPR_PREFIX):
+            tests = tests + create_expression_tests(file_name)
+        elif file_name.startswith(_SPEC_MOD_PREFIX):
+            tests = tests + create_module_tests(file_name)
 
 # remove the tailing newline
 tests = tests[0:-1]

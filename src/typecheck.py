@@ -173,14 +173,17 @@ def get_expr_func_name(expr_type):
 
 def check_Num_expr(num, t, env):
     """Checks whether the AST expression node given by C{num} typechecks as a
-    num expression (ie, a numeric literal)."""
+    num expression (ie, a numeric literal) of type C{t}."""
 
+    if not isinstance(num, ast.Num):
+        return False
+    
     n = num.n
 
-    if isinstance(t, BaseInt):
+    if is_int(t):
         return isinstance(n, int)
-    elif isinstance(t, BaseFloat):
-        return isinstance(n, float)
+    if is_float(t):
+        return isinstance(n, float) or isinstance(n, int)
     else:
         return False
 
@@ -189,6 +192,9 @@ def check_Name_expr(name, t, env):
     name expression. Name expressions are used for variables and for boolean
     literals."""
 
+    if not isinstance(name, ast.Name):
+        return False
+
     if not isinstance(name.ctx, ast.Load):
         raise ASTTraversalError(msg="Referenced variables or booleans do" +
             " not have proper ctx's")
@@ -196,7 +202,7 @@ def check_Name_expr(name, t, env):
     id = name.id
 
     # if checking for a boolean, say whether it's a bool literal 
-    if isinstance(t, BaseBool):
+    if is_bool(t):
         return id == 'True' or id == 'False'
 
     # if not checking for a boolean, then must be looking for a variable, so
@@ -208,12 +214,15 @@ def check_BinOp_expr(binop, t, env):
     binary operation expression. This will only typecheck if C{t} is an int
     or a float."""
 
+    if not isinstance(binop, ast.BinOp):
+        return False
+
     l = binop.left
     r = binop.right
 
     # the type needs to be an int or a float, and both expresions need to
     # typecheck as that type.
-    return isinstance(t, (BaseInt, BaseFloat)) and \
+    return (is_int(t) or is_float(t)) and \
         check_expr(l, t, env) and check_expr(r, t, env)
 
 def check_Compare_expr(compare, t, env):
@@ -223,15 +232,16 @@ def check_Compare_expr(compare, t, env):
     NOTE: Right now, this only handles binary comparisons. That is, it only
     handles expressions of the form x>y or x==y, not x==y==z or x>y>z."""
 
+    if not isinstance(compare, ast.Compare):
+        return False
+
     # the Compare AST node anticipates expressions of the form x > y > z, in
     # which case x would be left, y would be comparators[0], and z would be
     # comparators[1]
     l = compare.left
     r = compare.comparators[0]
 
-    # will typecheck if both expressions typecheck as either an int or flt 
-    return (check_expr(l, int_type, env) and check_expr(r, int_type, env)) \
-        or (check_expr(l, float_type, env) and check_expr(r, float_type, env))
-
-
+    # will typecheck if t is a boolean and both sides typecheck as floats.
+    return is_bool(t) and \
+           check_expr(l, float_type, env) and check_expr(r, float_type, env)
 

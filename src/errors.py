@@ -1,12 +1,15 @@
-class TypeIncorrectlySpecifiedError(Exception):
+class PytyError(Exception):
     pass
 
-class TypeUnspecifiedError(Exception):
+class TypeIncorrectlySpecifiedError(PytyError):
+    pass
+
+class TypeUnspecifiedError(PytyError):
     def __init__(self, msg=None, var=None):
         super(TypeUnspecifiedError, self).__init__(msg)
         self.var = var
 
-class ASTTraversalError(Exception):
+class ASTTraversalError(PytyError):
     def __init__(self, msg=None, missing_field=None, treated_as=None,
                  node=None):
         self.msg = msg
