@@ -21,9 +21,13 @@ def _type_parser(filename):
         comment_form = r"#: (%s) : (%s)"
         
         variable_regex = r"[\w\d]*"
-        type_regex = r".*"
+        # we allow the type string to be anything here because we want it to
+        # match and then throw an error instead of not matching as a variable
+        # declaration.
+        loose_type_regex = r".*"
+        strict_type_regex = base_types.type_regex
         
-        regex = comment_form % (variable_regex, type_regex)
+        regex = comment_form % (variable_regex, loose_type_regex)
 
         m = re.match(regex, l)
 
@@ -31,6 +35,14 @@ def _type_parser(filename):
             g = m.groups()
             var_name = g[0]
             type_name = g[1]
+
+            print "type_name: " + type_name
+            print "type_regex: " + strict_type_regex
+            print "matches? " + str(re.match(strict_type_regex, type_name) != None)
+
+            if re.match(strict_type_regex, type_name) == None:
+                raise TypeIncorrectlySpecifiedError("Type incorrectly " +
+                    "specified as: " + type_name)
 
             env[var_name] = type_name
 
