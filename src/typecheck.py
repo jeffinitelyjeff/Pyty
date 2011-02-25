@@ -98,6 +98,7 @@ def check_expr(expr, t, env):
 #   = Done ------------------------------------------------------------------
 #    - Assign(expr* targets, expr value)
 #    - If(expr test, stmt* body, stmt* orelse)
+#    - While(expr test, stmt* body, stmt* orelse)
 #   = To Do -----------------------------------------------------------------
 #    - FunctionDef(identifier name, arguments args, stmt* body, expr*
 #       decorator_list)
@@ -105,9 +106,7 @@ def check_expr(expr, t, env):
 #    - Return(expr? value)
 #    - Delete(expr* targets)
 #    - AugAssign(expr target, operator op, expr value)
-#    - Print(expr? dest, expr* values, bool nl)
 #    - For(expr test, expr iter, stmt* body, stmt* orelse)
-#    - While(expr test, stmt* body, stmt* orelse)
 #    - With(expr context_expr, expr? optional_vars, stmt* body)
 #    - Raise(expr? type, expr? inst, expr? tback)
 #    - TryExcept(stmt* body, excepthandler* handlers, stmt* orelse)
@@ -115,6 +114,7 @@ def check_expr(expr, t, env):
 #    - Assert(expr test, expr? msg)
 #    - Import(alias* names)
 #    - ImportFrom(identifier? module, alias* names, int? level)
+#    - Print(expr? dest, expr* values, bool nl)
 #    - Pass
 #    - Break
 #    - Continue
@@ -123,7 +123,7 @@ def get_stmt_func_name(stmt_type):
     return "check_%s_stmt" % stmt_type
 
 def check_Assign_stmt(stmt, env):
-    """Checks whether the AST node given by C{node} typechecks as an
+    """Checks whether the AST node given by C{stmt} typechecks as an
     assignment statement. This requires that the expression on the (far) right
     of the equal signs must typecheck as each of the assign targets. The
     expression can typecheck as multiple different types because of
@@ -151,7 +151,7 @@ def check_Assign_stmt(stmt, env):
     return True
 
 def check_If_stmt(stmt, env):
-    """Checks whether the AST node given by C{node} typechceks as an if
+    """Checks whether the AST node given by C{stmt} typechceks as an if
     statement. This requires that the test typecheck as a bolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
@@ -166,7 +166,7 @@ def check_If_stmt(stmt, env):
            check_stmt_list(body, env) and check_stmt_list(orelse, env)
 
 def check_While_stmt(stmt, env):
-    """Checks whether the AST node given by C{node} typechecks as a while
+    """Checks whether the AST node given by C{stmt} typechecks as a while
     statement. This requires that the test typecheck as a boolean and that the
     body and orelse branches both typecheck as lists of statements."""
 

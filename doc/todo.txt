@@ -8,7 +8,6 @@ Main Goals:
 
 Other things to do:
 
-- Better way to specify tests?
-===== Change way tests are specified: make a way to test expression checking,
-and find better naming scheme for one_liners, since we're not considering
-expression statements.
+- make parser only add environment info if the docstring comes before the
+  variable's first position in the text
+- do check_For_stmt, but this isn't possible until we have sequence types
