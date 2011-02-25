@@ -4,6 +4,9 @@ import base_types
 from errors import TypeIncorrectlySpecifiedError
 
 def parse_type_declarations(filename):
+    return _type_parser_epydoc(filename)
+
+def _type_parser_epydoc(filename):
     """Returns a dictionary mapping variables in the file C{filename} with
     their types defined in docstrings."""
 
