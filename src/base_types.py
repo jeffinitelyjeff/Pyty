@@ -71,6 +71,9 @@ def is_float(t):
 def is_bool(t):
     return t == "bool"
 
+def is_subt(t0, t1):
+    return t0 == t1 or (t0 == "int" and t1 == "float")
+
 int_type = "int"
 float_type = "float"
 bool_type = "bool"

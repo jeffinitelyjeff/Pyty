@@ -209,7 +209,7 @@ def check_Name_expr(name, t, env):
     else:
         # if not checking for a boolean, then we must be looking for a variable,
         # so we need to see if it matches the type in the environment.
-        return isinstance(env_get(env, id), t)
+        return is_subt(env_get(env, name), t)
 
 def check_BinOp_expr(binop, t, env):
     """Checks whether the AST expression node given by C{expr} typechecks as a

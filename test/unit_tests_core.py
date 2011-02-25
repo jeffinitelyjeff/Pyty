@@ -8,6 +8,7 @@ sys.path.insert(0, '../src')
 from typecheck import *
 from parse import  parse_type_declarations
 from errors import *
+import errors
 from generate_tests import _TEST_CODE_DIR
 
 """
@@ -57,7 +58,13 @@ class PytyTests(unittest.TestCase):
         elif issubclass(getattr(errors, expected), PytyError):
             # if the expected value is an error, then make sure it
             # raises the right error.
-            self.assertRaises(getattr(errors, expected), f, a, type, {})           
+            try:
+                call_function(f, a, type, {})
+            except getattr(errors, expected):
+                pass
+            else:
+                self.fail("Should have raised error %s, but does not. (%s)."
+                          % (expected, s))                
         else:
             raise TestFileFormatError("Expression tests can only be" + \
                 " specified as passing, failing, or raising an error " + \
@@ -92,8 +99,13 @@ class PytyTests(unittest.TestCase):
             self.assertEqual(False, self._parse_and_check_mod(filename),
                              "Shouldn't typecheck, but does:\n%s" % text)
         elif issubclass(eval(expected), PytyError):
-            self.assertRaises(eval(expected),
-                              self._parse_and_check_mod, filename)
+            try:
+                self._parse_and_check_mod(filename)
+            except getattr(errors, expected):
+                pass
+            else:
+                self.fail("Should raise error %s, but does not:\n%s"
+                          % (expected, text.strip('\n')))
         else:
             # in generate_tests.py, we should have already ensured that the
             # expecetd string is pass, fail, or a valid error name, so this case

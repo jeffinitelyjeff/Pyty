@@ -1,1 +1,2 @@
 - is there a better way to avoid code duplication with the type imports?
+- should y = 4 = 3.0 + x fail to typecheck or throw an error if y has been specified as an int?
