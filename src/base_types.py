@@ -61,7 +61,9 @@ class BaseBool(PytyType):
 # specified in the typechecker. Right now they are specified with strings,
 # but this should allow an interface such that they can easily be changed to
 # objects or something else to implement disjoint sum types.
-        
+
+type_regex = r"int|float|bool"
+
 def is_int(t):
     return t == "int"
 

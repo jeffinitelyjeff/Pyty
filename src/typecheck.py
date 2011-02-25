@@ -17,20 +17,17 @@ def env_get(env, v):
 
     # make sure the variable is in the environment
     if v.id not in env:
-        raise TypeUnspecifiedError(var=v.id)
+        raise TypeUnspecifiedError(var=v.id,env=env)
     
     # return the type stored in the environment
     return env[v.id]
 
-def assert_node_type(node, ast_node_type):
+def is_node_type(node, ast_node_type):
     """Raises an ASTTraversalError if C{node} is not the right
     C{ast_node_type}; otherwise, returns C{True}."""
 
     found = node.__class__.__name__
-    if found != ast_node_type:
-        raise ASTTraversalError(expected=ast_node_type, found=found)
-
-    return True
+    return found == ast_node_type
 
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
@@ -44,7 +41,8 @@ def check_mod(node, env):
     """Checks whether the AST node given by C{node} typechecks as a module
     with environment C{env}."""
 
-    assert_node_type(node, "Module")
+    if not isinstance(node, ast.Module):
+        return False
 
     for s in node.body:
         if not check_stmt(s, env):
@@ -145,6 +143,28 @@ def check_Assign_stmt(stmt, env):
     # return True if we reached here, meaning that it matched with all targets
     return True
 
+def check_If_stmt(stmt, env):
+    """Checks whether the AST node given by C{node} typechceks as an if
+    statement. This requires that the test typecheck as a bolean and that the
+    body and orelse branches both typecheck as lists of statements."""
+
+    test = stmt.test
+    body = stmt.body
+    orelse = stmt.orelse
+
+    # make sure the test typechecks as aboolean
+    if not check_expr(test, bool_type, env):
+        return False
+
+    # make sure each statement in body typechecks as a statement
+    for s in body:
+        if not check_stmt(s, env):
+            return False
+
+    # make sure each statement in orelse typechceks as a statement
+    for s in orelse:
+        if not check_stmt(s, env):
+            return False 
 
 # ---------------------------------------------------------------------------
 # EXPRESSION CHECKING FUNCTIONS ---------------------------------------------

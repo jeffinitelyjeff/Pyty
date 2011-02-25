@@ -1,11 +1,42 @@
+import re
+
 from epydoc import docparser
 
 import base_types
 from errors import TypeIncorrectlySpecifiedError
 
 def parse_type_declarations(filename):
-    return _type_parser_epydoc(filename)
+    return _type_parser(filename)
 
+def _type_parser(filename):
+    """Scans through the contents of C{filename} to find comments of the form
+    '#: x : int' and creates an environment dictionary of those types.
+
+    Note: will eventually have to be much more sophisticated to handle better
+    integration with epydoc."""
+
+    env = {}
+
+    for l in open(filename, 'r'):
+        comment_form = r"#: (%s) : (%s)"
+        
+        variable_regex = r"[\w\d]*"
+        type_regex = r".*"
+        
+        regex = comment_form % (variable_regex, type_regex)
+
+        m = re.match(regex, l)
+
+        if m != None:
+            g = m.groups()
+            var_name = g[0]
+            type_name = g[1]
+
+            env[var_name] = type_name
+
+    return env
+
+##### NOW DEFUNCT
 def _type_parser_epydoc(filename):
     """Returns a dictionary mapping variables in the file C{filename} with
     their types defined in docstrings."""
