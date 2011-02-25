@@ -44,10 +44,7 @@ def check_mod(node, env):
     if not isinstance(node, ast.Module):
         return False
 
-    for s in node.body:
-        if not check_stmt(s, env):
-            return False
-    return True
+    return check_stmt_list(node.body, env)
 
 def check_stmt(stmt, env):
     """Checks whether the AST node given by C{node} typechecks as a statement.
@@ -65,6 +62,16 @@ def check_stmt(stmt, env):
         return call_function(n, stmt, env)
     except KeyError:
         return False
+
+def check_stmt_list(stmt_list, env):
+    """For each stmt in C{stmt_list}, checks whether stmt is a valid
+    statement."""
+
+    for s in stmt_list:
+        if not check_stmt(s, env):
+            return False
+
+    return True
 
 def check_expr(expr, t, env):
     """Checks whether the AST expression node given by C{node} typechecks as
@@ -90,6 +97,7 @@ def check_expr(expr, t, env):
 #   Valid statement types are:
 #   = Done ------------------------------------------------------------------
 #    - Assign(expr* targets, expr value)
+#    - If(expr test, stmt* body, stmt* orelse)
 #   = To Do -----------------------------------------------------------------
 #    - FunctionDef(identifier name, arguments args, stmt* body, expr*
 #       decorator_list)
@@ -100,7 +108,6 @@ def check_expr(expr, t, env):
 #    - Print(expr? dest, expr* values, bool nl)
 #    - For(expr test, expr iter, stmt* body, stmt* orelse)
 #    - While(expr test, stmt* body, stmt* orelse)
-#    - If(expr test, stmt* body, stmt* orelse)
 #    - With(expr context_expr, expr? optional_vars, stmt* body)
 #    - Raise(expr? type, expr? inst, expr? tback)
 #    - TryExcept(stmt* body, excepthandler* handlers, stmt* orelse)
@@ -148,27 +155,32 @@ def check_If_stmt(stmt, env):
     statement. This requires that the test typecheck as a bolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
+    if not isinstance(stmt, ast.If):
+        return False
+
     test = stmt.test
     body = stmt.body
     orelse = stmt.orelse
 
-    # make sure the test typechecks as aboolean
-    if not check_expr(test, bool_type, env):
+    return check_expr(test, bool_type, env) and \
+           check_stmt_list(body, env) and check_stmt_list(orelse, env)
+
+def check_While_stmt(stmt, env):
+    """Checks whether the AST node given by C{node} typechecks as a while
+    statement. This requires that the test typecheck as a boolean and that the
+    body and orelse branches both typecheck as lists of statements."""
+
+    if not isinstance(stmt, ast.While):
         return False
 
-    # make sure each statement in body typechecks as a statement
-    for s in body:
-        if not check_stmt(s, env):
-            return False
+    # this code is IDENTICAL to the If stuff; should consider refactoring into
+    # helper function.
+    test = stmt.test
+    body = stmt.body
+    orelse = stmt.orelse
 
-    # make sure each statement in orelse typechceks as a statement
-    for s in orelse:
-        if not check_stmt(s, env):
-            return False
-
-    # if nothing has failed to typecheck, then the statement as a whole
-    # typechecks.
-    return True
+    return check_expr(test, bool_type, env) and \
+           check_stmt_list(body, env) and check_stmt_list(orelse, env)
 
 # ---------------------------------------------------------------------------
 # EXPRESSION CHECKING FUNCTIONS ---------------------------------------------
