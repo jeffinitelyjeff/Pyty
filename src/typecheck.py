@@ -115,7 +115,7 @@ def check_expr(expr, t, env):
 #    - Continue
 
 def get_stmt_func_name(stmt_type):
-    return "check_%s_stmt" % stmt_type.capitalize()
+    return "check_%s_stmt" % stmt_type
 
 def check_Assign_stmt(stmt, env):
     """Checks whether the AST node given by C{node} typechecks as an
@@ -169,7 +169,7 @@ def check_Assign_stmt(stmt, env):
 #    - Str(string s)
 
 def get_expr_func_name(expr_type):
-    return "check_%s_expr" % expr_type.capitalize()
+    return "check_%s_expr" % expr_type
 
 def check_Num_expr(num, t, env):
     """Checks whether the AST expression node given by C{num} typechecks as a
@@ -201,13 +201,15 @@ def check_Name_expr(name, t, env):
     
     id = name.id
 
-    # if checking for a boolean, say whether it's a bool literal 
-    if is_bool(t):
-        return id == 'True' or id == 'False'
-
-    # if not checking for a boolean, then must be looking for a variable, so
-    # we need to see if it matches the type in the environment.
-    return isinstance(env_get(env, name), t)
+    # need to treat when the Name expr is a boolean and when it's a variable.
+    if id == 'True' or id == 'False':
+        # if the name is actually representing a boolean, then determine if
+        # we're actually typechecking it as a boolean.
+        return is_bool(t)
+    else:
+        # if not checking for a boolean, then we must be looking for a variable,
+        # so we need to see if it matches the type in the environment.
+        return isinstance(env_get(env, id), t)
 
 def check_BinOp_expr(binop, t, env):
     """Checks whether the AST expression node given by C{expr} typechecks as a

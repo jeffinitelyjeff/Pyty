@@ -152,7 +152,7 @@ tests = ""
 # create new tests (this creates files to contain the module tests as an
 # intermediate step). 
 for file_name in os.listdir(_SPEC_DIR):
-    if not file_name.endswith('~'):
+    if file_name.endswith('.spec'):
         if file_name.startswith(_SPEC_EXPR_PREFIX):
             tests = tests + create_expression_tests(file_name)
         elif file_name.startswith(_SPEC_MOD_PREFIX):

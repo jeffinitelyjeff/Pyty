@@ -9,6 +9,9 @@ class TypeUnspecifiedError(PytyError):
         super(TypeUnspecifiedError, self).__init__(msg)
         self.var = var
 
+    def __str__(self):
+        return "Variable %s has unspecified type" % self.var
+
 class ASTTraversalError(PytyError):
     def __init__(self, msg=None, missing_field=None, treated_as=None,
                  node=None):
