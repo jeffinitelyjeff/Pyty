@@ -1,5 +1,4 @@
 import ast
-from epydoc import docparser
 
 from errors import TypeUnspecifiedError, \
                    ASTTraversalError

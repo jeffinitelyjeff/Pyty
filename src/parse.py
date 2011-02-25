@@ -1,7 +1,5 @@
 import re
 
-from epydoc import docparser
-
 import base_types
 from errors import TypeIncorrectlySpecifiedError
 
