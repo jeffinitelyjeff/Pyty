@@ -164,7 +164,11 @@ def check_If_stmt(stmt, env):
     # make sure each statement in orelse typechceks as a statement
     for s in orelse:
         if not check_stmt(s, env):
-            return False 
+            return False
+
+    # if nothing has failed to typecheck, then the statement as a whole
+    # typechecks.
+    return True
 
 # ---------------------------------------------------------------------------
 # EXPRESSION CHECKING FUNCTIONS ---------------------------------------------

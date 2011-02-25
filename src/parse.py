@@ -36,10 +36,6 @@ def _type_parser(filename):
             var_name = g[0]
             type_name = g[1]
 
-            print "type_name: " + type_name
-            print "type_regex: " + strict_type_regex
-            print "matches? " + str(re.match(strict_type_regex, type_name) != None)
-
             if re.match(strict_type_regex, type_name) == None:
                 raise TypeIncorrectlySpecifiedError("Type incorrectly " +
                     "specified as: " + type_name)
