@@ -11,3 +11,7 @@ Other things to do:
 - make parser only add environment info if the docstring comes before the
   variable's first position in the text
 - do check_For_stmt, but this isn't possible until we have sequence types
+- make pytytypes better -> have class which just has an enumerated type for
+  basetypes, make things abstracted better.
+- rewrite assertions into typecheck -- should through debugging output when
+  getting to weird branches instead of just returning false.
