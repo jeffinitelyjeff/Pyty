@@ -35,14 +35,37 @@ class TypeDec(ast.stmt):
         self.col = col
 
 
-def embed_environments(tree):
-    """Reads in an AST and, for each statement, adds an instance variable called
-    C{env} which is the environment of type declarations at that current state
-    of the program. C{env} is stored as a dictionary mapping variable
+def embed_environments(mod):
+    """Reads in a module AST and, for each statement, adds an instance variable
+    called C{env} which is the environment of type declarations at that current
+    state of the program. C{env} is stored as a dictionary mapping variable
     identifiers to PytyType objects.
     """
 
-    for child in ast.iter_child_nodes(tree):
+    is_mod = mod.__class__.__name__ == "Module"
+
+    assert(is_mod)
+
+    if is_mod:
+        return _embed_environment_stmtlist(mod.body, {})
+    else:
+        return None
+    
+
+def _get_stmt_lists(node):
+    """Provides a layer of abstraction for extracting all the children from a
+    node that are lists of statements."""
+
+    node_type = node.__class__.__name__
+
+    if node_type in ("If", "While", "For", "TryExcept"):
+        return (node.body, node.orelse)
+    elif node_type in ("FunctionDef", "ClassDef", "With"):
+        return (node.body)
+    elif node_type in ("TryFinally"):
+        return (node.body, node.finalbody)
+    else:
+        return tuple()
 
 def _embed_environment_node(tree, old_env):
     """Recursive helper for embed_environment to add environments to AST nodes.
@@ -63,7 +86,7 @@ def _embed_environment_node(tree, old_env):
 
     # if tree is a statement
     elif isinstance(tree, ast.stmt):
-        # we only need to do real work if it's a TypeDec statement
+        # we only need to add typedefs to the dictionary if it's a TypeDec statement
         if tree.__class__.__name__ = "TypeDec":
             new_env = old_env.copy()
             
@@ -71,9 +94,25 @@ def _embed_environment_node(tree, old_env):
                 new_env[target.id] = tree.t
                 
             tree.env = new_env
+        # but if it's any kind of statement with children, we need to recurse
+        # down and assign environments to those nodes.
         else:
             tree.env = old_env
 
+            # need to get all the children which are lists of statements. AST's
+            # built-in function of iter_child_nodes won't quite do the job here,
+            # as it'll just return a generator with all the children nodes
+            # flattened.
+            stmt_lists = _get_stmt_lists(tree)
+
+            for stmt_list in stmt_lists:
+                _embed_environment_stmtlist(stmt_list, old_env)
+
+            # statements don't show up as children of other nodes (except as
+            # statement lists of course), and expressions don't get any
+            # environments added, so statement lists is all we really have to
+            # worry about
+            
         return tree.env
 
     # according to the Python API, AST nodes are disjoint sums of expressions,
@@ -91,6 +130,10 @@ def _embed_environment_stmtlist(stmts, old_env):
     end of the list of statements because we are assuming that C{stmts} is the
     entire contents of one block, so, once we're done with the block, we should
     no longer know or care about the type declarations from within the block.
+
+    @returns: The environment at the end of the list of statements. This will
+    only be used when processing the list of statements in a module to get a
+    "master" environment for a file to use in debugging.
     """
 
     working_env = old_env
@@ -98,6 +141,24 @@ def _embed_environment_stmtlist(stmts, old_env):
     for s in stmts:
         working_env = _embed_environment_node(s, working_env)
 
+    return working_env
+
         
-            
+def find_env(expr):
+    """This should only be called on an expression within an AST that has
+    already been propogated with environments. All statements will have
+    environments set as instance variables, but expressions will have to refer
+    to the environments of their parent statements. XXX This probably will be
+    redundant, because the environments of the parent statements will be
+    accessed and then typecheck will be called with those environments when the
+    children expressions are typechecked.
+    """
+
+    # this function is pointless to call on anything other than expressions.
+    assert(isinstance(expr, ast.expr))
+
+    # TODO implement if necessary
+
+
+    
         

@@ -1,3 +1,36 @@
+ ---------------------------------------------------------------------------
+ STATEMENT CHECKING FUNCTIONS ----------------------------------------------
+ ---------------------------------------------------------------------------
+   Valid statement types are:
+   = Done ------------------------------------------------------------------
+    - Assign(expr* targets, expr value)
+    - If(expr test, stmt* body, stmt* orelse)
+    - While(expr test, stmt* body, stmt* orelse)
+   = To Do -----------------------------------------------------------------
+    - FunctionDef(identifier name, arguments args, stmt* body, expr*
+       decorator_list)
+    - ClassDef(identifier name, expr* bases, stmt* body, expr* decorator_list)
+    - Return(expr? value)
+    - Delete(expr* targets)
+    - AugAssign(expr target, operator op, expr value)
+    - For(expr test, expr iter, stmt* body, stmt* orelse)
+    - With(expr context_expr, expr? optional_vars, stmt* body)
+    - Raise(expr? type, expr? inst, expr? tback)
+    - TryExcept(stmt* body, excepthandler* handlers, stmt* orelse)
+    - TryFinally(stmt* body, stmt* finalbody)
+    - Assert(expr test, expr? msg)
+    - Import(alias* names)
+    - ImportFrom(identifier? module, alias* names, int? level)
+    - Print(expr? dest, expr* values, bool nl)
+    - Pass
+    - Break
+    - Continue
+
+
+
+
+
+
 Basic Architecture
 ==================
 -src/
