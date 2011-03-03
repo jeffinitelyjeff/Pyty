@@ -1,5 +1,36 @@
 import ast
 
+# These are statements which do not contain statement children.
+_SIMPLE_STATEMENTS = ( "Assign", "Return", "Delet", "AugAssign", "Raise",
+                       "Assert", "Import", "ImportFrom", "Print", "Pass",
+                       "Break", "Continue" )
+
+# These are statements which do contain statement children.
+_COMPOUND_STATEMENTS = ( "If", "While", "FunctionDef", "ClassDef", "For",
+                         "With", "TryExcept", "TryFinally" )
+
+assert(set(_SIMPLE_STATEMENTS).intersection(set(_COMPOUND_STATEMENTS)) = set([]))
+
+# These are statements which contain statements in just a list called "body".
+_BODY_STATEMENTS = ( "FunctionDef", "ClassDef", "With" )
+
+# These are statements which contain statements in lists called "body" and
+# "orelse".
+_BODY_ORELSE_STATEMENTS = ( "If", "While", "For", "TryExcept" )
+
+# These are statements which contain statements in lists called "body" and
+# "finally".
+_BODY_FINALLY_STATEMENTS = ( "TryFinally", )
+
+assert(set(_BODY_STATEMENTS).issubset(
+    set(_SIMPLE_STATEMENTS).union(set(_COMPOUND_STATEMETNS))))
+assert(set(_BODY_ORELSE_STATEMENTS).issubset(
+    set(_SIMPLE_STATEMENTS).union(set(_COMPOUND_STATEMETNS))))
+assert(set(_BODY_FINALLY_STATEMENTS).issubset(
+    set(_SIMPLE_STATEMENTS).union(set(_COMPOUND_STATEMETNS))))
+
+       
+
 class TypeDec(ast.stmt):
     """A TypeDec is an AST statement node which represents the assertion that a
     variable or function is of a certain type. This is effectively a
@@ -34,6 +65,35 @@ class TypeDec(ast.stmt):
         self.lineno = line
         self.col = col
 
+def place_typedec(tree, typedec):
+    """Traverses the AST C{tree} and finds the proper place to insert the type
+    declaration based on the line numbers of the nodes in the AST.
+    """
+
+    # TODO implement
+    
+def place_typedec_in_stmt_list(stmt_list, typedec):
+    """Places the typedec in the proper position of the lit of statements."""
+
+    lower_bound_idx = 0
+    lower_bound_stmt = None
+
+    # increment lower_bound_idx until we hit a lineno that's past the desired lineno
+    for stmt in stmt_list:
+        if stmt.lineno > typedec.lineno:
+            break
+
+        # the line of the typedec should definitely not already be in the AST.
+        assert(stmt.lineno != typedec.lineno)
+
+        lower_bound_idx += 1
+        lower_bound_stmt = stmt
+    
+    # if the lower bound we found is a simple statement (one that does not have
+    # statement children), then we can just insert the typedec.
+    if stmt in _SIMPLE_STATEMENTS:
+        
+
 
 def embed_environments(mod):
     """Reads in a module AST and, for each statement, adds an instance variable
@@ -58,11 +118,11 @@ def _get_stmt_lists(node):
 
     node_type = node.__class__.__name__
 
-    if node_type in ("If", "While", "For", "TryExcept"):
+    if node_type in _BODY_ORELSE_STATEMENTS:
         return (node.body, node.orelse)
-    elif node_type in ("FunctionDef", "ClassDef", "With"):
+    elif node_type in _BODY_STATEMENTS:
         return (node.body)
-    elif node_type in ("TryFinally"):
+    elif node_type in _BODY_FINALLY_STATEMENTS:
         return (node.body, node.finalbody)
     else:
         return tuple()
