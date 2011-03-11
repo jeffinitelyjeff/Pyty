@@ -15,3 +15,8 @@ Other things to do:
   basetypes, make things abstracted better.
 - rewrite assertions into typecheck -- should through debugging output when
   getting to weird branches instead of just returning false.
+
+- add ability to specify a type in one line like this: "x = 5 #: x : int" make
+- more efficient AST traversal when adding typedec nodes -> shouldn't have to
+  start at the root every time.
+

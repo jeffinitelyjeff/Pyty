@@ -1,35 +1,42 @@
 import ast
 
-# These are statements which do not contain statement children.
-_SIMPLE_STATEMENTS = ( "Assign", "Return", "Delet", "AugAssign", "Raise",
-                       "Assert", "Import", "ImportFrom", "Print", "Pass",
-                       "Break", "Continue" )
+def are_disjoint(set1, set2):
+    return set1.intersection(set2) == set([])
 
-# These are statements which do contain statement children.
-_COMPOUND_STATEMENTS = ( "If", "While", "FunctionDef", "ClassDef", "For",
-                         "With", "TryExcept", "TryFinally" )
+def triple_union(set1, set2, set3):
+    return set1.union(set2).union(set3)
 
-assert(set(_SIMPLE_STATEMENTS).intersection(set(_COMPOUND_STATEMENTS)) = set([]))
+## These are classifications of statement types essentially based on whether the
+## statement is multi-line or not. All statement types in _SIMPLE_STATEMENTS do
+## not have lists of statements as children, but every statement type in
+## _COMPOUND_STATEMENT does have at least one list of statements as a child.
 
-# These are statements which contain statements in just a list called "body".
-_BODY_STATEMENTS = ( "FunctionDef", "ClassDef", "With" )
+_SIMPLE_STATEMENTS = set([ "Assign", "Return", "Delet", "AugAssign", "Raise",
+                           "Assert", "Import", "ImportFrom", "Print", "Pass",
+                           "Break", "Continue" ])
+_COMPOUND_STATEMENTS = set([ "If", "While", "FunctionDef", "ClassDef", "For",
+                             "With", "TryExcept", "TryFinally" ])
+_ALL_STATEMENTS = _SIMPLE_STATEMENTS.union(_COMPOUND_STATEMENTS)
 
-# These are statements which contain statements in lists called "body" and
-# "orelse".
-_BODY_ORELSE_STATEMENTS = ( "If", "While", "For", "TryExcept" )
+# simple and compound statement should not overlap.
+assert(are_disjoint(_SIMPLE_STATEMENTS, _COMPOUND_STATEMENTS)
 
-# These are statements which contain statements in lists called "body" and
-# "finally".
-_BODY_FINALLY_STATEMENTS = ( "TryFinally", )
+## These are classifications of compound statements based on the structure of
+## their corresponding AST node. Body statements contain only one list of
+## statements labeled "body", body-orelse statements contain lists of statements
+## labeled "body" and "orelse", and body-finally statements contain lists of
+## statements labeled "body" and "finally".
 
-assert(set(_BODY_STATEMENTS).issubset(
-    set(_SIMPLE_STATEMENTS).union(set(_COMPOUND_STATEMETNS))))
-assert(set(_BODY_ORELSE_STATEMENTS).issubset(
-    set(_SIMPLE_STATEMENTS).union(set(_COMPOUND_STATEMETNS))))
-assert(set(_BODY_FINALLY_STATEMENTS).issubset(
-    set(_SIMPLE_STATEMENTS).union(set(_COMPOUND_STATEMETNS))))
+_BODY_STATEMENTS = set([ "FunctionDef", "ClassDef", "With" ])
+_BODY_ORELSE_STATEMENTS = set([ "If", "While", "For", "TryExcept" ])
+_BODY_FINALLY_STATEMENTS = set([ "TryFinally" ])
 
-       
+# make sure the complex statements are a disjoint sum of these statements.
+assert(_BODY_STATEMENTS.issubset(_COMPOUND_STATEMENTS))
+assert(_BODY_ORELSE_STATEMENTS.issubset(_COMPOUND_STATEMENTS))
+assert(_BODY_FINALLY_STATEMENTS.issubset(_COMPOUND_STATEMENTS))
+assert(triple_union(_BODY_STATEMENTS, _BODY_ORELSE_STATEMENTS,
+                    _BODY_FINALLY_STATEMENTS) == _COMPOUND_STATEMENTS)
 
 class TypeDec(ast.stmt):
     """A TypeDec is an AST statement node which represents the assertion that a
@@ -45,15 +52,15 @@ class TypeDec(ast.stmt):
     """
 
     def __init__(targets, t, line, col):
-        """Creates a C{TypeDec} node with the supplied parameters.
+        """Creates a L{TypeDec} node with the supplied parameters.
 
         @type targets: list of ast.Name
         @param targets: The list of variables which are having their types
-        declared. A list is permitted to allow for cases of declaring several
-        variables at once.
+            declared. A list is permitted to allow for cases of declaring several
+            variables at once.
         @type t: PytyType
         @param t: A PytyType object representing the type which the C{targets}
-        are declared as.
+            are declared as.
         @type line: int
         @param line: The line number of the source code for the declaration.
         @type col: int
@@ -65,36 +72,80 @@ class TypeDec(ast.stmt):
         self.lineno = line
         self.col = col
 
-def place_typedec(tree, typedec):
-    """Traverses the AST C{tree} and finds the proper place to insert the type
-    declaration based on the line numbers of the nodes in the AST.
-    """
+    def place_in_module(self, mod):
+        """Places this L{TypeDec} instance in its proper place (according to its
+        C{lineno}) in the module represented by the AST node C{mod}.
+        """
 
-    # TODO implement
-    
-def place_typedec_in_stmt_list(stmt_list, typedec):
-    """Places the typedec in the proper position of the lit of statements."""
+        self._place_in_stmt_list(mod.body)
 
-    lower_bound_idx = 0
-    lower_bound_stmt = None
+    def _place_in_stmt_list(self, stmt_list):
+        """Places this L{TypeDec} instance in its proper place (according to its
+        C{lineno}) in the list of statement AST nodes provided by C{stmt_list}.
+        """
 
-    # increment lower_bound_idx until we hit a lineno that's past the desired lineno
-    for stmt in stmt_list:
-        if stmt.lineno > typedec.lineno:
-            break
+        idx = 0
 
-        # the line of the typedec should definitely not already be in the AST.
-        assert(stmt.lineno != typedec.lineno)
+        # iterate through stmt_list until we hit a lineno that's too far.
+        for stmt in stmt_list:
+            if stmt.lineno > self.lineno:
+                break
 
-        lower_bound_idx += 1
-        lower_bound_stmt = stmt
-    
-    # if the lower bound we found is a simple statement (one that does not have
-    # statement children), then we can just insert the typedec.
-    if stmt in _SIMPLE_STATEMENTS:
+            # the line of this typedec should definitely not already be in the
+            # AST, at least for now. XXX ONELINETYPEDEC
+            assert(stmt.lineno != self.lineno)
+
+            idx += 1
+
+        self._place_near_stmt(stmt_list, idx)
+
+    def _place_near_stmt(self, stmt_list, pos):
+        """Places this L{TypeDec} instance in the correct position 'near' the
+        statement at position C{pos} in the list of statements C{stmt_list}. If
+        the specified statement is a simple (one-line) statement, then this just
+        means placing this L{TypeDec} directly after the statement; if the
+        specified statement is a compound (multi-line) statement, then this
+        means placing this L{TypeDec} in the proper place within the compound
+        statement.
+
+        @precondition: stmt_list[pos].lineno < self.lineno and
+            stmt_list[pos+1].lineno > self.lineno
+        """
+
+        stmt = stmt_list[pos]
+
+        if stmt in _SIMPLE_STATEMENTS:
+            # if the preceeding statement is simple, then just place the typedec
+            # after the statement.
+            stmt_list.insert(pos + 1, typedec)
+        elif stmt in _COMPOUND_STATEMENTS:
+            # if the preceeding statement is complex, then figure out what kind of
+            # statement AST structure it has, and place the typedec into the right
+            # list of child statements.
+
+            branch1 = stmt.body
+            # branch2 = None ### XXX this might be necessary? dunno.
+
+            if stmt in _BODY_ORELSE_STATEMENTS:
+                branch2 = stmt.orelse
+            elif stmt in _BODY_FINALLY_STATEMENTS:
+                branch2 = stmt.finally
+
+            if stmt in _BODY_STATEMENTS or branch2[0].lineno > self.lineno:
+                # place the typedec in the first list of statements if the statement
+                # type only has one branch or the lineno of the first line of the
+                # second branch is past the desired lineno.
+                self._place_in_stmt_list(branch1)
+            else:
+                # place the typedec in the second list of statements otherwise (ie,
+                # if the statement type has more than one branch and the first line
+                # of the second branch is not past the desired lineno).
+                self._place_in_stmt_list(branch2)
+        else:
+            # statements are a disjoint sum of simple and compound statements, so
+            # this default case should never be reached.
+            assert(False)
         
-
-
 def embed_environments(mod):
     """Reads in a module AST and, for each statement, adds an instance variable
     called C{env} which is the environment of type declarations at that current
@@ -107,7 +158,7 @@ def embed_environments(mod):
     assert(is_mod)
 
     if is_mod:
-        return _embed_environment_stmtlist(mod.body, {})
+        return _embed_environment_stmt_list(mod.body, {})
     else:
         return None
     
@@ -166,7 +217,7 @@ def _embed_environment_node(tree, old_env):
             stmt_lists = _get_stmt_lists(tree)
 
             for stmt_list in stmt_lists:
-                _embed_environment_stmtlist(stmt_list, old_env)
+                _embed_environment_stmt_list(stmt_list, old_env)
 
             # statements don't show up as children of other nodes (except as
             # statement lists of course), and expressions don't get any
@@ -180,7 +231,7 @@ def _embed_environment_node(tree, old_env):
     else:
         assert(False)
 
-def _embed_environment_stmtlist(stmts, old_env):
+def _embed_environment_stmt_list(stmts, old_env):
     """Recursive helper for embed_environment to add environments to lists of
     statements. The list of statements to be processed is assumed to be
     consecutively ordered within one block (and consisting of the entire block),

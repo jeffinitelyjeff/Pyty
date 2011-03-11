@@ -1,4 +1,26 @@
  ---------------------------------------------------------------------------
+ EXPRESSION CHECKING FUNCTIONS ---------------------------------------------
+ ---------------------------------------------------------------------------
+   Valid expression types are:
+   = Done ------------------------------------------------------------------
+    - Num(object n)
+    - Name(identifier id, expr_context ctx)
+    - BinOp(expr left, operator op, expr right)
+    - Compare(expr left, cmpop* ops, expr* comparators)
+   = To Do -----------------------------------------------------------------
+    - BoolOp(boolop op, expr* values)
+    - UnaryOp(unaryop op, expr operand)
+    - Lambda(arguments args, expr body)
+    - IfExp(expr test, expr body, expr orelse)
+    - Dict(expr* keys, expr* values)
+    - Set(expr* elts)
+    - List(expr* elts, expr_context ctx)
+    - Tuple(expr* elts, expr_context ctx)
+    - Call(expr func, expr* args, keyword* keywords, expr? starargs,
+       expr? kwargs)
+    - Str(string s)
+
+---------------------------------------------------------------------------
  STATEMENT CHECKING FUNCTIONS ----------------------------------------------
  ---------------------------------------------------------------------------
    Valid statement types are:
