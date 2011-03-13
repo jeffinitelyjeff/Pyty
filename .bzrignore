@@ -1,4 +1,5 @@
 test/test_files/*
 *.pyc
 test/_unit_tests_gen.py
+.emacs.desktop.lock
 *~

@@ -1,15 +1,12 @@
 import ast
 
-def are_disjoint(set1, set2):
-    return set1.intersection(set2) == set([])
+from util import are_disjoint, disjoint_sums_of
 
-def triple_union(set1, set2, set3):
-    return set1.union(set2).union(set3)
-
-## These are classifications of statement types essentially based on whether the
-## statement is multi-line or not. All statement types in _SIMPLE_STATEMENTS do
-## not have lists of statements as children, but every statement type in
-## _COMPOUND_STATEMENT does have at least one list of statements as a child.
+### These are classifications of statement types essentially based on whether
+### the statement is multi-line or not. All statement types in
+### _SIMPLE_STATEMENTS do not have lists of statements as children, but every
+### statement type in _COMPOUND_STATEMENT does have at least one list of
+### statements as a child.
 
 _SIMPLE_STATEMENTS = set([ "Assign", "Return", "Delet", "AugAssign", "Raise",
                            "Assert", "Import", "ImportFrom", "Print", "Pass",
@@ -19,24 +16,25 @@ _COMPOUND_STATEMENTS = set([ "If", "While", "FunctionDef", "ClassDef", "For",
 _ALL_STATEMENTS = _SIMPLE_STATEMENTS.union(_COMPOUND_STATEMENTS)
 
 # simple and compound statement should not overlap.
-assert(are_disjoint(_SIMPLE_STATEMENTS, _COMPOUND_STATEMENTS)
+assert(_are_disjoint(_SIMPLE_STATEMENTS, _COMPOUND_STATEMENTS)
 
-## These are classifications of compound statements based on the structure of
-## their corresponding AST node. Body statements contain only one list of
-## statements labeled "body", body-orelse statements contain lists of statements
-## labeled "body" and "orelse", and body-finally statements contain lists of
-## statements labeled "body" and "finally".
+### These are classifications of compound statements based on the structure of
+### their corresponding AST node. Body statements contain only one list of
+### statements labeled "body", body-orelse statements contain lists of
+### statements labeled "body" and "orelse", and body-finally statements contain
+### lists of statements labeled "body" and "finally".
 
 _BODY_STATEMENTS = set([ "FunctionDef", "ClassDef", "With" ])
 _BODY_ORELSE_STATEMENTS = set([ "If", "While", "For", "TryExcept" ])
 _BODY_FINALLY_STATEMENTS = set([ "TryFinally" ])
 
 # make sure the complex statements are a disjoint sum of these statements.
-assert(_BODY_STATEMENTS.issubset(_COMPOUND_STATEMENTS))
-assert(_BODY_ORELSE_STATEMENTS.issubset(_COMPOUND_STATEMENTS))
-assert(_BODY_FINALLY_STATEMENTS.issubset(_COMPOUND_STATEMENTS))
-assert(triple_union(_BODY_STATEMENTS, _BODY_ORELSE_STATEMENTS,
-                    _BODY_FINALLY_STATEMENTS) == _COMPOUND_STATEMENTS)
+assert(_disjoint_sums_of([_BODY_STATEMENTS, _BODY_ORELSE_STATEMENTS,
+                          _BODY_FINALLY_STATEMENTS], _COMPOUND_STATEMENTS)
+
+### ----------------------------------------------------------------------------
+### TypeDec class and methods to add typedec to an AST -------------------------
+### ----------------------------------------------------------------------------
 
 class TypeDec(ast.stmt):
     """A TypeDec is an AST statement node which represents the assertion that a
@@ -145,7 +143,11 @@ class TypeDec(ast.stmt):
             # statements are a disjoint sum of simple and compound statements, so
             # this default case should never be reached.
             assert(False)
-        
+
+### ----------------------------------------------------------------------------
+### Functions to add environment info to an AST populated with TypeDec nodes ---
+### ----------------------------------------------------------------------------
+            
 def embed_environments(mod):
     """Reads in a module AST and, for each statement, adds an instance variable
     called C{env} which is the environment of type declarations at that current
@@ -176,7 +178,10 @@ def _get_stmt_lists(node):
     elif node_type in _BODY_FINALLY_STATEMENTS:
         return (node.body, node.finalbody)
     else:
-        return tuple()
+        # This should only be called on compound statements, which the three
+        # previous cases form a disjoint sum of..
+        assert(False)
+
 
 def _embed_environment_node(tree, old_env):
     """Recursive helper for embed_environment to add environments to AST nodes.
