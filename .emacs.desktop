@@ -2,7 +2,7 @@
 ;; --------------------------------------------------------------------------
 ;; Desktop File for Emacs
 ;; --------------------------------------------------------------------------
-;; Created Sun Mar 13 15:43:51 2011
+;; Created Sun Mar 13 15:52:51 2011
 ;; Desktop file format version 206
 ;; Emacs version 23.1.1
 
@@ -16,28 +16,6 @@
 
 ;; Buffer section -- buffers listed in same order as in buffer list:
 (desktop-create-buffer 206
-  "/home/jruberg/code/pyty/myast/src/ast_extensions.py"
-  "ast_extensions.py"
-  'python-mode
-  '(auto-fill-mode linum-mode)
-  1453
-  '(62 nil)
-  nil
-  nil
-  '((buffer-file-coding-system . undecided-unix)))
-
-(desktop-create-buffer 206
-  "/home/jruberg/Dropbox/code/pyty/myast/.bzrignore"
-  ".bzrignore"
-  'fundamental-mode
-  '(linum-mode)
-  68
-  '(nil nil)
-  nil
-  nil
-  '((buffer-file-coding-system . undecided-unix)))
-
-(desktop-create-buffer 206
   "/home/jruberg/code/pyty/myast/src/util.py"
   "util.py"
   'python-mode
@@ -47,6 +25,17 @@
   nil
   nil
   '((buffer-file-coding-system . utf-8-unix)))
+
+(desktop-create-buffer 206
+  "/home/jruberg/code/pyty/myast/src/ast_extensions.py"
+  "ast_extensions.py"
+  'python-mode
+  '(auto-fill-mode linum-mode)
+  1453
+  '(62 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
 
 (desktop-create-buffer 206
   "/home/jruberg/code/pyty/myast/doc/q.txt"
