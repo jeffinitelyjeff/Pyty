@@ -20,3 +20,6 @@ Other things to do:
 - more efficient AST traversal when adding typedec nodes -> shouldn't have to
   start at the root every time.
 
+- implement more efficient storage of environments; instead of storing the
+  entire environment at each statement node, just store references to the
+  previous dictionaries.
