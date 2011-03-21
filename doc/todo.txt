@@ -23,3 +23,9 @@ Other things to do:
 - implement more efficient storage of environments; instead of storing the
   entire environment at each statement node, just store references to the
   previous dictionaries.
+
+- allow multiple variables to be typedec'd in one statement (this is implemented
+  from the AST side, but not the parsing side.)
+
+- look into ast.get_docstring --> possibly could be modified to also give
+  variable docstring?

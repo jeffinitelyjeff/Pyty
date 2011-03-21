@@ -1,8 +1,12 @@
-- should all children of a block statement be treated as sharing the same
++ should all children of a block statement be treated as sharing the same
   environment? this would be easier to implement. for now I'll assume I
-  shouldn't do it this way.
+  shouldn't do it this way. <-- ANSWER: no, they shouldn't.
 
 
 
 - should y = 4 = 3.0 + x fail to typecheck or throw an error if y has been
   specified as an int?
+- including assert statements under class variable declarations seems bad;
+  should this be avoided?
+
+  

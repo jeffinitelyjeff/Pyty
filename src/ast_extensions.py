@@ -1,6 +1,7 @@
 import ast
 
 from util import are_disjoint, disjoint_sums_of
+from pyty_types import PytyTypes
 
 class ASTInfo:
     """
@@ -44,6 +45,19 @@ class ASTInfo:
                             compound_stmts))
 
     @staticmethod
+    def is_node_of_type(obj, node_type):
+        """Returns whether the object has the proper type as determined by the
+        name of its class.
+
+        @param obj: an object.
+        @type node_type: str
+        @param node_type: the name of the class which this is checking the
+            object against.
+        """
+        
+        return obj.__class__.__name__ == node_type
+
+    @staticmethod
     def get_stmt_lists(node):
         """Returns a tuple of the stmt lists that are children of this AST
         C{node}. Provided so clients don't need to ask what kind of compound
@@ -67,18 +81,38 @@ class ASTInfo:
 ### ----------------------------------------------------------------------------
 ### TypeDec class and methods to add typedec to an AST -------------------------
 ### ----------------------------------------------------------------------------
+
+class TypeStore():
+    """Context to use for an ast.Name node when declaraing the identifier's
+    type. I don't think there's anything special about the contexts except
+    whether they're an instance of ast.Store or ast.Load, so I don't think this
+    needs to do anything special.
+    """
+    
+    pass
            
 class TypeDec(ast.stmt):
-    """A TypeDec is an AST statement node which represents the assertion that a
+    """
+    A TypeDec is an AST statement node which represents the assertion that a
     variable or function is of a certain type. This is effectively a
     side-effecting expression, where the side-effect is the alteration of the
     type environment of the program. Storing these type declarations as AST
     nodes should allow us to treat their processing more uniformly.
-
     TypeDec AST nodes will be added to the generic AST in a second-run of
     parsing. A normal ast.AST will be generated with ast.parse, then a
     line-by-line parsing of the source code will put these TypeDec nodes in
     their proper places.
+
+    @type targets: list of ast.Name
+    @ivar targets: The list of variables which are having their types declared.
+    @type t: PytyType
+    @ivar t: A PytyType object representing the type which the C{targets} are
+        being declared as.
+    @type lineno: int
+    @ivar lineno: The line number of the declaration in the source code.
+    @type col_offset: int
+    @ivar col_offset: The column offset of the beginning of the declaration (ie,
+        the '#:' in the source code).
     """
 
     def __init__(targets, t, line, col):
@@ -86,25 +120,31 @@ class TypeDec(ast.stmt):
 
         @type targets: list of ast.Name
         @param targets: The list of variables which are having their types
-            declared. A list is permitted to allow for cases of declaring several
-            variables at once.
+            declared. 
         @type t: PytyType
-        @param t: A PytyType object representing the type which the C{targets}
-            are declared as.
+        @param t: The type which the C{targets} are declared as. If a string is
+            provided, then a PytyType object will be created based on this
+            string.
         @type line: int
         @param line: The line number of the source code for the declaration.
         @type col: int
         @param col: The column number of the source code for the declaration.
         """
-
+    
         self.targets = targets
-        self.t = t
         self.lineno = line
-        self.col = col
+        self.col_offset = col
+
+        if isinstance(t, str):
+            self.t = PytyType(t)
+        else:
+            self.t = t
+
+        # XXX Provide some way to specify target name nodes by their id's.
 
     @staticmethod
     def is_typedec(node):
-        return node.__class__.__name__ == "TypeDec"
+        return ASTInfo.is_node_of_type(node, "TypeDec")
 
     def place_in_module(self, mod):
         """Places this L{TypeDec} instance in its proper place (according to its
