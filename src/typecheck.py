@@ -30,16 +30,16 @@ def call_function(fun_name, *args, **kwargs):
 # GENERAL CHECKING FUNCTIONS ------------------------------------------------
 # ---------------------------------------------------------------------------
 
-def check_mod(node, env):
-    """Checks whether the AST node given by C{node} typechecks as a module
-    with environment C{env}."""
+def check_mod(node):
+    """Checks whether the L{ast_extensions.EnvASTModule} node given by C{node}
+    typechecks as a module with the environments defined in the AST structure."""
 
     if not isinstance(node, ast.Module):
         return False
 
     return check_stmt_list(node.body, env)
 
-def check_stmt(stmt, env):
+def check_stmt(stmt):
     """Checks whether the AST node given by C{node} typechecks as a statement.
     The requirements for typechecking as a statement depend on what kind of
     statement C{node} is, and so this function calls one of several functions
@@ -52,16 +52,16 @@ def check_stmt(stmt, env):
     # the subset of the language we're considering (note: the subset is
     # defined as whatever there are check function definitions for).
     try:
-        return call_function(n, stmt, env)
+        return call_function(n, stmt)
     except KeyError:
         return False
 
-def check_stmt_list(stmt_list, env):
+def check_stmt_list(stmt_list):
     """For each stmt in C{stmt_list}, checks whether stmt is a valid
     statement."""
 
     for s in stmt_list:
-        if not check_stmt(s, env):
+        if not check_stmt(s):
             return False
 
     return True
@@ -115,7 +115,7 @@ def check_expr(expr, t, env):
 def get_stmt_func_name(stmt_type):
     return "check_%s_stmt" % stmt_type
 
-def check_Assign_stmt(stmt, env):
+def check_Assign_stmt(stmt):
     """Checks whether the AST node given by C{stmt} typechecks as an
     assignment statement. This requires that the expression on the (far) right
     of the equal signs must typecheck as each of the assign targets. The
@@ -136,14 +136,14 @@ def check_Assign_stmt(stmt, env):
             raise ASTTraversalError(msg="Targets in assignment do not have" + 
                 " proper ctx's") 
 
-        t = env_get(env, v)
-        if not check_expr(e, t, env):
+        t = env_get(stmt.env, v)
+        if not check_expr(e, t, stmt.env):
             return False
 
     # return True if we reached here, meaning that it matched with all targets
     return True
 
-def check_If_stmt(stmt, env):
+def check_If_stmt(stmt):
     """Checks whether the AST node given by C{stmt} typechceks as an if
     statement. This requires that the test typecheck as a bolean and that the
     body and orelse branches both typecheck as lists of statements."""
@@ -155,10 +155,10 @@ def check_If_stmt(stmt, env):
     body = stmt.body
     orelse = stmt.orelse
 
-    return check_expr(test, bool_type, env) and \
-           check_stmt_list(body, env) and check_stmt_list(orelse, env)
+    return check_expr(test, bool_type, stmt.env) and \
+           check_stmt_list(body) and check_stmt_list(orelse)
 
-def check_While_stmt(stmt, env):
+def check_While_stmt(stmt):
     """Checks whether the AST node given by C{stmt} typechecks as a while
     statement. This requires that the test typecheck as a boolean and that the
     body and orelse branches both typecheck as lists of statements."""
@@ -172,8 +172,8 @@ def check_While_stmt(stmt, env):
     body = stmt.body
     orelse = stmt.orelse
 
-    return check_expr(test, bool_type, env) and \
-           check_stmt_list(body, env) and check_stmt_list(orelse, env)
+    return check_expr(test, bool_type, stmt.env) and \
+           check_stmt_list(body) and check_stmt_list(orelse)
 
 # ---------------------------------------------------------------------------
 # EXPRESSION CHECKING FUNCTIONS ---------------------------------------------
