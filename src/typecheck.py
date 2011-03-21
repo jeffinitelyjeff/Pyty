@@ -2,7 +2,8 @@ import ast
 
 from errors import TypeUnspecifiedError, \
                    ASTTraversalError
-from base_types import *
+from pyty_types import PytyType
+from ast_extensions import is_node_type
 
 # ---------------------------------------------------------------------------
 # HELPER FUNCTIONS ----------------------------------------------------------
@@ -20,13 +21,6 @@ def env_get(env, v):
     
     # return the type stored in the environment
     return env[v.id]
-
-def is_node_type(node, ast_node_type):
-    """Raises an ASTTraversalError if C{node} is not the right
-    C{ast_node_type}; otherwise, returns C{True}."""
-
-    found = node.__class__.__name__
-    return found == ast_node_type
 
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
@@ -240,11 +234,11 @@ def check_Name_expr(name, t, env):
     if id == 'True' or id == 'False':
         # if the name is actually representing a boolean, then determine if
         # we're actually typechecking it as a boolean.
-        return is_bool(t)
+        return t.is_bool()
     else:
         # if not checking for a boolean, then we must be looking for a variable,
         # so we need to see if it matches the type in the environment.
-        return is_subt(env_get(env, name), t)
+        return (env_get(env, name).is_subtype(t)
 
 def check_BinOp_expr(binop, t, env):
     """Checks whether the AST expression node given by C{expr} typechecks as a
@@ -259,7 +253,7 @@ def check_BinOp_expr(binop, t, env):
 
     # the type needs to be an int or a float, and both expresions need to
     # typecheck as that type.
-    return (is_int(t) or is_float(t)) and \
+    return (t.is_int() or t.is_float()) and \
         check_expr(l, t, env) and check_expr(r, t, env)
 
 def check_Compare_expr(compare, t, env):
@@ -279,6 +273,6 @@ def check_Compare_expr(compare, t, env):
     r = compare.comparators[0]
 
     # will typecheck if t is a boolean and both sides typecheck as floats.
-    return is_bool(t) and \
+    return t.is_bool() and \
            check_expr(l, float_type, env) and check_expr(r, float_type, env)
 

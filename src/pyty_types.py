@@ -17,7 +17,7 @@ class PytyType:
         return self.t == "bool"
 
 
-    def is_subt(self, other):
+    def is_subtype(self, other):
             
         return self.t == other.t or (self.is_int() and other.is_float())
 
