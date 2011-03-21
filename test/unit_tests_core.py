@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, '../src')
 
 from typecheck import *
-from parse import  parse_type_declarations
+from parse import  parse_type_decs
 from errors import *
 import errors
 from generate_tests import _TEST_CODE_DIR
@@ -76,7 +76,7 @@ class PytyTests(unittest.TestCase):
             text = f.read()
 
         untyped_ast = ast.parse(text)
-        typedecs = parse_type_declarations(filename)
+        typedecs = parse_type_decs(filename)
         typed_ast = TypeDecASTModule(untyped_ast, typedecs)
         env_ast = EnvASTModule(typed_ast)
         return check_mod(env_ast)
