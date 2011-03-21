@@ -220,7 +220,7 @@ class TypeDec(ast.stmt):
             # this default case should never be reached.
             assert(False)
 
-def TypeDecASTModule:
+class TypeDecASTModule:
     """A wrapper for an C{ast.Module} which has the property that all of its
     children nodes have been populated with additional nodes (not specified in
     the standard AST library) to represent Pyty type declarations.
@@ -271,7 +271,7 @@ def TypeDecASTModule:
 ### Functions to add environment info to an AST populated with TypeDec nodes ---
 ### ----------------------------------------------------------------------------
 
-def EnvASTModule(TypeDecASTModule):
+class EnvASTModule(TypeDecASTModule):
     """A L{TypeDecASTModule} which has the property that each statement node
     contained in the wrapped AST has an additional field to represent the type
     environment for the execution of that statement. The environments are stored

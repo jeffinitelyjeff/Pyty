@@ -75,9 +75,11 @@ class PytyTests(unittest.TestCase):
         with open(filename, 'r') as f:
             text = f.read()
 
-        a = ast.parse(text)
-        env = parse_type_declarations(filename)
-        return check_mod(a, env)
+        untyped_ast = ast.parse(text)
+        typedecs = parse_type_declarations(filename)
+        typed_ast = TypeDecASTModule(untyped_ast, typedecs)
+        env_ast = EnvASTModule(typed_ast)
+        return check_mod(env_ast)
 
     def _check_mod(self, filename):
         """Typechecks the contents of file C{filename} as a
