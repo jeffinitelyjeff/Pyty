@@ -3,7 +3,6 @@ import ast
 from errors import TypeUnspecifiedError, \
                    ASTTraversalError
 from pyty_types import PytyType
-from ast_extensions import is_node_type
 
 # ---------------------------------------------------------------------------
 # HELPER FUNCTIONS ----------------------------------------------------------
@@ -238,7 +237,7 @@ def check_Name_expr(name, t, env):
     else:
         # if not checking for a boolean, then we must be looking for a variable,
         # so we need to see if it matches the type in the environment.
-        return (env_get(env, name).is_subtype(t)
+        return env_get(env, name).is_subtype(t)
 
 def check_BinOp_expr(binop, t, env):
     """Checks whether the AST expression node given by C{expr} typechecks as a

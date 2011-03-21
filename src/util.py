@@ -42,7 +42,7 @@ def disjoint_sums_of(sets, union):
         for j in range(len(sets)):
             s2 = sets[j]
 
-            if i != j and not _are_disjoint(s1, s2):
+            if i != j and not are_disjoint(s1, s2):
                 return False
 
-        return u == union
+    return u == union

@@ -1,7 +1,7 @@
 import ast
 
 from util import are_disjoint, disjoint_sums_of
-from pyty_types import PytyTypes
+from pyty_types import PytyType
 
 class ASTInfo:
     """
@@ -33,7 +33,7 @@ class ASTInfo:
     all_stmts = simple_stmts.union(compound_stmts)
 
     # simple and compound statements should not overlap.
-    assert(are_disjoint(simple_statements, compound_statements))
+    assert(are_disjoint(simple_stmts, compound_stmts))
 
 
     body_stmts = set("FunctionDef ClassDef With".split())
@@ -203,7 +203,7 @@ class TypeDec(ast.stmt):
             if stmt in _BODY_ORELSE_STATEMENTS:
                 branch2 = stmt.orelse
             elif stmt in _BODY_FINALLY_STATEMENTS:
-                branch2 = stmt.finally
+                branch2 = stmt.finalbody
 
             if stmt in _BODY_STATEMENTS or branch2[0].lineno > self.lineno:
                 # place the typedec in the first list of statements if the statement
