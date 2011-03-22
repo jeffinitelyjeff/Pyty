@@ -1,7 +1,7 @@
 import re
 import ast
 
-from ast_extensions import TypeDec, TypeStore
+from ast_extensions import TypeDec, TypeStore, TypeDecASTModule, EnvASTModule
 from pyty_types import PytyType
 
 # the \s are regexes for whitespace. the first group contains a regex for valid
@@ -37,15 +37,17 @@ def parse_type_decs(filename):
         m = re.match(_TYPEDEC_REGEX, l)
 
         if m != None:
-            var_name = g.groups('id')
-            type_name = g.groups('t')
+            var_name = m.group('id')
+            type_name = m.group('t')
 
             if re.match(_TYPENAME_REGEX, type_name) == None:
                 raise TypeIncorrectlySpecifiedError("Type incorrectly " +
                     "specified as: " + type_name)
 
             tdec = parse_type_dec(l, lineno, var_name, type_name)
-            tdecs.add(tdec)
+            tdecs.append(tdec)
+
+    return tdecs
 
 def parse_type_dec(line, lineno, var_name, type_name):
     """Constructs a L{ast_extensions.TypeDec} from the type declaration in the

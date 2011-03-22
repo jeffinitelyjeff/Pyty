@@ -4,7 +4,7 @@ class PytyType:
     type_regex = r"^(int|float|bool)$"
     
     def __init__(self, spec):
-        if re.match(type_regex, spec):
+        if re.match(PytyType.type_regex, spec):
             self.t = spec
 
     def is_int(self):
@@ -15,7 +15,6 @@ class PytyType:
 
     def is_bool(self):
         return self.t == "bool"
-
 
     def is_subtype(self, other):
             

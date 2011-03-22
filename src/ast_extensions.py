@@ -32,14 +32,41 @@ class ASTInfo:
                           "TryExcept TryFinally").split())
     all_stmts = simple_stmts.union(compound_stmts)
 
+    @staticmethod
+    def class_name_in(obj, set):
+        return obj.__class__.__name__ in set
+
+    @staticmethod
+    def is_simple(stmt):
+        return stmt.__class__.__name__ in ASTInfo.simple_stmts
+    
+    @staticmethod
+    def is_compound(stmt):
+        return stmt.__class__.__name__ in ASTInfo.compound_stmts
+
+    @staticmethod
+    def is_stmt(stmt):
+        return stmt.__class__.__name__ in ASTInfo.all_stmts
+
     # simple and compound statements should not overlap.
     assert(are_disjoint(simple_stmts, compound_stmts))
-
 
     body_stmts = set("FunctionDef ClassDef With".split())
     body_orelse_stmts = set("If While For TryExcept".split())
     body_finally_stmts = set("TryFinally".split())
-    
+
+    @staticmethod
+    def is_body(stmt):
+        return stmt.__class__.__name__ in ASTInfo.body_stmts
+
+    @staticmethod
+    def is_body_orelse(stmt):
+        return stmt.__class__.__name__ in ASTInfo.body_orelse_stmts
+
+    @staticmethod
+    def is_body_finally(stmt):
+        return stmt.__class__.__name__ in ASTInfo.body_finally_stmts
+
     # make sure the compound statements are a disjoint sum of these statements.
     assert(disjoint_sums_of([body_stmts, body_orelse_stmts, body_finally_stmts],
                             compound_stmts))
@@ -115,7 +142,7 @@ class TypeDec(ast.stmt):
         the '#:' in the source code).
     """
 
-    def __init__(targets, t, line, col):
+    def __init__(self, targets, t, line, col):
         """Creates a L{TypeDec} node with the supplied parameters.
 
         @type targets: list of ast.Name
@@ -188,11 +215,14 @@ class TypeDec(ast.stmt):
 
         stmt = stmt_list[pos]
 
-        if stmt in _SIMPLE_STATEMENTS:
+        assert(ASTInfo.is_stmt(stmt)) # XXX
+        assert(ASTInfo.is_simple(stmt) or ASTInfo.is_compound(stmt)) # XXX
+
+        if ASTInfo.is_simple(stmt):
             # if the preceeding statement is simple, then just place the typedec
             # after the statement.
-            stmt_list.insert(pos + 1, typedec)
-        elif stmt in _COMPOUND_STATEMENTS:
+            stmt_list.insert(pos + 1, self)
+        elif ASTInfo.is_compound(stmt):
             # if the preceeding statement is complex, then figure out what kind of
             # statement AST structure it has, and place the typedec into the right
             # list of child statements.
@@ -200,12 +230,12 @@ class TypeDec(ast.stmt):
             branch1 = stmt.body
             # branch2 = None ### XXX this might be necessary? dunno.
 
-            if stmt in _BODY_ORELSE_STATEMENTS:
+            if ASTInfo.is_body_orelse(stmt):
                 branch2 = stmt.orelse
-            elif stmt in _BODY_FINALLY_STATEMENTS:
+            elif ASTInfo.is_body_finally(stmt):
                 branch2 = stmt.finalbody
 
-            if stmt in _BODY_STATEMENTS or branch2[0].lineno > self.lineno:
+            if ASTInfo.is_body(stmt) or branch2[0].lineno > self.lineno:
                 # place the typedec in the first list of statements if the statement
                 # type only has one branch or the lineno of the first line of the
                 # second branch is past the desired lineno.
@@ -284,6 +314,17 @@ class EnvASTModule(TypeDecASTModule):
     """
 
     def __init__(self, typed_tree, clone=False):
+        """Create an EnvASTModule from a TypeDecASTModule. Will create a copy of
+        the backed tree instead of changing the original tree if specified.
+
+        @type typed_tree: L{TypeDecASTModule}
+        @param typed_tree: The L{TypeDecASTModule} to use to create the
+        C{EnvASTModule}.
+        """
+        
+        # unwrap the TypeDecASTModule
+        typed_tree = typed_tree.tree
+        
         # make sure that it is initialized with a module AST node.
         assert(typed_tree.__class__.__name__ == "Module")
         
@@ -300,7 +341,7 @@ class EnvASTModule(TypeDecASTModule):
         that stage of execution. 
         """
 
-        return _embed_environment_stmt_list(self.tree.body, {})
+        return EnvASTModule._embed_environment_stmt_list(self.tree.body, {})
 
     @staticmethod
     def _embed_environment_node(node, old_env):
@@ -330,7 +371,7 @@ class EnvASTModule(TypeDecASTModule):
         
         elif isinstance(node, ast.stmt):
 
-            if is_typedec(node):
+            if TypeDec.is_typedec(node):
                 # if it's a typedec, then add typedefs to the dictionary.
                 
                 node.env = old_env.copy()
@@ -340,7 +381,7 @@ class EnvASTModule(TypeDecASTModule):
 
                 return node.env
 
-            elif is_simple_stmt(node):
+            elif ASTInfo.is_simple(node):
                 # if it's a simple statement, but not a typedec, then the
                 # enviroment is the same as the previous statement's
                 # environment.
@@ -353,7 +394,7 @@ class EnvASTModule(TypeDecASTModule):
 
                 return node.env
 
-            elif is_compound_stmt(node):
+            elif ASTInfo.is_compound(node):
                 # if it's a compound statement, then add environments to the
                 # children statements, but we need to process each block
                 # differently so that variables declared in an if block aren't
@@ -374,7 +415,7 @@ class EnvASTModule(TypeDecASTModule):
                 stmt_lists = ASTInfo.get_stmt_lists(node)
 
                 for stmt_list in stmt_lists:
-                    _embed_environment_stmt_list(stmt_list, old_env)
+                    EnvASTModule._embed_environment_stmt_list(stmt_list, old_env)
 
                 return old_env
 
@@ -410,7 +451,7 @@ class EnvASTModule(TypeDecASTModule):
         current_env = old_env
 
         for s in stmts:
-            current_env = _embed_environment_node(s, current_env)
+            current_env = EnvASTModule._embed_environment_node(s, current_env)
 
         return current_env
 

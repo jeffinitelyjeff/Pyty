@@ -5,6 +5,7 @@ import sys
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
+from ast_extensions import *
 from typecheck import *
 from parse import  parse_type_decs
 from errors import *
