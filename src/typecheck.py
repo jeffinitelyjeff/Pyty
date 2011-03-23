@@ -8,18 +8,31 @@ from pyty_types import PytyType
 # HELPER FUNCTIONS ----------------------------------------------------------
 # ---------------------------------------------------------------------------
 
-def env_get(env, v):
+def env_get_name(env, v):
+    """Returns the type of the variable given by the AST name node C{v} in
+    environment C{env}. Abstracts away needing to get the variable's id in or
+    der to look it up in the environment dictionary.
+
+    @type env: dict of str and PytyType
+    @type v: C{ast.Name}
+    """
+
+def env_get(env, var_id):
     """Returns the type of the variable given by AST node C{v} in environment
     C{env}. Abstracts away needing to get the variable's name in order to look
     it up in the environment dictionary. Also throws a TypeUnspecifiedError if
-    C{v} is not in C{env}."""
+    C{v} is not in C{env}.
+
+    @type env: dict of str and PytyType
+    @type v: C{ast.Name}
+    """
 
     # make sure the variable is in the environment
-    if v.id not in env:
-        raise TypeUnspecifiedError(var=v.id,env=env)
+    if var_id not in env:
+        raise TypeUnspecifiedError(var=var_id,env=env)
     
     # return the type stored in the environment
-    return env[v.id]
+    return env[idx]
 
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
@@ -36,7 +49,7 @@ def check_mod(node):
     if not isinstance(node, ast.Module):
         return False
 
-    return check_stmt_list(node.body, env)
+    return check_stmt_list(node.body)
 
 def check_stmt(stmt):
     """Checks whether the AST node given by C{node} typechecks as a statement.
@@ -44,6 +57,8 @@ def check_stmt(stmt):
     statement C{node} is, and so this function calls one of several functions
     which typecheck C{node} as the specific kind of statement. The function to
     call is generated from the class name of C{node}."""
+
+    assert(hasattr(stmt, 'env'))
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
@@ -131,11 +146,11 @@ def check_Assign_stmt(stmt):
         # ensure that the variables are appearing with "store" contexts, ie
         # that they are being assigned to and not referenced. this really
         # shouldn't be a problem, but this is just to be safe.
-        if not isinstance(v.ctx, ast.Store):
+        if v.ctx.__class__.__name__ != "Store":
             raise ASTTraversalError(msg="Targets in assignment do not have" + 
-                " proper ctx's") 
+                " proper ctx's... somehow") 
 
-        t = env_get(stmt.env, v)
+        t = env_get(stmt.env, v.id)
         if not check_expr(e, t, stmt.env):
             return False
 
@@ -274,4 +289,4 @@ def check_Compare_expr(compare, t, env):
     # will typecheck if t is a boolean and both sides typecheck as floats.
     return t.is_bool() and \
            check_expr(l, float_type, env) and check_expr(r, float_type, env)
-
+        
