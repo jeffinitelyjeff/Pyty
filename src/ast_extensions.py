@@ -3,6 +3,10 @@ import ast
 from util import are_disjoint, disjoint_sums_of
 from pyty_types import PytyType
 
+### ---------------------------------------------------------------------------
+### Information about AST statements ------------------------------------------
+### ---------------------------------------------------------------------------
+
 class ASTInfo:
     """
     Class to encapsulate and provide info about the AST.
@@ -32,18 +36,6 @@ class ASTInfo:
                           "TryExcept TryFinally").split())
     all_stmts = simple_stmts.union(compound_stmts)
 
-    @staticmethod
-    def is_simple_stmt(stmt):
-        return stmt.__class__.__name__ in ASTInfo.simple_stmts
-    
-    @staticmethod
-    def is_compound_stmt(stmt):
-        return stmt.__class__.__name__ in ASTInfo.compound_stmts
-
-    @staticmethod
-    def is_stmt(stmt):
-        return stmt.__class__.__name__ in ASTInfo.all_stmts
-
     # simple and compound statements should not overlap.
     assert(are_disjoint(simple_stmts, compound_stmts))
 
@@ -51,52 +43,73 @@ class ASTInfo:
     body_orelse_stmts = set("If While For TryExcept".split())
     body_finally_stmts = set("TryFinally".split())
 
-    @staticmethod
-    def is_body_stmt(stmt):
-        return stmt.__class__.__name__ in ASTInfo.body_stmts
-
-    @staticmethod
-    def is_body_orelse_stmt(stmt):
-        return stmt.__class__.__name__ in ASTInfo.body_orelse_stmts
-
-    @staticmethod
-    def is_body_finally_stmt(stmt):
-        return stmt.__class__.__name__ in ASTInfo.body_finally_stmts
-
     # make sure the compound statements are a disjoint sum of these statements.
     assert(disjoint_sums_of([body_stmts, body_orelse_stmts, body_finally_stmts],
                             compound_stmts))
 
-    @staticmethod
-    def is_node_of_type(obj, node_type):
-        """Returns whether the object has the proper type as determined by the
-        name of its class.
 
-        @param obj: an object.
-        @type node_type: str
-        @param node_type: the name of the class which this is checking the
-            object against.
-        """
-        
-        return obj.__class__.__name__ == node_type
+# create functions to add to ast.stmt to check if the statement is simple or
+# compound. this makes the syntax cleaner (this allows us to do stmt.is_simple()
+# instead of ASTInfo.is_simple_stmt(stmt).
 
-    @staticmethod
-    def get_stmt_lists(node):
-        """Returns a tuple of the stmt lists that are children of this AST
-        C{node}. Provided so clients don't need to ask what kind of compound
-        statement C{node} is.
-        """
-    
-        if is_body_orelse_stmt(node):
-            return (node.body, node.orelse)
-        elif is_body_stmt(node):
-            return (node.body)
-        elif is_body_finally_stmt(node):
-            return (node.body, node.finalbody)
-        else:
-            # This should only be called on compound statements, which the three
-            # previous cases form a disjoint sum of.
-            assert(False)
+def __is_simple_stmt(self):
+    """Returns whether this ast.stmt node is a simple statement. THIS IS ONLY
+    SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT SHOULD NOT BE CALLED AS THE
+    MODULE-LEVEL FUNCTION IN THE AST_EXTENSIONS MODULE."""
+    return self.__class__.__name__ in ASTInfo.simple_stmts
+ast.stmt.is_simple = __is_simple_stmt
+
+def __is_compound_stmt(self):
+    """Returns whether this ast.stmt node is a compound statement. THIS IS ONLY
+    SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT SHOULD NOT BE CALLED AS THE
+    MODULE-LEVEL FUNCTION IN THE AST_EXTENSIONS MODULE."""
+    return self.__class__.__name__ in ASTInfo.simple_stmts
+ast.stmt.is_compound = __is_compound_stmt
+
+# create functions to add to ast.stmt to check what kind of children statement
+# lists it has. like above, this makes the syntax of calling the method cleaner
+# than having it be a global method of ASTInfo.
+
+def __is_body_stmt(self):
+    """Returns whether this ast.stmt node has children statements solely in a
+    body field. THIS IS ONLY SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT
+    SHOULD NOT BE CALLED AS THE MODULE-LEVEL FUNCTION IN THE AST_EXTENSIONS
+    MODULE."""
+    return self.__class__.__name__ in ASTInfo.body_stmts
+ast.stmt.is_body = __is_body_stmt
+
+def __is_body_orelse_stmt(self):
+    """Returns whether this ast.stmt node has children statements in a body
+    field and an orelse field. THIS IS ONLY SUPPOSED TO BE CALLED BY AN AST.STMT
+    NODE; IT SHOULD NOT BE CALLED AS THE MODULE-LEVEL FUNCTION IN THE
+    AST_EXTENSIONS MODULE."""
+    return self.__class__.__name__ in ASTInfo.body_orelse_stmts
+ast.stmt.is_body_orelse = __is_body_orelse_stmt
+
+def __is_body_finally_stmt(self):
+    """Returns whether this ast.stmt node has children statements in a body
+    field and a finally field. THIS IS ONLY SUPPOSED TO BE CALLED BY AN AST.STMT
+    NODE; IT SHOULD NOT BE CALLED AS THE MODULE-LEVEL FUNCTION IN THE
+    AST_EXTENSIONS MODULE."""
+    return self.__class__.__name__ in ASTInfo.body_finally_stmts
+ast.stmt.is_body_finally = __is_body_finally_stmt
+
+def __get_stmt_lists(self):
+    """Returns a tuple of the children statement lists of this ast.stmt
+    node. THIS IS ONLY SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT SHOULD NOT
+    BE CALLED AS THE MODULE-LEVEL FNUCTION IN THE AST_EXTENSIONS MODLUE."""
+
+    if self.is_body_orelse():
+        return (self.body, self.orelse)
+    elif self.is_body():
+        return (self.body)
+    elif self.is_body_finally():
+        return (self.body, self.finalbody)
+    else:
+        # This should only be called on compound statements, which the three
+        # previous cases form a disjoint sum of.
+        assert(False)
+ast.stmt.stmt_lists = __get_stmt_lists
 
 
 ### ----------------------------------------------------------------------------
@@ -165,7 +178,7 @@ class TypeDec(ast.stmt):
 
     @staticmethod
     def is_typedec(node):
-        return ASTInfo.is_node_of_type(node, "TypeDec")
+        return node.__class__.__name__ == "TypeDec"
 
     def place_in_module(self, mod):
         """Places this L{TypeDec} instance in its proper place (according to its
@@ -209,36 +222,27 @@ class TypeDec(ast.stmt):
 
         stmt = stmt_list[pos]
 
-        assert(ASTInfo.is_stmt(stmt)) # XXX
-        assert(ASTInfo.is_simple_stmt(stmt) or ASTInfo.is_compound_stmt(stmt)) # XXX
-
-        if ASTInfo.is_simple_stmt(stmt):
+        if stmt.is_simple():
             # if the preceeding statement is simple, then just place the typedec
             # after the statement.
             stmt_list.insert(pos + 1, self)
-        elif ASTInfo.is_compound_stmt(stmt):
-            # if the preceeding statement is complex, then figure out what kind of
-            # statement AST structure it has, and place the typedec into the right
-            # list of child statements.
+        elif stmt.is_compound():
+            # if the preceeding statement is compound, then figure out what kind
+            # of statement AST structure it has, and place the typedec into the
+            # right list of child statements.
 
-            branch1 = stmt.body
-            # branch2 = None ### XXX this might be necessary? dunno.
+            branches = stmt.stmt_lists()
 
-            if ASTInfo.is_body_orelse_stmt(stmt):
-                branch2 = stmt.orelse
-            elif ASTInfo.is_body_finally_stmt(stmt):
-                branch2 = stmt.finalbody
-
-            if ASTInfo.is_body_stmt(stmt) or branch2[0].lineno > self.lineno:
+            if stmt.is_body() or branches[1][0].lineno > self.lineno:
                 # place the typedec in the first list of statements if the statement
                 # type only has one branch or the lineno of the first line of the
                 # second branch is past the desired lineno.
-                self._place_in_stmt_list(branch1)
+                self._place_in_stmt_list(branches[0])
             else:
                 # place the typedec in the second list of statements otherwise (ie,
                 # if the statement type has more than one branch and the first line
                 # of the second branch is not past the desired lineno).
-                self._place_in_stmt_list(branch2)
+                self._place_in_stmt_list(branches[1])
         else:
             # statements are a disjoint sum of simple and compound statements, so
             # this default case should never be reached.
@@ -266,7 +270,8 @@ class TypeDecASTModule:
 
         self.clone = clone
         self.typedecs = typedecs
-
+        
+        # place each type declaration
         for typedec in typedecs:
             self.place_typedec(typedec)
 
@@ -364,18 +369,20 @@ class EnvASTModule(TypeDecASTModule):
             return None
         
         elif isinstance(node, ast.stmt):
+            stmt = node
 
-            if TypeDec.is_typedec(node):
+            if TypeDec.is_typedec(stmt):
                 # if it's a typedec, then add typedefs to the dictionary.
+                typedec = stmt
                 
-                node.env = old_env.copy()
+                typedec.env = old_env.copy()
 
-                for target in node.targets:
-                    node.env[target.id] = node.t
+                for target in typedec.targets:
+                    typedec.env[target.id] = typedec.t
 
-                return node.env
+                return typedec.env
 
-            elif ASTInfo.is_simple_stmt(node):
+            elif stmt.is_simple():
                 # if it's a simple statement, but not a typedec, then the
                 # enviroment is the same as the previous statement's
                 # environment.
@@ -384,11 +391,11 @@ class EnvASTModule(TypeDecASTModule):
                 # statements, the same env dictionary is being stored with a
                 # different reference; I don't think this should cause any
                 # issues for now, but we'll see.
-                node.env = old_env
+                stmt.env = old_env
 
-                return node.env
+                return stmt.env
 
-            elif ASTInfo.is_compound_stmt(node):
+            elif stmt.is_compound():
                 # if it's a compound statement, then add environments to the
                 # children statements, but we need to process each block
                 # differently so that variables declared in an if block aren't
@@ -406,7 +413,7 @@ class EnvASTModule(TypeDecASTModule):
                 # environments so that data isn't copied and reused all over the
                 # place.
                 
-                stmt_lists = ASTInfo.get_stmt_lists(node)
+                stmt_lists = stmt.stmt_lists()
 
                 for stmt_list in stmt_lists:
                     EnvASTModule._embed_environment_stmt_list(stmt_list, old_env)
