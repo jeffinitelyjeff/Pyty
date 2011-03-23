@@ -33,15 +33,11 @@ class ASTInfo:
     all_stmts = simple_stmts.union(compound_stmts)
 
     @staticmethod
-    def class_name_in(obj, set):
-        return obj.__class__.__name__ in set
-
-    @staticmethod
-    def is_simple(stmt):
+    def is_simple_stmt(stmt):
         return stmt.__class__.__name__ in ASTInfo.simple_stmts
     
     @staticmethod
-    def is_compound(stmt):
+    def is_compound_stmt(stmt):
         return stmt.__class__.__name__ in ASTInfo.compound_stmts
 
     @staticmethod
@@ -56,15 +52,15 @@ class ASTInfo:
     body_finally_stmts = set("TryFinally".split())
 
     @staticmethod
-    def is_body(stmt):
+    def is_body_stmt(stmt):
         return stmt.__class__.__name__ in ASTInfo.body_stmts
 
     @staticmethod
-    def is_body_orelse(stmt):
+    def is_body_orelse_stmt(stmt):
         return stmt.__class__.__name__ in ASTInfo.body_orelse_stmts
 
     @staticmethod
-    def is_body_finally(stmt):
+    def is_body_finally_stmt(stmt):
         return stmt.__class__.__name__ in ASTInfo.body_finally_stmts
 
     # make sure the compound statements are a disjoint sum of these statements.
@@ -91,13 +87,11 @@ class ASTInfo:
         statement C{node} is.
         """
     
-        node_type = node.__class__.__name__
-
-        if node_type in _BODY_ORELSE_STATEMENTS:
+        if is_body_orelse_stmt(node):
             return (node.body, node.orelse)
-        elif node_type in _BODY_STATEMENTS:
+        elif is_body_stmt(node):
             return (node.body)
-        elif node_type in _BODY_FINALLY_STATEMENTS:
+        elif is_body_finally_stmt(node):
             return (node.body, node.finalbody)
         else:
             # This should only be called on compound statements, which the three
@@ -216,13 +210,13 @@ class TypeDec(ast.stmt):
         stmt = stmt_list[pos]
 
         assert(ASTInfo.is_stmt(stmt)) # XXX
-        assert(ASTInfo.is_simple(stmt) or ASTInfo.is_compound(stmt)) # XXX
+        assert(ASTInfo.is_simple_stmt(stmt) or ASTInfo.is_compound_stmt(stmt)) # XXX
 
-        if ASTInfo.is_simple(stmt):
+        if ASTInfo.is_simple_stmt(stmt):
             # if the preceeding statement is simple, then just place the typedec
             # after the statement.
             stmt_list.insert(pos + 1, self)
-        elif ASTInfo.is_compound(stmt):
+        elif ASTInfo.is_compound_stmt(stmt):
             # if the preceeding statement is complex, then figure out what kind of
             # statement AST structure it has, and place the typedec into the right
             # list of child statements.
@@ -230,12 +224,12 @@ class TypeDec(ast.stmt):
             branch1 = stmt.body
             # branch2 = None ### XXX this might be necessary? dunno.
 
-            if ASTInfo.is_body_orelse(stmt):
+            if ASTInfo.is_body_orelse_stmt(stmt):
                 branch2 = stmt.orelse
-            elif ASTInfo.is_body_finally(stmt):
+            elif ASTInfo.is_body_finally_stmt(stmt):
                 branch2 = stmt.finalbody
 
-            if ASTInfo.is_body(stmt) or branch2[0].lineno > self.lineno:
+            if ASTInfo.is_body_stmt(stmt) or branch2[0].lineno > self.lineno:
                 # place the typedec in the first list of statements if the statement
                 # type only has one branch or the lineno of the first line of the
                 # second branch is past the desired lineno.
@@ -381,7 +375,7 @@ class EnvASTModule(TypeDecASTModule):
 
                 return node.env
 
-            elif ASTInfo.is_simple(node):
+            elif ASTInfo.is_simple_stmt(node):
                 # if it's a simple statement, but not a typedec, then the
                 # enviroment is the same as the previous statement's
                 # environment.
@@ -394,7 +388,7 @@ class EnvASTModule(TypeDecASTModule):
 
                 return node.env
 
-            elif ASTInfo.is_compound(node):
+            elif ASTInfo.is_compound_stmt(node):
                 # if it's a compound statement, then add environments to the
                 # children statements, but we need to process each block
                 # differently so that variables declared in an if block aren't
