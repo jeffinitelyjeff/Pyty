@@ -63,7 +63,7 @@ def __is_compound_stmt(self):
     """Returns whether this ast.stmt node is a compound statement. THIS IS ONLY
     SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT SHOULD NOT BE CALLED AS THE
     MODULE-LEVEL FUNCTION IN THE AST_EXTENSIONS MODULE."""
-    return self.__class__.__name__ in ASTInfo.simple_stmts
+    return self.__class__.__name__ in ASTInfo.compound_stmts
 ast.stmt.is_compound = __is_compound_stmt
 
 # create functions to add to ast.stmt to check what kind of children statement
