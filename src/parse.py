@@ -38,6 +38,12 @@ def parse_type_decs(filename):
 
         m = re.match(_TYPEDEC_REGEX, l)
 
+        if filename == TEST_CODE_SUBDIR + DEBUG_SUBJECT_FILE:
+            if m:
+                logging.debug(" tdec --> " + l[:-1])
+            else:
+                logging.debug("          " + l[:-1])
+
         if m != None:
             var_name = m.group('id')
             type_name = m.group('t')

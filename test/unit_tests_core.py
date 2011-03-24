@@ -61,6 +61,9 @@ class PytyTests(unittest.TestCase):
 
         debug_file = TEST_CODE_SUBDIR + DEBUG_SUBJECT_FILE
 
+        if filename == debug_file:
+            logging.debug("File text:\n " + text)
+
         untyped_ast = ast.parse(text)
 
         if filename == debug_file and DEBUG_UNTYPED_AST:

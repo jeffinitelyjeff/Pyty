@@ -7,7 +7,7 @@ class PytyType:
         if re.match(PytyType.type_regex, spec):
             self.t = spec
 
-    def __str__(self):
+    def __repr__(self):
         return self.t
 
     def is_int(self):

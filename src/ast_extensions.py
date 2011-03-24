@@ -4,7 +4,7 @@ from util import are_disjoint, disjoint_sums_of
 from pyty_types import PytyType
 
 def dump_self(self):
-    ast.dump(self)
+    return ast.dump(self)
 ast.mod.__repr__ = dump_self
 ast.stmt.__repr__ = dump_self
 ast.expr.__repr__ = dump_self
@@ -128,8 +128,12 @@ class TypeStore():
     whether they're an instance of ast.Store or ast.Load, so I don't think this
     needs to do anything special.
     """
-    
-    pass
+
+    def __init__(self):
+        pass
+
+    def __repr__(self):
+        return "TypeStore()"
            
 class TypeDec(ast.stmt):
     """
@@ -180,19 +184,26 @@ class TypeDec(ast.stmt):
         else:
             self.t = t
 
-        # XXX Provide some way to specify target name nodes by their id's.
+        # these are instance variables provided by AST nodes to allow traversal
+        # / parsing of the nodes.
+        self._fields = ("targets", "t")
+        self._attributes = ("lineno", "col_offset")
 
-    def __str__(self):
-        result = "TypeDec : ( "
+        # XXX Provide some way to specify target name nodes by their id's?
+
+    # this is unnecessary and not much better than the dump method, might as
+    # well leave it out and keep things consistent?
+    ## def __repr__(self):
+    ##     result = "TypeDec : ( "
         
-        for target in self.targets:
-            result += target.id + ","
-        result = result[0:-1]
+    ##     for target in self.targets:
+    ##         result += target.id + ","
+    ##     result = result[0:-1]
 
-        result += " -> " + str(self.t) + " ) at line " + str(self.lineno) + \
-                  " col " + str(self.col_offset)
+    ##     result += " -> " + str(self.t) + " ) at line " + str(self.lineno) + \
+    ##               " col " + str(self.col_offset)
 
-        return result
+    ##     return result
         
 
     @staticmethod
