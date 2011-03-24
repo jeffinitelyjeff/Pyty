@@ -463,13 +463,22 @@ class EnvASTModule(TypeDecASTModule):
                 # statement making some kind of chain of references to
                 # environments so that data isn't copied and reused all over the
                 # place.
+
+                stmt.env = old_env
+
+                # add the 'env' variable to the list of attributes for this
+                # node; need to manuever around the fact thta tuples are
+                # immutable.
+                list = list(stmt._attributes)
+                lst.append('env')
+                stmt._attributes = tuple(lst)
                 
                 stmt_lists = stmt.stmt_lists()
 
                 for stmt_list in stmt_lists:
                     EnvASTModule._embed_environment_stmt_list(stmt_list, old_env)
 
-                return old_env
+                return stmt.env
 
             else:
                 # simple and compound statements should form a disjoint sum of
