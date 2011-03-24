@@ -1,59 +1,13 @@
 import ast
-import _ast
 
 from util import are_disjoint, disjoint_sums_of
 from pyty_types import PytyType
-from settings import *
 
-def ast_dump_self(self):
+def dump_self(self):
     return ast.dump(self)
-def tree_dump_self(self):
-    return tree_dump(self)
-
-if TREE_DUMP:
-    ast.mod.__repr__ = tree_dump_self
-    ast.stmt.__repr__ = tree_dump_self
-    ast.expr.__repr__ = tree_dump_self
-else:
-    ast.mod.__repr__ = ast_dump_self
-    ast.stmt.__repr__ = ast_dump_self
-    ast.expr.__repr__ = ast_dump_self
-
-def tree_dump(node, annotate_fields=True, include_attributes=False):
-    """
-    This is an adaptation of ast.dump (taken from the ast source code), which
-    tries to display information in a more tree-like nature. This will of course
-    be very unhelpful for any decently-sized AST, but should be very helpful for
-    small tests.
-    
-    Return a formatted dump of the tree in *node*.  This is mainly useful for
-    debugging purposes.  The returned string will show the names and the values
-    for fields.  This makes the code impossible to evaluate, so if evaluation is
-    wanted *annotate_fields* must be set to False.  Attributes such as line
-    numbers and column offsets are not dumped by default.  If this is wanted,
-    *include_attributes* can be set to True.
-    """
-    def _format(node, d):
-        if isinstance(node, _ast.AST):
-            fields = [(a, _format(b, d+1)) for a, b in ast.iter_fields(node)]
-            rv = '%s\n%s%s' % (node.__class__.__name__, ' ' * d, ('\n%s' % (' ' *
-    d)).join(
-                ('%s=%s' % field for field in fields)
-                if annotate_fields else
-                (b for a, b in fields)
-            ))
-            if include_attributes and node._attributes:
-                rv += fields and ', ' or ' '
-                rv += ', '.join('%s=%s' % (a, _format(getattr(node, a), d+1))
-                                for a in node._attributes)
-            return rv
-        elif isinstance(node, list):
-            return '\n%s%s' % (' ' * d, ', '.join(_format(x, d+1) for x in node))
-        return repr(node)
-    if not isinstance(node, _ast.AST):
-        raise TypeError('expected AST, got %r' % node.__class__.__name__)
-    return _format(node, 1)
-	
+ast.mod.__repr__ = dump_self
+ast.stmt.__repr__ = dump_self
+ast.expr.__repr__ = dump_self
 
 ### ---------------------------------------------------------------------------
 ### Information about AST statements ------------------------------------------
