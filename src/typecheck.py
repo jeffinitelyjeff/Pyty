@@ -182,7 +182,7 @@ def check_If_stmt(stmt):
     statement. This requires that the test typecheck as a bolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
-    assert(isinstance, stmt, ast.If)
+    assert(isinstance(stmt, ast.If))
 
     test = stmt.test
     body = stmt.body
@@ -196,7 +196,7 @@ def check_While_stmt(stmt):
     statement. This requires that the test typecheck as a boolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
-    assert(isinstance(stmt, ast.While)
+    assert(isinstance(stmt, ast.While))
 
     # this code is IDENTICAL to the If stuff; should consider refactoring into
     # helper function.
