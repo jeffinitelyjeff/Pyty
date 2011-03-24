@@ -35,11 +35,14 @@ def parse_type_decs(filename):
     tdecs = []
     lineno = 0
 
+    log.debug("--- v Typedec parsing v ---", DEBUG_TYPEDEC_PARSING)
+
     for l in open(filename, 'r'):
         # move to next line
         lineno += 1
 
         m = re.match(_TYPEDEC_REGEX, l)
+
 
         if m:
             log.debug(" tdec --> " + l[:-1], DEBUG_TYPEDEC_PARSING)
@@ -56,6 +59,8 @@ def parse_type_decs(filename):
 
             tdec = parse_type_dec(l, lineno, var_name, type_name)
             tdecs.append(tdec)
+
+    log.debug("--- ^ Typedec parsing ^ ---", DEBUG_TYPEDEC_PARSING)
 
     return tdecs
 

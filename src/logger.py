@@ -6,6 +6,8 @@ from settings import *
 logging.basicConfig(level=LOG_LEVEL, filename=LOG_DIR+LOGFILE)
 
 class Logger:
+    nl = "\n" + (" " * 12)
+    
     def __init__(self):
         self.in_debug_file = False
 
@@ -16,9 +18,9 @@ class Logger:
         self.in_debug_file = False
 
     def debug(self, s, cond=True):
-        if self.in_debug_file and cond:
-            logging.debug(s)
+        if FILE_DEBUG and self.in_debug_file and cond:
+            logging.debug(" " + s.replace('\n', Logger.nl))
 
 def announce_file(filename):
-    logging.debug("\n\n---- RUNNING " + filename.upper() + " AT " +
-                  str(datetime.now()) + " ----")
+    logging.debug(" ---- RUNNING " + filename.upper() + " AT " +
+                  str(datetime.now()) + " ----" + Logger.nl*2)

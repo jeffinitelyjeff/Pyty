@@ -73,23 +73,27 @@ class PytyTests(unittest.TestCase):
         else:
             log.exit_debug_file()
 
-        log.debug("\n---File text---\n" + text)
+        log.debug("--- v File text v ---\n" + text + "--- ^ File text ^ ---")
 
         untyped_ast = ast.parse(text)
 
-        log.debug("\n---Untyped AST---\n" + str(untyped_ast), DEBUG_UNTYPED_AST)
+        log.debug("--- v Untyped AST v ---\n" + str(untyped_ast) +
+                  "\n--- ^ Untyped AST ^ ---", DEBUG_UNTYPED_AST)
             
         typedecs = parse_type_decs(filename)
 
-        log.debug("\n---TypeDecs---\n" + str(typedecs), DEBUG_TYPEDECS)
+        log.debug("--- v TypeDecs v ---\n" + str(typedecs) +
+                  "\n--- ^ TypeDecs ^ ---", DEBUG_TYPEDECS)
 
         typed_ast = TypeDecASTModule(untyped_ast, typedecs)
 
-        log.debug("\n---TypedAST---\n" + str(typed_ast), DEBUG_TYPED_AST)
+        log.debug("--- v TypedAST v ---\n" + str(typed_ast) +
+                  "\n--- ^ TypedAST ^ ---", DEBUG_TYPED_AST)
             
         env_ast = EnvASTModule(typed_ast)
 
-        logging.debug("\n---EnvAST---\n" + str(env_ast), DEBUG_ENV_AST)
+        log.debug("--- v EnvAST v ---\n" + str(env_ast) +
+                  "\n--- ^ EnvAST ^ ---", DEBUG_ENV_AST)
             
         return check_mod(env_ast.tree)
 
