@@ -1,8 +1,10 @@
 import re
 import ast
+import logging
 
 from ast_extensions import TypeDec, TypeStore, TypeDecASTModule, EnvASTModule
 from pyty_types import PytyType
+from settings import *
 
 # the \s are regexes for whitespace. the first group contains a regex for valid
 # Python variable identifiers; the second group catches anything, and then this

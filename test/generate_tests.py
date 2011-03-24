@@ -1,14 +1,18 @@
 import os
 import sys
+import logging
+from datetime import datetime
 
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
 from errors import *
 import typecheck
+from settings import *
+from util import announce_file
 
 """
-Uses the specification of the files in C{_TEST_SPECS} to generate lots of
+Uses the specification of the files in C{TEST_SPECS} to generate lots of
 individual python source code files which are all placed in the directory
 specified by C{_TEST_FILE_DIR}.
 Then generates a unit test for every individual python source file created.
@@ -22,13 +26,8 @@ but in the generated python source files (with file name
 [Source code]
 """
 
-_SPEC_DIR = "spec"
-_SPEC_EXPR_PREFIX = "expr_"
-_SPEC_MOD_PREFIX = "mod_"
-
-_TEST_CODE_DIR = "test_files"
-_UNIT_TEST_CORE = "unit_tests_core.py"
-_UNIT_TEST_OUTPUT = "_unit_tests_gen.py"
+logging.basicConfig(level=LOG_LEVEL, filename=LOG_DIR + LOGFILE)
+announce_file("generate_tests.py")
 
 def _expr_test_function_def(test_name, expr_string, expr_kind,
                             type, expected_result):
@@ -61,7 +60,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
     tests = ""
     count = 0
 
-    with open(_SPEC_DIR + '/' + spec_file, 'r') as f:
+    with open(SPEC_SUBDIR + spec_file, 'r') as f:
         text = f.read()
 
     split_text = text.split(result_delim)
@@ -103,12 +102,12 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
 
                     file_name = spec_file.split('.')[0]+str(count)+'.py'
 
-                    with open(_TEST_CODE_DIR + "/" + file_name, 'w') as g:
+                    with open(TEST_CODE_SUBDIR + file_name, 'w') as g:
                         g.write("### " + expected_result)
                         g.write(mod)
 
                     test = _mod_test_function_def(file_name,
-                                                  _TEST_CODE_DIR+'/'+file_name) 
+                                                  TEST_CODE_SUBDIR+file_name) 
                     tests = tests + test
 
         else:
@@ -134,7 +133,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
     return tests
 
 def create_expression_tests(spec_file):
-    with open(_SPEC_DIR + '/' + spec_file, 'r') as f:
+    with open(SPEC_SUBDIR + spec_file, 'r') as f:
         text = f.read()
         expr_type = text.split('expr type: ')[1].split('\n')[0].strip()
     
@@ -144,18 +143,18 @@ def create_module_tests(spec_file):
     return _create_generic_tests(spec_file, '----', '---', "mod")
 
 # remove generated test source code
-for file_name in os.listdir(_TEST_CODE_DIR):
-    os.remove(_TEST_CODE_DIR + '/' + file_name)
+for file_name in os.listdir(TEST_CODE_SUBDIR):
+    os.remove(TEST_CODE_SUBDIR + file_name)
 
 tests = ""
 
 # create new tests (this creates files to contain the module tests as an
 # intermediate step). 
-for file_name in os.listdir(_SPEC_DIR):
+for file_name in os.listdir(SPEC_SUBDIR):
     if file_name.endswith('.spec'):
-        if file_name.startswith(_SPEC_EXPR_PREFIX):
+        if file_name.startswith(SPEC_EXPR_PREFIX):
             tests = tests + create_expression_tests(file_name)
-        elif file_name.startswith(_SPEC_MOD_PREFIX):
+        elif file_name.startswith(SPEC_MOD_PREFIX):
             tests = tests + create_module_tests(file_name)
 
 # remove the tailing newline
@@ -164,10 +163,10 @@ tests = tests[0:-1]
 flag1 = "    ##### Generated unit tests will go below here\n"
 flag2 = "    ##### Generated unit tests will go above here\n"
 
-with open(_UNIT_TEST_CORE, 'r') as f:
+with open(UNIT_TEST_CORE, 'r') as f:
     core_text = f.read();
 
 replaced = core_text.replace(flag1+flag2, flag1+tests+flag2)
 
-with open(_UNIT_TEST_OUTPUT, 'w') as f:
+with open(UNIT_TEST_OUTPUT, 'w') as f:
     f.write(replaced)

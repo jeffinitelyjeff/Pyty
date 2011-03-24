@@ -1,8 +1,10 @@
 import ast
+import logging
 
 from errors import TypeUnspecifiedError, \
                    ASTTraversalError
 from pyty_types import PytyType
+from settings import *
 
 # ---------------------------------------------------------------------------
 # HELPER FUNCTIONS ----------------------------------------------------------

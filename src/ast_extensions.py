@@ -3,6 +3,12 @@ import ast
 from util import are_disjoint, disjoint_sums_of
 from pyty_types import PytyType
 
+def dump_self(self):
+    ast.dump(self)
+ast.mod.__repr__ = dump_self
+ast.stmt.__repr__ = dump_self
+ast.expr.__repr__ = dump_self
+
 ### ---------------------------------------------------------------------------
 ### Information about AST statements ------------------------------------------
 ### ---------------------------------------------------------------------------
@@ -175,6 +181,19 @@ class TypeDec(ast.stmt):
             self.t = t
 
         # XXX Provide some way to specify target name nodes by their id's.
+
+    def __str__(self):
+        result = "TypeDec : ( "
+        
+        for target in self.targets:
+            result += target.id + ","
+        result = result[0:-1]
+
+        result += " -> " + str(self.t) + " ) at line " + str(self.lineno) + \
+                  " col " + str(self.col_offset)
+
+        return result
+        
 
     @staticmethod
     def is_typedec(node):

@@ -1,3 +1,6 @@
+import logging
+from datetime import datetime
+
 """
 Contains useful helper functions that are not directly tied to the purpose of
 other source code files.
@@ -46,3 +49,9 @@ def disjoint_sums_of(sets, union):
                 return False
 
     return u == union
+
+
+### Logging helper -------------------------------------------------------------
+def announce_file(filename):
+    logging.debug("\n\n---- RUNNING " + filename.upper() + " AT " +
+                  str(datetime.now()) + " ----")

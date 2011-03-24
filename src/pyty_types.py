@@ -7,6 +7,9 @@ class PytyType:
         if re.match(PytyType.type_regex, spec):
             self.t = spec
 
+    def __str__(self):
+        return self.t
+
     def is_int(self):
         return self.t == "int"
     
@@ -21,5 +24,5 @@ class PytyType:
         return self.t == other.t or (self.is_int() and other.is_float())
 
         # XXX include more complicated rules for collection and function types
-    
+
     
