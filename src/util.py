@@ -51,7 +51,3 @@ def disjoint_sums_of(sets, union):
     return u == union
 
 
-### Logging helper -------------------------------------------------------------
-def announce_file(filename):
-    logging.debug("\n\n---- RUNNING " + filename.upper() + " AT " +
-                  str(datetime.now()) + " ----")

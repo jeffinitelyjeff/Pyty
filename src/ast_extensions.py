@@ -3,7 +3,6 @@ import logging
 
 from util import are_disjoint, disjoint_sums_of
 from pyty_types import PytyType
-from typecheck import in_debug_file
 
 def dump_self(self):
     return ast.dump(self)
@@ -11,7 +10,7 @@ ast.mod.__repr__ = dump_self
 ast.stmt.__repr__ = dump_self
 ast.expr.__repr__ = dump_self
 
-in_debug_file = False
+a_log = None
 
 ### ---------------------------------------------------------------------------
 ### Information about AST statements ------------------------------------------
@@ -413,13 +412,15 @@ class EnvASTModule(TypeDecASTModule):
                 # if it's a typedec, then add typedefs to the dictionary.
                 typedec = stmt
 
+                typedec.old_env = old_env
                 typedec.env = old_env.copy()
 
                 # add the 'env' variable to the list of attributes for this
-                # node; need to manuever around the fact that tuples are immutable.
-                lst = list(typedec._attributes)
-                lst.append('env')
-                typedec._attributes = tuple(lst)
+                # node; need to manuever around the fact that tuples are
+                # immutable.
+                l = list(typedec._attributes)
+                l.append('env')
+                typedec._attributes = tuple(l)
 
                 for target in typedec.targets:
                     typedec.env[target.id] = typedec.t
@@ -440,9 +441,9 @@ class EnvASTModule(TypeDecASTModule):
                 # add the 'env' variable to the list of attributes for this
                 # node; need to manuever around the fact that tuples are
                 # immutable.
-                lst = list(stmt._attributes)
-                lst.append('env')
-                stmt._attributes = tuple(lst)
+                l = list(stmt._attributes)
+                l.append('env')
+                stmt._attributes = tuple(l)
 
                 return stmt.env
 
@@ -469,9 +470,9 @@ class EnvASTModule(TypeDecASTModule):
                 # add the 'env' variable to the list of attributes for this
                 # node; need to manuever around the fact thta tuples are
                 # immutable.
-                list = list(stmt._attributes)
-                lst.append('env')
-                stmt._attributes = tuple(lst)
+                l = list(stmt._attributes)
+                l.append('env')
+                stmt._attributes = tuple(l)
                 
                 stmt_lists = stmt.stmt_lists()
 

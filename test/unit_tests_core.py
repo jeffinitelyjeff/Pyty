@@ -10,12 +10,16 @@ sys.path.insert(0, '../src')
 
 from ast_extensions import *
 from typecheck import *
-from parse import  parse_type_decs
+from parse import *
 from errors import *
 import errors
 from settings import *
-from util import announce_file
+from logger import Logger, announce_file
+
+# these should be redundant, but they're necessary to refer to the specific log
+# objects.
 import ast_extensions
+import parse
 import typecheck
 
 """
@@ -24,7 +28,6 @@ to fill this file with the several unit tests (each of which tests one source
 code file in the test_files directory).
 """
 
-logging.basicConfig(level=LOG_LEVEL, filename=LOG_DIR + LOGFILE)
 announce_file("unit_tests_core.py")
 
 class PytyTests(unittest.TestCase):
@@ -62,37 +65,31 @@ class PytyTests(unittest.TestCase):
         with open(filename, 'r') as f:
             text = f.read()
 
+        log = typecheck.log = parse.log = ast_extensions.log = Logger()
+
         debug_file = TEST_CODE_SUBDIR + DEBUG_SUBJECT_FILE
         if filename == debug_file:
-            in_debug_file = True
+            log.enter_debug_file()
         else:
-            in_debug_file = False
+            log.exit_debug_file()
 
-        ast_extensions.in_debug_file = in_debug_file
-        typecheck.in_debug_file = in_debug_file
-
-        if in_debug_file:
-            logging.debug("\n---File text---\n" + text)
+        log.debug("\n---File text---\n" + text)
 
         untyped_ast = ast.parse(text)
 
-        if in_debug_file and DEBUG_UNTYPED_AST:
-            logging.debug("\n---Untyped AST---\n" + str(untyped_ast))
+        log.debug("\n---Untyped AST---\n" + str(untyped_ast), DEBUG_UNTYPED_AST)
             
         typedecs = parse_type_decs(filename)
 
-        if in_debug_file and DEBUG_TYPEDECS:
-            logging.debug("\n---TypeDecs---\n" + str(typedecs))
+        log.debug("\n---TypeDecs---\n" + str(typedecs), DEBUG_TYPEDECS)
 
         typed_ast = TypeDecASTModule(untyped_ast, typedecs)
 
-        if in_debug_file and DEBUG_TYPED_AST:
-            logging.debug("\n---TypedAST---\n" + str(typed_ast))
+        log.debug("\n---TypedAST---\n" + str(typed_ast), DEBUG_TYPED_AST)
             
         env_ast = EnvASTModule(typed_ast)
 
-        if in_debug_file and DEBUG_ENV_AST:
-            logging.debug("\n---EnvAST---\n" + str(env_ast))
+        logging.debug("\n---EnvAST---\n" + str(env_ast), DEBUG_ENV_AST)
             
         return check_mod(env_ast.tree)
 

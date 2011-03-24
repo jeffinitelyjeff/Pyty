@@ -5,10 +5,9 @@ from errors import TypeUnspecifiedError, \
                    ASTTraversalError
 from pyty_types import PytyType
 from settings import *
+from logger import Logger
 
-
-
-in_debug_file = False
+log = None
 
 # HELPER FUNCTIONS ----------------------------------------------------------
 # ---------------------------------------------------------------------------
@@ -21,6 +20,8 @@ def env_get_name(env, v):
     @type env: dict of str and PytyType
     @type v: C{ast.Name}
     """
+
+    env_get(env, v.id)
 
 def env_get(env, var_id):
     """Returns the type of the variable given by AST node C{v} in environment
@@ -51,15 +52,16 @@ def check_mod(node):
     """Checks whether the L{ast_extensions.EnvASTModule} node given by C{node}
     typechecks as a module with the environments defined in the AST structure."""
 
-    if in_debug_file and DEBUG_TYPECHECK:
-        logging.debug("\n---Typechecking module---")
+    log.debug("\n---Typechecking module---", DEBUG_TYPECHECK)
 
     if not isinstance(node, ast.Module):
-        if in_debug_file and DEBUG_TYPECHECK:
-            logging.debug("Returnin false cuz this isn't a module")
+        log.debug("Returning false cuz this isn't a module",
+                      DEBUG_TYPECHECK)
         return False
 
-    return check_stmt_list(node.body)
+    result = check_stmt_list(node.body)
+    log.debug("Module typecheck: " + str(result))
+    return result
 
 def check_stmt(stmt):
     """Checks whether the AST node given by C{node} typechecks as a statement.
@@ -70,8 +72,7 @@ def check_stmt(stmt):
 
     assert(hasattr(stmt, 'env') or stmt.is_compound())
 
-    if in_debug_file and DEBUG_TYPECHECK:
-        logging.debug("\n---Typechecking stmt---")
+    log.debug("\n---Typechecking stmt---", DEBUG_TYPECHECK)
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
@@ -79,21 +80,26 @@ def check_stmt(stmt):
     # the subset of the language we're considering (note: the subset is
     # defined as whatever there are check function definitions for).
     try:
-        return call_function(n, stmt)
+        result = call_function(n, stmt)
+        log.debug("Stmt typechek: " + str(result))
+        return result
     except KeyError:
+        log.debug("Found an AST node that is not in the subset of the " +
+                    "language we're considering.")
         return False
 
 def check_stmt_list(stmt_list):
     """For each stmt in C{stmt_list}, checks whether stmt is a valid
     statement."""
 
-    if in_debug_file and DEBUG_TYPECHECK:
-        logging.debug("\n---Typechecking stmt list---")
+    log.debug("\n---Typechceking stmt list---", DEBUG_TYPECHECK)
 
     for s in stmt_list:
         if not check_stmt(s):
+            log.debug("One of the statements in the stmt list didn't typecheck.")
             return False
 
+    log.debug("Stmt_list typecheck: True")
     return True
 
 def check_expr(expr, t, env):
@@ -105,16 +111,19 @@ def check_expr(expr, t, env):
 
     n = get_expr_func_name(expr.__class__.__name__)
 
-    if in_debug_file and DEBUG_TYPECHECK:
-        logging.debug("---Expr Typechecking---\nTypechecking: " + str(expr) +
-                      "\nEnv: " + str(env))
+    log.debug("---Expr Typechceking---\nTypechecking: " + str(expr) +
+                "\nEnv: " + str(env), DEBUG_TYPECHECK)
     
     # if we get a KeyError, then we're inspecting an AST node that is not in
     # the subset of the language we're considering (note: the subset is
     # defined as whtaever there are check function definitions for).
     try:
-        return call_function(n, expr, t, env)
+        result = call_function(n, expr, t, env)
+        log.debug("Expr typecheck:\n" + str(expr) + "\n" + str(result))
+        return result
     except KeyError:
+        log.debug("Found an AST node that is not in the subset of the " +
+                    "language we're considering.")
         return False
     
 
@@ -148,6 +157,21 @@ def check_expr(expr, t, env):
 
 def get_stmt_func_name(stmt_type):
     return "check_%s_stmt" % stmt_type
+
+def check_TypeDec_stmt(stmt):
+    """Any TypeDec should typecheck correctly as long as it doesn't try to
+    reassign a type."""
+
+    assert(isinstance(stmt, TypeDec))
+
+    for target in stmt.targets:
+        if target in stmt.old_env:
+            log.debug("Found a TypeDec which tried to reassign a type.")
+            return False
+
+    log.debug("The TypeDec doesn't try to reassign a type, " +
+              "so it type checks properly.")
+    return True
 
 def check_Assign_stmt(stmt):
     """Checks whether the AST node given by C{stmt} typechecks as an

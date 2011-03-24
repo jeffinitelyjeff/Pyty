@@ -9,7 +9,7 @@ sys.path.insert(0, '../src')
 from errors import *
 import typecheck
 from settings import *
-from util import announce_file
+from logger import announce_file
 
 """
 Uses the specification of the files in C{TEST_SPECS} to generate lots of
@@ -26,7 +26,6 @@ but in the generated python source files (with file name
 [Source code]
 """
 
-logging.basicConfig(level=LOG_LEVEL, filename=LOG_DIR + LOGFILE)
 announce_file("generate_tests.py")
 
 def _expr_test_function_def(test_name, expr_string, expr_kind,

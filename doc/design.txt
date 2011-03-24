@@ -49,7 +49,14 @@
     - Continue
 
 
-
+Logging
+=======
+For debugging purposes, a "debug file" is set in settings.py, and each module
+that wants to use logging has a local variable called "modulename_in_debug_file"
+which whatever drives the typechecking (for testing, unit_tests_core.py) must
+turn this variable to true before calling that module's functions on the debug
+file, and then turn it to false after running those module's functions on the
+debug file.
 
 
 
