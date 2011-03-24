@@ -6,8 +6,12 @@ from ast_extensions import TypeDec, TypeStore, TypeDecASTModule, EnvASTModule
 from pyty_types import PytyType
 from settings import *
 from logger import Logger
+from errors import *
 
 log = None
+
+def p_debug(s, cond=True):
+    log.debug(s, DEBUG_TYPEDEC_PARSING and cond)
 
 # the \s are regexes for whitespace. the first group contains a regex for valid
 # Python variable identifiers; the second group catches anything, and then this
@@ -35,7 +39,7 @@ def parse_type_decs(filename):
     tdecs = []
     lineno = 0
 
-    log.debug("--- v Typedec parsing v ---", DEBUG_TYPEDEC_PARSING)
+    p_debug("--- v Typedec parsing v ---")
 
     for l in open(filename, 'r'):
         # move to next line
@@ -44,23 +48,21 @@ def parse_type_decs(filename):
         m = re.match(_TYPEDEC_REGEX, l)
 
 
-        if m:
-            log.debug(" tdec --> " + l[:-1], DEBUG_TYPEDEC_PARSING)
-        else:
-            log.debug("          " + l[:-1], DEBUG_TYPEDEC_PARSING)
+        p_debug(" tdec --> " + l[:-1], m)
+        p_debug("          " + l[:-1], not m)
 
-        if m != None:
+        if m:
             var_name = m.group('id')
             type_name = m.group('t')
 
-            if re.match(_TYPENAME_REGEX, type_name) == None:
-                raise TypeIncorrectlySpecifiedError("Type incorrectly " +
-                    "specified as: " + type_name)
+            if not re.match(_TYPENAME_REGEX, type_name):
+                p_debug("An invalid type name of %s was specified" % type_name)
+                raise TypeIncorrectlySpecifiedError()
 
             tdec = parse_type_dec(l, lineno, var_name, type_name)
             tdecs.append(tdec)
 
-    log.debug("--- ^ Typedec parsing ^ ---", DEBUG_TYPEDEC_PARSING)
+    p_debug("--- ^ Typedec parsing ^ ---")
 
     return tdecs
 

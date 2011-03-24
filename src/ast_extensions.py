@@ -10,8 +10,6 @@ ast.mod.__repr__ = dump_self
 ast.stmt.__repr__ = dump_self
 ast.expr.__repr__ = dump_self
 
-a_log = None
-
 ### ---------------------------------------------------------------------------
 ### Information about AST statements ------------------------------------------
 ### ---------------------------------------------------------------------------
@@ -40,7 +38,8 @@ class ASTInfo:
     """
 
     simple_stmts = set(("Assign Return Delete AugAssign Raise Assert " + \
-                        "Import ImportFrom Print Pass Break Continue").split())
+                        "Import ImportFrom Print Pass Break Continue " + \
+                        "TypeDec").split())
     compound_stmts = set(("If While FunctionDef ClassDef For With " + \
                           "TryExcept TryFinally").split())
     all_stmts = simple_stmts.union(compound_stmts)
@@ -225,7 +224,9 @@ class TypeDec(ast.stmt):
         C{lineno}) in the list of statement AST nodes provided by C{stmt_list}.
         """
 
-        idx = 0
+        # this index tracks the stmts that are before the typedec, so starting
+        # at 0 would mean assuming that the fisrt statement is before the typedec.
+        idx = -1
 
         # iterate through stmt_list until we hit a lineno that's too far.
         for stmt in stmt_list:
@@ -238,16 +239,17 @@ class TypeDec(ast.stmt):
 
             idx += 1
 
+        # pass on the idx of the stmt immediately proceeding the typedec.
         self._place_near_stmt(stmt_list, idx)
 
     def _place_near_stmt(self, stmt_list, pos):
-        """Places this L{TypeDec} instance in the correct position 'near' the
-        statement at position C{pos} in the list of statements C{stmt_list}. If
-        the specified statement is a simple (one-line) statement, then this just
-        means placing this L{TypeDec} directly after the statement; if the
-        specified statement is a compound (multi-line) statement, then this
-        means placing this L{TypeDec} in the proper place within the compound
-        statement.
+        """Places this L{TypeDec} instance in the correct position 'nearly
+        after' the statement at position C{pos} in the list of statements
+        C{stmt_list}. If the specified statement is a simple (one-line)
+        statement, then this just means placing this L{TypeDec} directly after
+        the statement; if the specified statement is a compound (multi-line)
+        statement, then this means placing this L{TypeDec} in the proper place
+        within the compound statement.
 
         @precondition: stmt_list[pos].lineno < self.lineno and
             stmt_list[pos+1].lineno > self.lineno
@@ -255,9 +257,11 @@ class TypeDec(ast.stmt):
 
         stmt = stmt_list[pos]
 
-        if stmt.is_simple():
+        if stmt.is_simple() or pos == -1:
             # if the preceeding statement is simple, then just place the typedec
-            # after the statement.
+            # after the statement. also, if pos == -1, then this signals that
+            # there were no stmts before the typedec, so we want to place the
+            # typedec in pos = 0.
             stmt_list.insert(pos + 1, self)
         elif stmt.is_compound():
             # if the preceeding statement is compound, then figure out what kind
@@ -380,6 +384,31 @@ class EnvASTModule(TypeDecASTModule):
         return EnvASTModule._embed_environment_stmt_list(self.tree.body, {})
 
     @staticmethod
+    def _embed_environment_stmt_list(stmts, old_env):
+        """Recursive helper for _embed_environment to add environments to lists
+        of statements. The list of statements to be processed is assumed to be
+        consecutively ordered within one block (and consisting of the entire
+        block), so we assume that the working environment of line n is the
+        working environment of line n-1, plus any type declarations that may
+        have been added in line n. We do not need to return or keep track of the
+        environment at the end of the list of statements because we are assuming
+        that C{stmts} is the entire contents of one block, so, once we're done
+        with the block, we should no longer know or care about the type
+        declarations from within the block.
+
+        @returns: The environment at the end of the list of statements. This will
+        only be used when processing the list of statements in a module to get a
+        "master" environment for a file to use in debugging.
+        """
+
+        current_env = old_env
+
+        for s in stmts:
+            current_env = EnvASTModule._embed_environment_node(s, current_env)
+
+        return current_env
+
+    @staticmethod
     def _embed_environment_node(node, old_env):
         """Recursive helper for embed_environment to add environments to AST
         nodes.  There are three distinct types of nodes that this can be called
@@ -491,48 +520,6 @@ class EnvASTModule(TypeDecASTModule):
             # expressions, statements, and modules, so we should never reach
             # here.
             assert(False)
-
-    @staticmethod
-    def _embed_environment_stmt_list(stmts, old_env):
-        """Recursive helper for _embed_environment to add environments to lists
-        of statements. The list of statements to be processed is assumed to be
-        consecutively ordered within one block (and consisting of the entire
-        block), so we assume that the working environment of line n is the
-        working environment of line n-1, plus any type declarations that may
-        have been added in line n. We do not need to return or keep track of the
-        environment at the end of the list of statements because we are assuming
-        that C{stmts} is the entire contents of one block, so, once we're done
-        with the block, we should no longer know or care about the type
-        declarations from within the block.
-
-        @returns: The environment at the end of the list of statements. This will
-        only be used when processing the list of statements in a module to get a
-        "master" environment for a file to use in debugging.
-        """
-
-        current_env = old_env
-
-        for s in stmts:
-            current_env = EnvASTModule._embed_environment_node(s, current_env)
-
-        return current_env
-
-
-    ## This probably won't be necessary.
-    ## def find_env(expr):
-    ##     """This should only be called on an expression within an AST that has
-    ##     already been propogated with environments. All statements will have
-    ##     environments set as instance variables, but expressions will have to refer
-    ##     to the environments of their parent statements. XXX This probably will be
-    ##     redundant, because the environments of the parent statements will be
-    ##     accessed and then typecheck will be called with those environments when the
-    ##     children expressions are typechecked.
-    ##     """
-
-    ##     # this function is pointless to call on anything other than expressions.
-    ##     assert(isinstance(expr, ast.expr))
-
-    ##     # TODO implement if necessary
 
 
 

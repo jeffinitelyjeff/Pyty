@@ -30,6 +30,8 @@ code file in the test_files directory).
 
 announce_file("unit_tests_core.py")
 
+log = typecheck.log = parse.log = Logger()
+
 class PytyTests(unittest.TestCase):
 
     def _check_expr(self, s, expr_kind, type, expected):
@@ -39,17 +41,19 @@ class PytyTests(unittest.TestCase):
             
         f = get_expr_func_name(expr_kind)
 
+        t = PytyType(type)
+
         if expected == "pass":
-            self.assertEqual(True, call_function(f, a, type, {}),
+            self.assertEqual(True, call_function(f, a, t, {}),
                              "Should typecheck but does not (%s)." % s)
         elif expected == "fail":
-            self.assertEqual(False, call_function(f, a, type, {}),
+            self.assertEqual(False, call_function(f, a, t, {}),
                              "Shouldn't typecheck but does. (%s)." % s)
         elif issubclass(getattr(errors, expected), PytyError):
             # if the expected value is an error, then make sure it
             # raises the right error.
             try:
-                call_function(f, a, type, {})
+                call_function(f, a, t, {})
             except getattr(errors, expected):
                 pass
             else:
@@ -65,15 +69,13 @@ class PytyTests(unittest.TestCase):
         with open(filename, 'r') as f:
             text = f.read()
 
-        log = typecheck.log = parse.log = ast_extensions.log = Logger()
-
         debug_file = TEST_CODE_SUBDIR + DEBUG_SUBJECT_FILE
         if filename == debug_file:
             log.enter_debug_file()
         else:
             log.exit_debug_file()
 
-        log.debug("--- v File text v ---\n" + text + "--- ^ File text ^ ---")
+        log.debug("--- v File : " + filename + " v ---\n" + text + "--- ^ File text ^ ---")
 
         untyped_ast = ast.parse(text)
 

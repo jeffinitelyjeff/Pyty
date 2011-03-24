@@ -3,11 +3,15 @@ import logging
 
 from errors import TypeUnspecifiedError, \
                    ASTTraversalError
-from pyty_types import PytyType
+from pyty_types import *
 from settings import *
 from logger import Logger
+from ast_extensions import *
 
 log = None
+
+def t_debug(s, cond=True):
+    log.debug(s, DEBUG_TYPECHECK and cond)
 
 # HELPER FUNCTIONS ----------------------------------------------------------
 # ---------------------------------------------------------------------------
@@ -21,7 +25,7 @@ def env_get_name(env, v):
     @type v: C{ast.Name}
     """
 
-    env_get(env, v.id)
+    return env_get(env, v.id)
 
 def env_get(env, var_id):
     """Returns the type of the variable given by AST node C{v} in environment
@@ -35,10 +39,11 @@ def env_get(env, var_id):
 
     # make sure the variable is in the environment
     if var_id not in env:
+        t_debug("Type of %s not found in %s" % (var_id, env))
         raise TypeUnspecifiedError(var=var_id,env=env)
     
     # return the type stored in the environment
-    return env[idx]
+    return env[var_id]
 
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
@@ -52,17 +57,15 @@ def check_mod(node):
     """Checks whether the L{ast_extensions.EnvASTModule} node given by C{node}
     typechecks as a module with the environments defined in the AST structure."""
 
-    log.debug("----- v Typechecking module v -----", DEBUG_TYPECHECK)
+    t_debug("----- v Typechecking module v -----")
 
     if not isinstance(node, ast.Module):
-        log.debug("Returning false cuz this isn't a module",
-                      DEBUG_TYPECHECK)
-        log.debug("----- ^ Typechecking module ^ -----", DEBUG_TYPECHECK)
+        t_debug("Returning false cuz this isn't a module")
+        t_debug("----- ^ Typechecking module ^ -----")
         return False
 
     result = check_stmt_list(node.body)
-    log.debug("return: " + str(result) +
-              "\n----- ^ Typechecking module ^ -----", DEBUG_TYPECHECK)
+    t_debug("return: " + str(result) + "\n----- ^ Typechecking module ^ -----")
     return result
 
 def check_stmt(stmt):
@@ -72,9 +75,11 @@ def check_stmt(stmt):
     which typecheck C{node} as the specific kind of statement. The function to
     call is generated from the class name of C{node}."""
 
-    assert(hasattr(stmt, 'env') or stmt.is_compound())
+    t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---")
 
-    log.debug("--- v Typechecking stmt v ---", DEBUG_TYPECHECK)
+    t_debug("Throwing assertion error because this statement is simple but " +
+            "has no environment", stmt.is_simple() and not hasattr(stmt, 'env'))
+    assert(hasattr(stmt, 'env') or stmt.is_compound())
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
@@ -83,29 +88,28 @@ def check_stmt(stmt):
     # defined as whatever there are check function definitions for).
     try:
         result = call_function(n, stmt)
-        log.debug("return: " + str(result) +
-                  "\n--- ^ Typechecking stmt ^ ---", DEBUG_TYPECHECK)
+        t_debug("return: " + str(result) + "\n--- ^ Typechecking stmt ^ ---")
         return result
     except KeyError:
-        log.debug("Found an AST node that is not in the subset of the " +
-                    "language we're considering." +
-                    "\n--- ^ Typechecking stmt ^ ---", DEBUG_TYPECHECK)
+        t_debug("Found an AST node that is not in the subset of the " +
+                "language we're considering." +
+                "\n--- ^ Typechecking stmt ^ ---")
         return False
 
 def check_stmt_list(stmt_list):
     """For each stmt in C{stmt_list}, checks whether stmt is a valid
     statement."""
 
-    log.debug("---- v Typechecking stmt list v ----", DEBUG_TYPECHECK)
+    t_debug("---- v Typechecking stmt list v ----")
 
     for s in stmt_list:
         if not check_stmt(s):
-            log.debug("return: False")
-            log.debug("---- ^ Typechecking stmt list ^ ----", DEBUG_TYPECHECK)
+            t_debug("return: False")
+            t_debug("---- ^ Typechecking stmt list ^ ----")
             return False
 
-    log.debug("return: True")
-    log.debug("---- ^ Typechecking stmt list ^ ----", DEBUG_TYPECHECK)
+    t_debug("return: True")
+    t_debug("---- ^ Typechecking stmt list ^ ----")
     return True
 
 def check_expr(expr, t, env):
@@ -117,19 +121,19 @@ def check_expr(expr, t, env):
 
     n = get_expr_func_name(expr.__class__.__name__)
 
-    log.debug("-- v Typechecking expr v --\nExpr: " + str(expr) +
-                "\nEnv: " + str(env), DEBUG_TYPECHECK)
+    t_debug("-- v Typechecking expr as " + str(t) + " v --\nExpr: " +
+            str(expr) + "\nEnv: " + str(env))
     
     # if we get a KeyError, then we're inspecting an AST node that is not in
     # the subset of the language we're considering (note: the subset is
     # defined as whtaever there are check function definitions for).
     try:
         result = call_function(n, expr, t, env)
-        log.debug("return: " + str(result) + "\n-- ^ Typechecking expr ^ --")
+        t_debug("return: " + str(result) + "\n-- ^ Typechecking expr ^ --")
         return result
     except KeyError:
-        log.debug("Found an AST node that is not in the subset of the " +
-                    "language we're considering.")
+        t_debug("Found an AST node that is not in the subset of the " +
+                "language we're considering.")
         return False
     
 
@@ -172,11 +176,10 @@ def check_TypeDec_stmt(stmt):
 
     for target in stmt.targets:
         if target in stmt.old_env:
-            log.debug("Found a TypeDec which tried to reassign a type.")
+            # XXX ultimately, this should throw some kind of ERROR.
+            t_debug("Found a TypeDec which tried to reassign a type.")
             return False
 
-    log.debug("The TypeDec doesn't try to reassign a type, " +
-              "so it type checks properly.")
     return True
 
 def check_Assign_stmt(stmt):
@@ -234,7 +237,7 @@ def check_While_stmt(stmt):
     body = stmt.body
     orelse = stmt.orelse
 
-    return check_expr(test, PytyType("int"), stmt.env) and \
+    return check_expr(test, bool_type, stmt.env) and \
            check_stmt_list(body) and check_stmt_list(orelse)
 
 # ---------------------------------------------------------------------------
@@ -271,9 +274,9 @@ def check_Num_expr(num, t, env):
     
     n = num.n
 
-    if is_int(t):
+    if t.is_int():
         return isinstance(n, int)
-    if is_float(t):
+    if t.is_float():
         return isinstance(n, float) or isinstance(n, int)
     else:
         return False
@@ -284,11 +287,13 @@ def check_Name_expr(name, t, env):
     literals."""
 
     if not isinstance(name, ast.Name):
+        t_debug("Not a Name expression")
         return False
 
-    if not isinstance(name.ctx, ast.Load):
-        raise ASTTraversalError(msg="Referenced variables or booleans do" +
-            " not have proper ctx's")
+    if name.ctx.__class__.__name__ != 'Load':
+        t_debug("Name node read expecting Load context when the context was "
+                + name.ctx.__class__.__name__)
+        raise ASTTraversalError()
     
     id = name.id
 
@@ -300,7 +305,13 @@ def check_Name_expr(name, t, env):
     else:
         # if not checking for a boolean, then we must be looking for a variable,
         # so we need to see if it matches the type in the environment.
-        return env_get(env, name).is_subtype(t)
+        spec_type = env_get_name(env, name)
+
+        if not spec_type.is_subtype(t):
+            t_debug(("Variable %s has been declared of type %s, so it does not "+
+                    "typecheck as type %s") % (name.id, str(spec_type), str(t)))
+        
+        return env_get_name(env, name).is_subtype(t)
 
 def check_BinOp_expr(binop, t, env):
     """Checks whether the AST expression node given by C{expr} typechecks as a

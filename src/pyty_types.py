@@ -26,3 +26,7 @@ class PytyType:
         # XXX include more complicated rules for collection and function types
 
     
+int_type = PytyType('int')
+float_type = PytyType('float')
+bool_type = PytyType('bool')
+

@@ -1,4 +1,4 @@
-from datetime import datetime
+import math
 
 import logging
 from settings import *
@@ -27,4 +27,7 @@ class Logger:
             logging.debug(s.replace('\n', Logger.nl))
 
 def announce_file(filename):
-    logging.debug("--------- RUNNING " + filename.upper() + " ----------")
+    gen_width = 40 - len(filename)
+    lwidth = int(math.ceil(gen_width / 2.0))
+    rwidth = int(math.floor(gen_width / 2.0))
+    logging.debug("="*lwidth + " RUNNING " + filename.upper() + " " + "="*rwidth)
