@@ -19,9 +19,10 @@ SPEC_EXPR_PREFIX = "expr_" # prefix for files specifying expr tests
 SPEC_MOD_PREFIX = "mod_"   # prefix for files specifying module tests
 
 DEBUG_SUBJECT_FILE = "mod_while9.py"
-DEBUG_UNTYPED_AST = True
-DEBUG_TYPEDECS = True
+DEBUG_TYPEDEC_PARSING = False
+DEBUG_UNTYPED_AST = False
+DEBUG_TYPEDECS = False
 DEBUG_TYPED_AST = True
-DEBUG_ENV_AST = True
+DEBUG_ENV_AST = False
 
 TREE_DUMP = True # whether ast's __repr__ will be tree-formatted or not

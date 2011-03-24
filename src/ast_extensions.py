@@ -1,7 +1,9 @@
 import ast
+import logging
 
 from util import are_disjoint, disjoint_sums_of
 from pyty_types import PytyType
+from typecheck import in_debug_file
 
 def dump_self(self):
     return ast.dump(self)
@@ -263,6 +265,9 @@ class TypeDec(ast.stmt):
 
             branches = stmt.stmt_lists()
 
+            if in_debug_file:
+                logging.debug(str(branches))
+
             if stmt.is_body() or branches[1][0].lineno > self.lineno:
                 # place the typedec in the first list of statements if the statement
                 # type only has one branch or the lineno of the first line of the
@@ -306,7 +311,7 @@ class TypeDecASTModule:
             self.place_typedec(typedec)
 
     def __str__(self):
-        return str(self.tree) + " with " + str(self.typedecs)
+        return "Tree:\n" + str(self.tree) + "\nTypedecs:\n" + str(self.typedecs)
 
     def get_original_tree(self):
         """Returns the original tree if this L{TypeDecAST} was initialized as a
@@ -364,6 +369,9 @@ class EnvASTModule(TypeDecASTModule):
 
         self._embed_environment()
 
+    def __str__(self):
+        return ast.dump(self.tree, include_attributes=True)
+
     def _embed_environment(self):
         """For each statement node of this L{EnvASTModule}'s underlying AST,
         adds an instance variable called C{env} which is the type environment at
@@ -404,8 +412,14 @@ class EnvASTModule(TypeDecASTModule):
             if TypeDec.is_typedec(stmt):
                 # if it's a typedec, then add typedefs to the dictionary.
                 typedec = stmt
-                
+
                 typedec.env = old_env.copy()
+
+                # add the 'env' variable to the list of attributes for this
+                # node; need to manuever around the fact that tuples are immutable.
+                lst = list(typedec._attributes)
+                lst.append('env')
+                typedec._attributes = tuple(lst)
 
                 for target in typedec.targets:
                     typedec.env[target.id] = typedec.t
@@ -422,6 +436,13 @@ class EnvASTModule(TypeDecASTModule):
                 # different reference; I don't think this should cause any
                 # issues for now, but we'll see.
                 stmt.env = old_env
+
+                # add the 'env' variable to the list of attributes for this
+                # node; need to manuever around the fact that tuples are
+                # immutable.
+                lst = list(stmt._attributes)
+                lst.append('env')
+                stmt._attributes = tuple(lst)
 
                 return stmt.env
 

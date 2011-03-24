@@ -5,6 +5,7 @@ import logging
 from ast_extensions import TypeDec, TypeStore, TypeDecASTModule, EnvASTModule
 from pyty_types import PytyType
 from settings import *
+from typecheck import in_debug_file
 
 # the \s are regexes for whitespace. the first group contains a regex for valid
 # Python variable identifiers; the second group catches anything, and then this
@@ -38,7 +39,8 @@ def parse_type_decs(filename):
 
         m = re.match(_TYPEDEC_REGEX, l)
 
-        if filename == TEST_CODE_SUBDIR + DEBUG_SUBJECT_FILE:
+        if filename == TEST_CODE_SUBDIR + DEBUG_SUBJECT_FILE \
+               and DEBUG_TYPEDEC_PARSING:
             if m:
                 logging.debug(" tdec --> " + l[:-1])
             else:

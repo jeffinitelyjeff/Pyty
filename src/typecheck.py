@@ -7,6 +7,9 @@ from pyty_types import PytyType
 from settings import *
 
 
+
+in_debug_file = False
+
 # HELPER FUNCTIONS ----------------------------------------------------------
 # ---------------------------------------------------------------------------
 
@@ -48,7 +51,12 @@ def check_mod(node):
     """Checks whether the L{ast_extensions.EnvASTModule} node given by C{node}
     typechecks as a module with the environments defined in the AST structure."""
 
+    if in_debug_file:
+        logging.debug("\n---Typechecking module---")
+
     if not isinstance(node, ast.Module):
+        if in_debug_file:
+            logging.debug("Returnin false cuz this isn't a module")
         return False
 
     return check_stmt_list(node.body)
@@ -60,7 +68,10 @@ def check_stmt(stmt):
     which typecheck C{node} as the specific kind of statement. The function to
     call is generated from the class name of C{node}."""
 
-    assert(hasattr(stmt, 'env'))
+    assert(hasattr(stmt, 'env') or stmt.is_compound())
+
+    if in_debug_file:
+        logging.debug("\n---Typechecking stmt---")
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
@@ -76,6 +87,9 @@ def check_stmt_list(stmt_list):
     """For each stmt in C{stmt_list}, checks whether stmt is a valid
     statement."""
 
+    if in_debug_file:
+        logging.debug("\n---Typechecking stmt list---")
+
     for s in stmt_list:
         if not check_stmt(s):
             return False
@@ -90,6 +104,10 @@ def check_expr(expr, t, env):
     function to call is generated from the class name of C{node}."""
 
     n = get_expr_func_name(expr.__class__.__name__)
+
+    if in_debug_file:
+        logging.debug("---Expr Typechecking---\nTypechecking: " + str(expr) +
+                      "\nEnv: " + str(env))
     
     # if we get a KeyError, then we're inspecting an AST node that is not in
     # the subset of the language we're considering (note: the subset is
@@ -148,9 +166,7 @@ def check_Assign_stmt(stmt):
         # ensure that the variables are appearing with "store" contexts, ie
         # that they are being assigned to and not referenced. this really
         # shouldn't be a problem, but this is just to be safe.
-        if v.ctx.__class__.__name__ != "Store":
-            raise ASTTraversalError(msg="Targets in assignment do not have" + 
-                " proper ctx's... somehow") 
+        assert(v.ctx.__class__.__name__ == "Store")
 
         t = env_get(stmt.env, v.id)
         if not check_expr(e, t, stmt.env):

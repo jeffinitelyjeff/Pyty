@@ -3,6 +3,7 @@ import ast
 import sys
 import logging
 from datetime import datetime
+import ast
 
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
@@ -60,32 +61,35 @@ class PytyTests(unittest.TestCase):
             text = f.read()
 
         debug_file = TEST_CODE_SUBDIR + DEBUG_SUBJECT_FILE
-
         if filename == debug_file:
-            logging.debug("File text:\n " + text)
+            in_debug_file = True
+        else:
+            in_debug_file = False
+
+        if in_debug_file:
+            logging.debug("\n---File text---\n" + text)
 
         untyped_ast = ast.parse(text)
 
-        if filename == debug_file and DEBUG_UNTYPED_AST:
-            logging.debug("Untyped AST: " + str(untyped_ast))
+        if in_debug_file and DEBUG_UNTYPED_AST:
+            logging.debug("\n---Untyped AST---\n" + str(untyped_ast))
             
         typedecs = parse_type_decs(filename)
 
-        if filename == debug_file and DEBUG_TYPEDECS:
-            logging.debug("TypeDecs: " + str(typedecs))
+        if in_debug_file and DEBUG_TYPEDECS:
+            logging.debug("\n---TypeDecs---\n" + str(typedecs))
 
         typed_ast = TypeDecASTModule(untyped_ast, typedecs)
 
-        if filename == debug_file and DEBUG_TYPED_AST:
-            logging.debug("TypedAST: " + str(typed_ast))
+        if in_debug_file and DEBUG_TYPED_AST:
+            logging.debug("\n---TypedAST---\n" + str(typed_ast))
             
         env_ast = EnvASTModule(typed_ast)
 
-        if filename == debug_file and DEBUG_ENV_AST:
-            logging.debug("yo")
-            logging.debug("EnvAST: " + str(env_ast))
+        if in_debug_file and DEBUG_ENV_AST:
+            logging.debug("\n---EnvAST---\n" + str(env_ast))
             
-        return check_mod(env_ast)
+        return check_mod(env_ast.tree)
 
     def _check_mod(self, filename):
         """Typechecks the contents of file C{filename} as a
