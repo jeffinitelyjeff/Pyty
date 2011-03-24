@@ -82,6 +82,7 @@ class PytyTests(unittest.TestCase):
         env_ast = EnvASTModule(typed_ast)
 
         if filename == debug_file and DEBUG_ENV_AST:
+            logging.debug("yo")
             logging.debug("EnvAST: " + str(env_ast))
             
         return check_mod(env_ast)
