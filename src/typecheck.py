@@ -51,11 +51,11 @@ def check_mod(node):
     """Checks whether the L{ast_extensions.EnvASTModule} node given by C{node}
     typechecks as a module with the environments defined in the AST structure."""
 
-    if in_debug_file:
+    if in_debug_file and DEBUG_TYPECHECK:
         logging.debug("\n---Typechecking module---")
 
     if not isinstance(node, ast.Module):
-        if in_debug_file:
+        if in_debug_file and DEBUG_TYPECHECK:
             logging.debug("Returnin false cuz this isn't a module")
         return False
 
@@ -70,7 +70,7 @@ def check_stmt(stmt):
 
     assert(hasattr(stmt, 'env') or stmt.is_compound())
 
-    if in_debug_file:
+    if in_debug_file and DEBUG_TYPECHECK:
         logging.debug("\n---Typechecking stmt---")
 
     n = get_stmt_func_name(stmt.__class__.__name__)
@@ -87,7 +87,7 @@ def check_stmt_list(stmt_list):
     """For each stmt in C{stmt_list}, checks whether stmt is a valid
     statement."""
 
-    if in_debug_file:
+    if in_debug_file and DEBUG_TYPECHECK:
         logging.debug("\n---Typechecking stmt list---")
 
     for s in stmt_list:
@@ -105,7 +105,7 @@ def check_expr(expr, t, env):
 
     n = get_expr_func_name(expr.__class__.__name__)
 
-    if in_debug_file:
+    if in_debug_file and DEBUG_TYPECHECK:
         logging.debug("---Expr Typechecking---\nTypechecking: " + str(expr) +
                       "\nEnv: " + str(env))
     

@@ -22,7 +22,8 @@ DEBUG_SUBJECT_FILE = "mod_while9.py"
 DEBUG_TYPEDEC_PARSING = False
 DEBUG_UNTYPED_AST = False
 DEBUG_TYPEDECS = False
-DEBUG_TYPED_AST = True
+DEBUG_TYPED_AST = False
 DEBUG_ENV_AST = False
+DEBUG_TYPECHCEK = False
 
 TREE_DUMP = True # whether ast's __repr__ will be tree-formatted or not

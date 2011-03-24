@@ -15,6 +15,8 @@ from errors import *
 import errors
 from settings import *
 from util import announce_file
+import ast_extensions
+import typecheck
 
 """
 This is just the core of the unit testing file. generate_tests.py must be run
@@ -65,6 +67,9 @@ class PytyTests(unittest.TestCase):
             in_debug_file = True
         else:
             in_debug_file = False
+
+        ast_extensions.in_debug_file = in_debug_file
+        typecheck.in_debug_file = in_debug_file
 
         if in_debug_file:
             logging.debug("\n---File text---\n" + text)
