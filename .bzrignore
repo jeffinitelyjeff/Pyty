@@ -3,3 +3,4 @@
 .emacs.*
 test/test_files/*
 test/_unit_tests_gen.py
+*.log
