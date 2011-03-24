@@ -267,10 +267,8 @@ class TypeDec(ast.stmt):
 
             branches = stmt.stmt_lists()
 
-            if in_debug_file:
-                logging.debug(str(branches))
-
-            if stmt.is_body() or branches[1][0].lineno > self.lineno:
+            if stmt.is_body() or len(branches[1]) == 0 \
+                   or branches[1][0].lineno > self.lineno:
                 # place the typedec in the first list of statements if the statement
                 # type only has one branch or the lineno of the first line of the
                 # second branch is past the desired lineno.

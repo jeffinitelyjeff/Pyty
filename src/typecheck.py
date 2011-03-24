@@ -159,6 +159,8 @@ def check_Assign_stmt(stmt):
         a = b = 5
     and does not handle assigning to lists or tuples."""
 
+    assert(isinstance(stmt, ast.Assign))
+
     e = stmt.value
 
     # return False if the expression doesn't match with one of the targets
@@ -180,8 +182,7 @@ def check_If_stmt(stmt):
     statement. This requires that the test typecheck as a bolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
-    if not isinstance(stmt, ast.If):
-        return False
+    assert(isinstance, stmt, ast.If)
 
     test = stmt.test
     body = stmt.body
@@ -195,8 +196,7 @@ def check_While_stmt(stmt):
     statement. This requires that the test typecheck as a boolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
-    if not isinstance(stmt, ast.While):
-        return False
+    assert(isinstance(stmt, ast.While)
 
     # this code is IDENTICAL to the If stuff; should consider refactoring into
     # helper function.
@@ -204,7 +204,7 @@ def check_While_stmt(stmt):
     body = stmt.body
     orelse = stmt.orelse
 
-    return check_expr(test, bool_type, stmt.env) and \
+    return check_expr(test, PytyType("int"), stmt.env) and \
            check_stmt_list(body) and check_stmt_list(orelse)
 
 # ---------------------------------------------------------------------------
