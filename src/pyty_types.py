@@ -1,8 +1,20 @@
 import re
 
 class PytyType:
-    type_regex = r"^(int|float|bool)$"
-    
+    type_regex = r"^(int|float|bool|list of (.*))$"
+
+    @staticmethod
+    def valid_type_string(spec):
+        m = re.match(PytyType.type_regex, spec)
+
+        if not m:
+            return False
+        else:
+            if m.groups()[1] is None:
+                return True
+            else:
+                return PytyType.valid_type_string(m.groups()[1])
+
     def __init__(self, spec):
         if re.match(PytyType.type_regex, spec):
             self.t = spec
@@ -25,8 +37,9 @@ class PytyType:
 
         # XXX include more complicated rules for collection and function types
 
-    
-int_type = PytyType('int')
-float_type = PytyType('float')
-bool_type = PytyType('bool')
+class PytyTypes:
+    int_t = PytyType('int')
+    float_t = PytyType('float')
+    bool_t = PytyType('bool')
+
 
