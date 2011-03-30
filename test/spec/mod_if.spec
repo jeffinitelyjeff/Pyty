@@ -38,6 +38,21 @@ else:
 if x > 0:
     y = 3
 ---
+#: x : int
+x = 3
+if x == 0:
+    #: y: float
+    y = 0.0
+elif x == 3:
+    #: y: bool
+    y = True
+---
+#: x : bool
+if x:
+    #: y : int
+    y = 3
+---
+    
 
 ----fail----
 
@@ -68,6 +83,24 @@ if 0.0:
 if 1.0:
     x = 1
 ---
+#: x : int
+#: y : float
+if x > 0:
+    y = 3.0
+else:
+    y = bool
+---
+#: x : int
+#: y : int
+x = 0
+y = 3
+if y > 0:
+    #: y : float
+    y = 3.0
+x = y
+---
+    
+
 
 ----TypeUnspecifiedError----
 
@@ -85,5 +118,18 @@ if y:
 #: x : int
 if y > 0:
     x = 0
+---
+#: x : int
+if x > 0:
+    #: y : int
+    y = 3
+x = y
+---
+#: x : int
+if x > 0:
+    #: y : int
+    y = 3
+else:
+    y = 4
 ---
 

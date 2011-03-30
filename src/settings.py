@@ -26,5 +26,3 @@ DEBUG_TYPEDECS        = False
 DEBUG_TYPED_AST       = False
 DEBUG_ENV_AST         = True
 DEBUG_TYPECHECK       = True
-
-TREE_DUMP = True # whether ast's __repr__ will be tree-formatted or not

@@ -1,7 +1,7 @@
 import re
 
 class PytyType:
-    type_regex = r"^(int|float|bool|list of (.*))$"
+    type_regex = r"^((int)|(float)|(bool)|(list of (.*)))$"
 
     @staticmethod
     def valid_type_string(spec):
@@ -10,14 +10,28 @@ class PytyType:
         if not m:
             return False
         else:
-            if m.groups()[1] is None:
+            if m.groups()[5] is None:
                 return True
             else:
-                return PytyType.valid_type_string(m.groups()[1])
+                return PytyType.valid_type_string(m.groups()[5])
+
+    @staticmethod
+    def kill_none_spots(tup):
+        return tuple([t for t in tup if t is not None])
 
     def __init__(self, spec):
-        if re.match(PytyType.type_regex, spec):
+        if PytyType.valid_type_string(spec):
             self.t = spec
+
+            m = re.match(PytyType.type_regex, spec)
+
+            self.main_t = m.groups()[1]
+            
+            g = PytyType.kill_none_spots(m.groups())
+
+            if len(g) > 2:
+                for i in range(1, len(g)):
+                    setattr(self, 'member_' + str(i), PytyType(g[i]))
 
     def __repr__(self):
         return self.t
