@@ -1,40 +1,116 @@
 import re
 
 class PytyType:
-    type_regex = r"^((int)|(float)|(bool)|(list of (.*)))$"
+    paren_regex = r"^\((.*)\)$"
+    list_regex = r"^list of (.*)$"
+    pair_regex = r"^(.*)\*(.*)$"
 
     @staticmethod
-    def valid_type_string(spec):
-        m = re.match(PytyType.type_regex, spec)
+    def valid(s):
+        if s == "int" or \
+           s == "float" or \
+           s == "bool":
+            return True
 
-        if not m:
-            return False
-        else:
-            if m.groups()[5] is None:
-                return True
-            else:
-                return PytyType.valid_type_string(m.groups()[5])
+        m0 = re.match(PytyType.paren_regex, s)
+        if m0:
+            return PytyType.valid(m0.groups()[0])
 
+        m1 = re.match(PytyType.list_regex, s)
+        if m1:
+            return PytyType.valid(m1.groups()[0])
+
+        m2 = re.match(PytyType.pair_regex, s)
+        if m2:
+            return PytyType.valid(m2.groups()[0].strip()) and \
+                   PytyType.valid(m2.groups()[1].strip())
+
+        # reaching here means nothing matched, so it's a fail.
+        return False
+
+    @staticmethod
+    def get_t(s):
+        if s == "int" or \
+           s == "float" or \
+           s == "bool":
+            return s
+
+        m0 = re.match(PytyType.paren_regex, s)
+        if m0:
+            return PytyType(m0.groups()[0]).t
+
+        m1 = re.match(PytyType.list_regex, s)
+        if m1:
+            return "list"
+
+        m2 = re.match(PytyType.pair_regex, s)
+        if m2:
+            return "pair"
+
+        # should only call get_t on valid strings; should never reach here.
+        assert(False)
+
+    @staticmethod
+    def get_members(s):
+        if s == "int" or \
+           s == "float" or \
+           s == "bool":
+            return None
+
+        m0 = re.match(PytyType.paren_regex, s)
+        if m0:
+            return PytyType(m0.groups()[0]).members
+
+        m1 = re.match(PytyType.list_regex, s)
+        if m1:
+            return (PytyType(m1.groups()[0]),)
+
+        m2 = re.match(PytyType.pair_regex, s)
+        if m2:
+            return (PytyType(m2.groups()[0].strip()),
+                    PytyType(m2.groups()[1].strip()))
+
+        # Should only call get_members on valid strings; should never reach here.
+        assert(False)
+                    
     @staticmethod
     def kill_none_spots(tup):
         return tuple([t for t in tup if t is not None])
 
     def __init__(self, spec):
+        if PytyType.valid(spec):
+            self.t = PytyType.get_t(spec)
+            self.members = PytyType.get_members(spec)
+        else:
+            raise Exception("Invalid Pyty Type specification!")
+
+        """
         if PytyType.valid_type_string(spec):
-            self.t = spec
+            self.main_t = spec
 
             m = re.match(PytyType.type_regex, spec)
 
-            self.main_t = m.groups()[1]
+            self.members = []
             
             g = PytyType.kill_none_spots(m.groups())
 
-            if len(g) > 2:
-                for i in range(1, len(g)):
-                    setattr(self, 'member_' + str(i), PytyType(g[i]))
+            for i in range(0, len(g)):
+                self.members.append(PytyType(g[i].strip()))
+        else:
+            raise Exception("Invalid Pyty Type specification.")
+            """
+
+    def is_base_type(self):
+        return self.members is None
+
+    def __eq__(self, other):
+        return self.t == other.t and self.members == other.members
 
     def __repr__(self):
-        return self.t
+        if self.is_base_type():
+            return self.t
+        else:
+            return self.t + ": " + str(self.members)
 
     def is_int(self):
         return self.t == "int"
