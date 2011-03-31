@@ -39,11 +39,11 @@ y = x
 # TEST NO 10
 #: x : int
 x = 4 - (3 + 11 % 2) / 2.0
-----TypeUnspecifiedError----
-#: y : float
-y = 4 + 3.0 + x
 ---
 #: y : int
+y = 4 + 3.0 + x
+----TypeUnspecifiedError----
+#: y : float
 y = 4 + 3.0 + x
 ---
 y = 4 + 3.0

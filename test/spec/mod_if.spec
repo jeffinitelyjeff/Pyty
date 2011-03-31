@@ -88,18 +88,17 @@ if 1.0:
 if x > 0:
     y = 3.0
 else:
-    y = bool
+    y = True
 ---
 #: x : int
-#: y : int
+#: y : bool
 x = 0
-y = 3
+y = True
 if y > 0:
-    #: y : float
-    y = 3.0
+    #: y : int
+    y = 3
 x = y
 ---
-    
 
 
 ----TypeUnspecifiedError----
@@ -132,4 +131,3 @@ if x > 0:
 else:
     y = 4
 ---
-
