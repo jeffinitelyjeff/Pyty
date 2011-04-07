@@ -1,6 +1,52 @@
 import re
 from lepl import *
 
+class TypeSpecParser:
+    int_tok = Token('int')
+    float_tok = Token('float')
+    bool_tok = Token('bool')
+    str_tok = Token('str')
+
+    list_start = Token('\[')
+    list_end = Token('\]')
+
+    tuple_start = Token('\(')
+    tuple_div = Token(',')
+    tuple_end = Token('\)')
+
+    dict_start = Token('\{')
+    dict_div = Token('\:')
+    dict_end = Token('\}')
+
+    fn_div = Token('\->')
+
+    typ = Delayed()
+
+    base_typ = int_tok | float_tok | bool_tok | str_tok
+
+    lst = ~list_start & typ & ~list_end
+
+    tup_comp = Delayed()
+    tup_comp += tuple_div & typ & Optional(tup_comp)
+    tup = tuple_start & typ & tup_comp & tuple_end
+
+    dct = dict_start & typ & dict_div & dict_end
+
+    fun = tup & fn_div & typ
+
+    typ += base_typ | lst | tup | dct | fun
+    
+    @staticmethod
+    def parse(s):
+        return sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
+
+class T:
+    @staticmethod
+    def p(s):
+        return TypeSpecParser.parse(s)
+    
+
+
 class ListSpec(List):
     def __init__(self, t):
         self.t = t
@@ -45,49 +91,3 @@ class FuncSpec(List):
 
     def ret_typ(self):
         return self.ret_t
-
-class TypeSpecParser:
-    int_tok = Token('int')
-    float_tok = Token('float')
-    bool_tok = Token('bool')
-    str_tok = Token('str')
-
-    list_start = Token('\[')
-    list_end = Token('\]')
-
-    tuple_start = Token('\(')
-    tuple_div = Token(',')
-    tuple_end = Token('\)')
-
-    dict_start = Token('\{')
-    dict_div = Token('\:')
-    dict_end = Token('\}')
-
-    fn_div = Token('\->')
-
-    typ = Delayed()
-
-    base_typ = int_tok | float_tok | bool_tok | str_tok
-
-    lst = ~list_start & typ & ~list_end
-
-    tup_comp = Delayed()
-    tup_comp += tup_div & typ & Optional(tup_comp)
-    tup = tup_start & typ & tup_comp & tup_end
-
-    dct = dict_start & typ & dict_div & dict_end
-
-    fun = tup & fn_div & typ
-
-    typ += base_type | lst | tup | dct | fun
-    
-    @staticmethod
-    def parse(s):
-        return sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
-
-class T:
-    @staticmethod
-    def p(s):
-        return TypeSpecParser.parse(s)
-    
-

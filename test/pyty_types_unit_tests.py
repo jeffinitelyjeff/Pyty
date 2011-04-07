@@ -1,5 +1,9 @@
+import sys
 import unittest
 from lepl import *
+
+# Include src in the Python search path
+sys.path.insert(0, '../src')
 
 from pyty_types import *
 
@@ -20,7 +24,7 @@ class TypeSpecTests(unittest.TestCase):
     def test_func_spec(self):
         self.assertEqual(FuncSpec(TupleSpec(['int', 'int']), 'float'),
                          List(['func',
-                               List(['tuple', 'int', 'int'])
+                               List(['tuple', 'int', 'int']),
                                'float']))
         self.assertEqual(FuncSpec(TupleSpec([]), 'str'),
                          List(['func', List([]), 'str']))
@@ -46,7 +50,7 @@ class TypeSpecTests(unittest.TestCase):
 
     def test_tuple(self):
         self.assertEqual(parse('(int)'),
-                         TupleSpec(['int'])
+                         TupleSpec(['int']))
         self.assertEqual(parse('(  int )'), parse('(int)'))
         self.assertEqual(parse('( bool,   str , float  , int )'),
                          parse('(bool,str,float,int)'))
@@ -75,11 +79,11 @@ class TypeSpecTests(unittest.TestCase):
         self.assertEqual(parse('(int) -> float'),
                          FuncSpec(TupleSpec(['int']), 'float'))
         self.assertEqual(parse('( int )->float '), parse('(int) -> float'))
-        self.assertEqual(parse('() -> int')
+        self.assertEqual(parse('() -> int'),
                          FuncSpec(TupleSpec([]), 'int'))
         self.assertEqual(parse('([float]) -> int'),
                          FuncSpec(TupleSpec([ListSpec('float')]), 'int'))
                          
 
 if __name__ == '__main__':
-    unittest.main
+    unittest.main()
