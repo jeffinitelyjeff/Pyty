@@ -23,21 +23,27 @@ class TypeSpecParser:
     parens = lpar_tok & typ & rpar_tok
     parens_typ = parens | typ
 
-    base_typ = int_tok | float_tok | bool_tok | str_tok > List
+    base_typ = int_tok | float_tok | bool_tok | str_tok
 
-    lst = list_tok & of_tok & typ >> List
+    lst = list_tok & of_tok & typ > List
 
-    tup_comp = typ & cross_tok & typ[:] >> List
-    tup = tuple_tok & of_tok & tup_comp >> List
+    tup_comp = Delayed()
+    tup_comp += typ & Optional(cross_tok & tup_comp) > List
+    tup = tuple_tok & of_tok & tup_comp > List
+    dct_comp = typ & col_tok & typ > List
+    dct = dict_tok & of_tok & dct_comp > List
 
-    dct_comp = typ & col_tok & typ >> List
-    dct = dict_tok & of_tok & dct_comp >> List
-
-    fun = typ & arrow_tok & typ >> List
+    fun = typ & arrow_tok & typ > List
 
     typ += base_typ | lst | tup | dct | fun | parens_typ
 
     @staticmethod
     def parse(s):
-        return TypeSpecParser.typ.parse(s)
+        return sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
+
+class T:
+    @staticmethod
+    def p(s):
+        return TypeSpecParser.parse(s)
+    
 
