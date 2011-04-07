@@ -1,4 +1,16 @@
- ---------------------------------------------------------------------------
+Type Specifications
+===================
+This is the context-free grammar in BNF used to decsribe type specifications
+
+t0, t1, ..., tn ::= (t0) | int | float | bool | str | t0 -> t1
+                  | list of t 
+                  | tuple of t0 * t1 * ... * tn
+                  | dict of t0 : t1
+
+This will have to be adapted to include arbitrary objects...
+                  
+                  
+---------------------------------------------------------------------------
  EXPRESSION CHECKING FUNCTIONS ---------------------------------------------
  ---------------------------------------------------------------------------
    Valid expression types are:
@@ -56,8 +68,6 @@ has a Logger object from logger.py. In each module, this is set to None, but
 whatever calls/drives those modules needs to set those variables to a Logger
 object.
 
-
-
 Basic Architecture
 ==================
 -src/
@@ -85,7 +95,6 @@ apporpriate type definitions for every variable instantiated.
 
 Current Goal for Node Hierarchy
 ===============================
-
 Note: There seems to be considerable (and confusing) difference between th
 edocumentation on ASTs and the actual module, so the following specification
 will be taken loosely. For instance, in the AST documentation it mentions that
