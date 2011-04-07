@@ -10,26 +10,6 @@ from pyty_types import *
 parse = TypeSpecParser.parse
 
 class TypeSpecTests(unittest.TestCase):
-    def test_list_spec(self):
-        self.assertEqual(ListSpec('int'), List(['list', 'int']))
-
-    def test_tuple_spec(self):
-        self.assertEqual(TupleSpec(['int', 'float']),
-                         List(['tuple', 'int', 'float']))
-
-    def test_dict_spec(self):
-        self.assertEqual(DictSpec('int', 'float'),
-                         List(['dict', 'int', 'float']))
-
-    def test_func_spec(self):
-        self.assertEqual(FuncSpec(TupleSpec(['int', 'int']), 'float'),
-                         List(['func',
-                               List(['tuple', 'int', 'int']),
-                               'float']))
-        self.assertEqual(FuncSpec(TupleSpec([]), 'str'),
-                         List(['func', List([]), 'str']))
-                         
-    
     def test_base_types(self):
         self.assertEqual(parse('int'),   'int')
         self.assertEqual(parse('float'), 'float')
