@@ -2,9 +2,9 @@ Type Specifications
 ===================
 This is the context-free grammar in BNF used to decsribe type specifications
 
-t0, t1, ..., tn, tm ::= (t0) | int | float | bool | str 
-                      | [t] | (t0, t1, ..., tn) | {t0: t1}
-                      | (t0, ..., tn) -> tm
+t0, t1, ..., tn ::= (t0) | int | float | bool | str 
+                  | [t] | {t0: t1} | t0 -> t1
+                  | (t0,) | (t0, t1, ..., tn)
 
 This will have to be adapted to include arbitrary objects...
                   

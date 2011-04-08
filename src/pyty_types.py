@@ -45,23 +45,23 @@ class FuncSpec(List):
         return self.ret_t
 
 class TypeSpecParser:
-    int_tok = Token('int')
-    float_tok = Token('float')
-    bool_tok = Token('bool')
-    str_tok = Token('str')
+    int_tok = Token(r'int')
+    float_tok = Token(r'float')
+    bool_tok = Token(r'bool')
+    str_tok = Token(r'str')
 
-    list_start = Token('\[')
-    list_end = Token('\]')
+    list_start = Token(r'\[')
+    list_end = Token(r'\]')
 
-    tuple_start = Token('\(')
-    tuple_div = Token(',')
-    tuple_end = Token('\)')
+    tuple_start = Token(r'\(')
+    tuple_div = Token(r',')
+    tuple_end = Token(r'\)')
 
-    dict_start = Token('\{')
-    dict_div = Token(':')
-    dict_end = Token('\}')
+    dict_start = Token(r'\{')
+    dict_div = Token(r':')
+    dict_end = Token(r'\}')
 
-    fn_div = Token('\->')
+    fn_div = Token(r'\->')
 
     typ = Delayed()
 
@@ -81,7 +81,7 @@ class TypeSpecParser:
     
     @staticmethod
     def parse(s):
-        return sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
+        return sexpr_to_tree(TypeSpecParser.typ.parse(s))
 
 class T:
     @staticmethod

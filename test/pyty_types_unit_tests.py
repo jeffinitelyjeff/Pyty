@@ -29,9 +29,9 @@ class TypeSpecTests(unittest.TestCase):
                          ListSpec(ListSpec(ListSpec('str'))))
 
     def test_tuple(self):
-        self.assertEqual(parse('(int)'),
+        self.assertEqual(parse('(int,)'),
                          TupleSpec(['int']))
-        self.assertEqual(parse('(  int )'), parse('(int)'))
+        self.assertEqual(parse('(  int, )'), parse('(int,)'))
         self.assertEqual(parse('( bool,   str , float  , int )'),
                          parse('(bool,str,float,int)'))
         self.assertEqual(parse('(bool,str,float,int)'),
@@ -40,7 +40,7 @@ class TypeSpecTests(unittest.TestCase):
                          TupleSpec(['bool', 'float']))
         self.assertEqual(parse('(int, str, float)'),
                          TupleSpec(['int', 'str', 'float']))
-        self.assertEqual(parse('([int])'),
+        self.assertEqual(parse('([int],)'),
                          TupleSpec([ListSpec('int')]))
         self.assertEqual(parse('([bool], [str])'),
                          TupleSpec([ListSpec('bool'), ListSpec('str')]))
@@ -56,12 +56,12 @@ class TypeSpecTests(unittest.TestCase):
                                   TupleSpec(['int', ListSpec('str'), 'bool'])))
 
     def test_func(self):
-        self.assertEqual(parse('(int) -> float'),
+        self.assertEqual(parse('(int,) -> float'),
                          FuncSpec(TupleSpec(['int']), 'float'))
-        self.assertEqual(parse('( int )->float '), parse('(int) -> float'))
+        self.assertEqual(parse('( int, )->float '), parse('(int) -> float'))
         self.assertEqual(parse('() -> int'),
                          FuncSpec(TupleSpec([]), 'int'))
-        self.assertEqual(parse('([float]) -> int'),
+        self.assertEqual(parse('([float],) -> int'),
                          FuncSpec(TupleSpec([ListSpec('float')]), 'int'))
                          
 
