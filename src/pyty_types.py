@@ -1,58 +1,11 @@
 import re
 from lepl import *
 
-"""
-class ListSpec(List):
-    def __init__(self, t):
-        self.t = t
-        super(List, self).__init__([t])
-
-    def typ(self):
-        return self.t
-
-class TupleSpec(List):
-    def __init__(self, ts):
-        self.ts = ts
-        super(List, self).__init__(ts)
-
-    def typ(self, i):
-        return self.ts[i]
-
-    def typs(self):
-        return self.ts
-
-class DictSpec(List):
-    def __init__(self, key_t, val_t):
-        self.key_t = key_t
-        self.val_t = val_t
-        super(List, self).__init__([key_t, val_t])
-
-    def key_typ(self):
-        return self.key_t
-
-    def val_typ(self):
-        return self.val_t
-
-class FuncSpec(List):
-    def __init__(self, par_t, ret_t):
-        self.par_t = par_t
-        self.ret_t = ret_t
-        super(List, self).__init__([par_t, ret_t])
-
-    def par_typ(self):
-        return self.par_t
-
-    def ret_typ(self):
-        return self.ret_t
-
-"""
-
 def better_sexpr_to_tree(a):
     if type(a) == str:
         return a
     else:
         return sexpr_to_tree(a)
-    
 
 class Lst(Node): pass
 class Tup(List): pass
@@ -104,6 +57,3 @@ class TypeSpecParser:
     @staticmethod
     def parse(s):
         return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
-
-def p(s):
-    return TypeSpecParser.parse(s)

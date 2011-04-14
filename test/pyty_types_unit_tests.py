@@ -64,7 +64,6 @@ class TypeSpecTests(unittest.TestCase):
                          s(Fun('unit', 'int')))
         self.assertEqual(p('([float],) -> int'),
                          s(Fun(Tup([Lst('float')]), 'int')))
-                         
 
 if __name__ == '__main__':
     unittest.main()
