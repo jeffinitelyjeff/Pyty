@@ -10,8 +10,14 @@ class PytyType:
     wrapped into PytyTypes once they are accessed.
     """
     
-    def __init__(self, t):
-        self.t = t
+    def __init__(self, typ):
+        self.t = typ
+
+    def __repr__(self):
+        return reverse_parse(self.t)
+
+    def __eq__(self, other):
+        return self.__repr__() == other.__repr__()
 
     def is_bool(self):
         return self.t == "bool"
@@ -53,15 +59,37 @@ class PytyType:
         assert(self.is_function())
         return [PytyType(self.t.in_t()), PytyType(self.t.out_t())]
 
-int_t = PytyType('int')
-float_t = PytyType('float')
-bool_t = PytyType('bool')
-str_t = PytyType('str')
+    def is_subtype(self, other_t):
+        return self == other_t or (self.is_int() and other_t.is_float())
 
 
 
 
 
+def reverse_parse(type_ast):
+    if type(type_ast) == str:
+        return type_ast
+    elif type_ast.__class__.__name__ == "Lst":
+        recurse = reverse_parse(type_ast.elt_t())
+        return "[" + recurse + "]"
+    elif type_ast.__class__.__name__ == "Tup":
+        recurses = [reverse_parse(t) for t in type_ast.elt_ts()]
+        if len(type_ast.elt_ts) == 1:
+            return "(" + recurses[0] + ",)"
+        else:
+            return "(" + ", ".join([str(x) for x in recurses])
+    elif type_ast.__class__.__name__ == "Dct":
+        recurse0 = reverse_parse(type_ast.key_t())
+        recurse1 = reverse_parse(type_ast.val_t())
+        return "{" + recurse0 + " : " + recurse1 + "}"
+    elif type_ast.__class__.__name__ == "Fun":
+        recurse0 = reverse_parse(type_ast.in_t())
+        recurse1 = reverse_parse(type_ast.out_t())
+        return recurse0 + " -> " + recurse1
+    else:
+        # This should be a disjoint sum.
+        assert(False)
+    
 def better_sexpr_to_tree(a):
     if type(a) == str:
         return a
@@ -134,14 +162,24 @@ class TypeSpecParser:
 
     @staticmethod
     def parse(s):
-        parsed_type = TypeSpecParser.typ.parse(s)[0]
-        return PytyType(parsed_type)
+        try:
+            parsed_type = TypeSpecParser.typ.parse(s)[0]
+            return PytyType(parsed_type)
+        except (RuntimeLexerError, FullFirstMatchException):
+            raise TypeIncorrectlySpecifiedError()
+        
 
     @staticmethod
     def print_parse(s):
         try:
             return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
-        except RuntimeLexerError, FullFirstMatchException:
+        except (RuntimeLexerError, FullFirstMatchException):
             raise TypeIncorrectlySpecifiedError()
         
 
+# NOTE this is a little bit hacky; we're passing the parsed type because we know
+# what it should be.
+int_t = PytyType('int')
+float_t = PytyType('float')
+bool_t = PytyType('bool')
+str_t = PytyType('str')

@@ -117,7 +117,7 @@ def check_expr(expr, t, env):
     an expression of type C{t}. The requirements of typechecking depend on the
     kind of expression C{node} is, and so this function calls one of several
     functions which typecheck C{code} as the specific kind of expression. The
-    function to call is generated from the class name of C{node}."""
+    function to call is chosen from the class name of C{node}."""
 
     n = get_expr_func_name(expr.__class__.__name__)
 
@@ -269,8 +269,8 @@ def check_Num_expr(num, t, env):
     """Checks whether the AST expression node given by C{num} typechecks as a
     num expression (ie, a numeric literal) of type C{t}."""
 
-    if not isinstance(num, ast.Num):
-        return False
+
+    assert(isinstance(num, ast.Num))
     
     n = num.n
 
@@ -286,14 +286,10 @@ def check_Name_expr(name, t, env):
     name expression. Name expressions are used for variables and for boolean
     literals."""
 
-    if not isinstance(name, ast.Name):
-        t_debug("Not a Name expression")
-        return False
+    assert(isinstance(name, ast.Name))
 
-    if name.ctx.__class__.__name__ != 'Load':
-        t_debug("Name node read expecting Load context when the context was "
-                + name.ctx.__class__.__name__)
-        raise ASTTraversalError()
+    # We should only reach here if we're loading the variable, not storing it.
+    assert(isinstance(name.ctx, ast.Load))
     
     id = name.id
 
@@ -318,8 +314,7 @@ def check_BinOp_expr(binop, t, env):
     binary operation expression. This will only typecheck if C{t} is an int
     or a float."""
 
-    if not isinstance(binop, ast.BinOp):
-        return False
+    assert(isinstance(binop, ast.BinOp))
 
     l = binop.left
     r = binop.right
@@ -336,8 +331,7 @@ def check_Compare_expr(compare, t, env):
     NOTE: Right now, this only handles binary comparisons. That is, it only
     handles expressions of the form x>y or x==y, not x==y==z or x>y>z."""
 
-    if not isinstance(compare, ast.Compare):
-        return False
+    assert(isinstance(compare, ast.Compare))
 
     # the Compare AST node anticipates expressions of the form x > y > z, in
     # which case x would be left, y would be comparators[0], and z would be
