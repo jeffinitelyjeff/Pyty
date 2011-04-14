@@ -11,10 +11,29 @@ def better_sexpr_to_tree(a):
 
 class PytyType: pass
 
-class Lst(Node, PytyType): pass
-class Tup(List, PytyType): pass
-class Dct(Node, PytyType): pass
-class Fun(Node, PytyType): pass
+class Lst(Node, PytyType):
+    def elt_t(self):
+        return _Node__children[0]
+    
+class Tup(List, PytyType):
+    def elt_ts(self):
+        return t for t in self
+
+class Dct(Node, PytyType):
+    def key_t(self):
+        return _Node__children[0]
+
+    def val_t(self):
+        return _Node__children[1]
+    
+class Fun(Node, PytyType):
+    def in_t(self):
+        return _Node__children[0]
+
+    def out_t(self):
+        return _Node__children[0]
+
+    
 
 def make_unit(toks):
     if toks[0] == "(" and toks[1] == ")":

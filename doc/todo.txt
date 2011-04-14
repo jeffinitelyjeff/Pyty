@@ -30,4 +30,4 @@ Other things to do:
 - look into ast.get_docstring --> possibly could be modified to also give
   variable docstring?
 
-- allow tuples of tuples
+- enable setting of list values in an assignment

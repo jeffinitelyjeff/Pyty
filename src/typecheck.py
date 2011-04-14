@@ -349,3 +349,27 @@ def check_Compare_expr(compare, t, env):
     return t.is_bool() and check_expr(l, float_t, env) \
            and check_expr(r, float_t, env)
 
+def check_List_expr(list, t, env):
+    """Checks whether the AST expression node given by C{list} typechecks as a
+    list expression as specified by L{parse_type.PytyType} C{t}.
+    """
+
+    assert(isinstance(list, ast.List))
+
+    if t.__class__.__name__ == "Lst":
+        element_t = t.elt_t
+        for x in list.elts:
+            if !check_expr(x, element_t, env):
+                # FIXME: specify that at least one element in the list did not
+                # conform to the type of the list.
+                return False
+        return True
+
+    else:
+        # FIXME: specify that a something other than a list was typechecked as
+        # a list.
+        return False
+
+        
+    
+        
