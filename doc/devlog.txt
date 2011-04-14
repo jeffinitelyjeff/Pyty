@@ -1,3 +1,11 @@
+4-14-2011
+=========
+- Finished type specification pasrer generator using LEPL. It was a pain to get
+  working corcetly, but it was really satisfying to get working exactly as I
+  wanted, and the code for the parser is now really succint and clear (as
+  opposed to coding up the logic of a parser).
+  
+
 2-23-2011
 =========
 - Is it okay practice to use assert statements?

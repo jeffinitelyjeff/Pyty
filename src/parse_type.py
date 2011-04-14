@@ -1,16 +1,20 @@
 import re
 from lepl import *
 
+from errors import TypeIncorrectlySpecifiedError
+
 def better_sexpr_to_tree(a):
     if type(a) == str:
         return a
     else:
         return sexpr_to_tree(a)
 
-class Lst(Node): pass
-class Tup(List): pass
-class Dct(Node): pass
-class Fun(Node): pass
+class PytyType: pass
+
+class Lst(Node, PytyType): pass
+class Tup(List, PytyType): pass
+class Dct(Node, PytyType): pass
+class Fun(Node, PytyType): pass
 
 def make_unit(toks):
     if toks[0] == "(" and toks[1] == ")":
@@ -53,7 +57,23 @@ class TypeSpecParser:
     parens = ~tuple_start & typ & ~tuple_end
     tight_typ += base_typ | lst | tup | dct | parens
     typ += fun | tight_typ
-    
+
     @staticmethod
     def parse(s):
-        return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
+        return TypeSpecParser.typ.parse(s)[0]
+
+    @staticmethod
+    def print_parse(s):
+        try:
+            return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
+        except RuntimeLexerError, FullFirstMatchException:
+            raise TypeIncorrectlySpecifiedError()
+
+
+
+int_t = TypeSpecParser.parse('int')
+float_t = TypeSpecParser.parse('float')
+bool_t = TypeSpecParser.parse('bool')
+str_t = TypeSpecParser.parse('str')
+        
+

@@ -10,7 +10,7 @@ sys.path.insert(0, '../src')
 
 from ast_extensions import *
 from typecheck import *
-from parse import *
+from parse_file import *
 from errors import *
 import errors
 from settings import *

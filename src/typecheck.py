@@ -3,7 +3,7 @@ import logging
 
 from errors import TypeUnspecifiedError, \
                    ASTTraversalError
-from pyty_types import *
+from parse_type import *
 from settings import *
 from logger import Logger
 from ast_extensions import *
@@ -221,7 +221,7 @@ def check_If_stmt(stmt):
     body = stmt.body
     orelse = stmt.orelse
 
-    return check_expr(test, PytyTypes.bool_t, stmt.env) and \
+    return check_expr(test, bool_t, stmt.env) and \
            check_stmt_list(body) and check_stmt_list(orelse)
 
 def check_While_stmt(stmt):
@@ -237,7 +237,7 @@ def check_While_stmt(stmt):
     body = stmt.body
     orelse = stmt.orelse
 
-    return check_expr(test, PytyTypes.bool_t, stmt.env) and \
+    return check_expr(test, bool_t, stmt.env) and \
            check_stmt_list(body) and check_stmt_list(orelse)
 
 # ---------------------------------------------------------------------------
@@ -346,6 +346,6 @@ def check_Compare_expr(compare, t, env):
     r = compare.comparators[0]
 
     # will typecheck if t is a boolean and both sides typecheck as floats.
-    return t.is_bool() and check_expr(l, PytyTypes.float_t, env) \
-           and check_expr(r, PytyTypes.float_t, env)
-        
+    return t.is_bool() and check_expr(l, float_t, env) \
+           and check_expr(r, float_t, env)
+

@@ -5,9 +5,9 @@ from lepl import *
 # Include src in the Python search path
 sys.path.insert(0, '../src')
 
-from pyty_types import *
+from parse_type import *
 
-p = TypeSpecParser.parse
+p = TypeSpecParser.print_parse
 s = better_sexpr_to_tree
 
 class TypeSpecTests(unittest.TestCase):

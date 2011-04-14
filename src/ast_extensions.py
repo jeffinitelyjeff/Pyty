@@ -2,7 +2,7 @@ import ast
 import logging
 
 from util import are_disjoint, disjoint_sums_of
-from pyty_types import PytyType
+from parse_type import PytyType, TypeSpecParser
 
 def dump_self(self):
     return ast.dump(self)
@@ -181,8 +181,8 @@ class TypeDec(ast.stmt):
         self.lineno = line
         self.col_offset = col
 
-        if isinstance(t, str):
-            self.t = PytyType(t)
+        if type(t) == str:
+            self.t = TypeSpecParser.parse(t)
         else:
             self.t = t
 
