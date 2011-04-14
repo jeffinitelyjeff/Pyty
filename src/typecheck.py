@@ -269,7 +269,6 @@ def check_Num_expr(num, t, env):
     """Checks whether the AST expression node given by C{num} typechecks as a
     num expression (ie, a numeric literal) of type C{t}."""
 
-
     assert(isinstance(num, ast.Num))
     
     n = num.n

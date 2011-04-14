@@ -1,3 +1,4 @@
+import re
 import os
 import sys
 import logging
@@ -87,7 +88,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
 
         # make sure a valid test result was specified
         if not expected_result in ('pass', 'fail') \
-            and not issubclass(eval(expected_result), PytyError):
+            and not issubclass(eval(expected_result), Exception):
             raise Exception("Test spec (for " + check_type +
                             ") not of valid format")
 
@@ -112,7 +113,8 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
         else:
 
             for expr in split_things:
-                if expr != '':
+                # make a test if the expression isn't blank and isn't a comment.
+                if expr != '' and not re.match(r'^#[^\n]*$', expr):
                     count += 1
 
                     actual_expr = expr.split(':')[0].strip()

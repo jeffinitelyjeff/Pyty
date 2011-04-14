@@ -51,13 +51,13 @@ class PytyTests(unittest.TestCase):
         elif expected == "fail":
             self.assertEqual(False, call_function(f, a, t, {}),
                              "Shouldn't typecheck as (%s) but does. (%s)." % (t,s))
-        elif issubclass(eval(expected), PytyError):
+        elif issubclass(eval(expected), Exception):
             # if the expected value is an error, then make sure it
             # raises the right error.
             try:
                 t = TypeSpecParser.parse(type)
                 call_function(f, a, t, {})
-            except getattr(errors, expected):
+            except eval(expected):
                 pass
             else:
                 self.fail("Should have raised error %s, but does not. (%s)."
@@ -121,21 +121,32 @@ class PytyTests(unittest.TestCase):
             # the third parameter is a message displayed if assertion fails.
             self.assertEqual(False, self._parse_and_check_mod(filename),
                              "Shouldn't typecheck, but does:\n%s" % text)
-        elif issubclass(eval(expected), PytyError):
-            try:
-                result = self._parse_and_check_mod(filename)
-            except getattr(errors, expected):
-                pass
-            else:
-                self.fail("Should raise error %s, but instead returned %s:\n%s"
-                          % (expected, result, text.strip('\n')))
         else:
             # in generate_tests.py, we should have already ensured that the
-            # expecetd string is pass, fail, or a valid error name, so this case
-            # should never be reached, but this is here just in case.
-            raise Exception("Expected test result not specified with a " +
-                            "valid value")
-    
+            # expected string is "pass", "fail", or a valid error name, so we
+            # should be able to parse the error name at this point, and if not
+            # then we have other issues.
+            try:
+                err = eval(expected)
+            except NameError:
+                # at this point, expected better be a valid error name.
+                assert(False)
+
+            # at this point, the error better actually be a subclass of
+            # Exception, since generate.py tests will already throw errors if
+            # improper errors are specified.
+            assert(issubclass(err, Exception))
+
+            try:
+                result = self._parse_and_check_mod(filename)
+                self.fail("Should raise error %s, but instead returned %s:\n%s"
+                          % (expected, result, text.strip('\n')))
+            except err:
+                pass
+            except Exception as e:
+                self.fail(("Should have raised error %s, but instead raised " +
+                          "error %s:\n%s") % (expected, e.__class__.__name__,
+                                              text.strip('\n')))
 
     ##### Generated unit tests will go below here
     ##### Generated unit tests will go above here
