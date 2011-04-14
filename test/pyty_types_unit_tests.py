@@ -7,62 +7,63 @@ sys.path.insert(0, '../src')
 
 from pyty_types import *
 
-parse = TypeSpecParser.parse
+p = TypeSpecParser.parse
+s = better_sexpr_to_tree
 
 class TypeSpecTests(unittest.TestCase):
     def test_base_types(self):
-        self.assertEqual(parse('int'),   'int')
-        self.assertEqual(parse('float'), 'float')
-        self.assertEqual(parse('bool'),  'bool')
-        self.assertEqual(parse('str'),   'str')
+        self.assertEqual(p('int'),   'int')
+        self.assertEqual(p('float'), 'float')
+        self.assertEqual(p('bool'),  'bool')
+        self.assertEqual(p('str'),   'str')
 
     def test_list(self):
-        self.assertEqual(parse('[int]'),
-                         ListSpec('int'))
-        self.assertEqual(parse('[ str ]'), parse('[str]'))
-        self.assertEqual(parse('[    float]'), parse('[float     ]'))
-        self.assertEqual(parse('[bool]'),
-                         ListSpec('bool'))
-        self.assertEqual(parse('[[float]]'),
-                         ListSpec(ListSpec('float')))
-        self.assertEqual(parse('[[[str]]]'),
-                         ListSpec(ListSpec(ListSpec('str'))))
+        self.assertEqual(p('[int]'),
+                         s(Lst('int')))
+        self.assertEqual(p('[ str ]'), p('[str]'))
+        self.assertEqual(p('[    float]'), p('[float     ]'))
+        self.assertEqual(p('[bool]'),
+                         s(Lst('bool')))
+        self.assertEqual(p('[[float]]'),
+                         s(Lst(Lst('float'))))
+        self.assertEqual(p('[[[str]]]'),
+                         s(Lst(Lst(Lst('str')))))
 
     def test_tuple(self):
-        self.assertEqual(parse('(int,)'),
-                         TupleSpec(['int']))
-        self.assertEqual(parse('(  int, )'), parse('(int,)'))
-        self.assertEqual(parse('( bool,   str , float  , int )'),
-                         parse('(bool,str,float,int)'))
-        self.assertEqual(parse('(bool,str,float,int)'),
-                         parse('(bool, str, float, int)'))
-        self.assertEqual(parse('(bool, float)'),
-                         TupleSpec(['bool', 'float']))
-        self.assertEqual(parse('(int, str, float)'),
-                         TupleSpec(['int', 'str', 'float']))
-        self.assertEqual(parse('([int],)'),
-                         TupleSpec([ListSpec('int')]))
-        self.assertEqual(parse('([bool], [str])'),
-                         TupleSpec([ListSpec('bool'), ListSpec('str')]))
+        self.assertEqual(p('(int,)'),
+                         s(Tup(['int'])))
+        self.assertEqual(p('(  int, )'), p('(int,)'))
+        self.assertEqual(p('( bool,   str , float  , int )'),
+                         p('(bool,str,float,int)'))
+        self.assertEqual(p('(bool,str,float,int)'),
+                         p('(bool, str, float, int)'))
+        self.assertEqual(p('(bool, float)'),
+                         s(Tup(['bool', 'float'])))
+        self.assertEqual(p('(int, str, float)'),
+                         s(Tup(['int', 'str', 'float'])))
+        self.assertEqual(p('([int],)'),
+                         s(Tup([Lst('int')])))
+        self.assertEqual(p('([bool], [str])'),
+                         s(Tup([Lst('bool'), Lst('str')])))
 
     def test_dict(self):
-        self.assertEqual(parse('{int: float}'), DictSpec('int', 'float'))
-        self.assertEqual(parse('{str: int}'), parse('{ str : int }'))
-        self.assertEqual(parse('{str: int}'), parse('{str:int}'))
-        self.assertEqual(parse('{str: [float]}'),
-                         DictSpec('str', ListSpec('float')))
-        self.assertEqual(parse('{float: (int, [str], bool)}'),
-                         DictSpec('float',
-                                  TupleSpec(['int', ListSpec('str'), 'bool'])))
+        self.assertEqual(p('{int: float}'), s(Dct('int', 'float')))
+        self.assertEqual(p('{str: int}'), p('{ str : int }'))
+        self.assertEqual(p('{str: int}'), p('{str:int}'))
+        self.assertEqual(p('{str: [float]}'),
+                         s(Dct('str', Lst('float'))))
+        self.assertEqual(p('{float: (int, [str], bool)}'),
+                         s(Dct('float',
+                                  Tup(['int', Lst('str'), 'bool']))))
 
     def test_func(self):
-        self.assertEqual(parse('(int,) -> float'),
-                         FuncSpec(TupleSpec(['int']), 'float'))
-        self.assertEqual(parse('( int, )->float '), parse('(int) -> float'))
-        self.assertEqual(parse('() -> int'),
-                         FuncSpec(TupleSpec([]), 'int'))
-        self.assertEqual(parse('([float],) -> int'),
-                         FuncSpec(TupleSpec([ListSpec('float')]), 'int'))
+        self.assertEqual(p('(int,) -> float'),
+                         s(Fun(Tup(['int']), 'float')))
+        self.assertEqual(p('int ->float '), p('(int) -> float'))
+        self.assertEqual(p('() -> int'),
+                         s(Fun('unit', 'int')))
+        self.assertEqual(p('([float],) -> int'),
+                         s(Fun(Tup([Lst('float')]), 'int')))
                          
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 import re
 from lepl import *
 
+"""
 class ListSpec(List):
     def __init__(self, t):
         self.t = t
@@ -44,6 +45,24 @@ class FuncSpec(List):
     def ret_typ(self):
         return self.ret_t
 
+"""
+
+def better_sexpr_to_tree(a):
+    if type(a) == str:
+        return a
+    else:
+        return sexpr_to_tree(a)
+    
+
+class Lst(Node): pass
+class Tup(List): pass
+class Dct(Node): pass
+class Fun(Node): pass
+
+def make_unit(toks):
+    if toks[0] == "(" and toks[1] == ")":
+        return "unit" 
+
 class TypeSpecParser:
     int_tok = Token(r'int')
     float_tok = Token(r'float')
@@ -63,27 +82,28 @@ class TypeSpecParser:
 
     fn_div = Token(r'\->')
 
+    tight_typ = Delayed()
     typ = Delayed()
 
     base_typ = int_tok | float_tok | bool_tok | str_tok
 
-    lst = ~list_start & typ & ~list_end > ListSpec
+    lst = ~list_start & typ & ~list_end > Lst
 
-    tup_comp = Delayed()
-    tup_comp += tuple_div & typ & Optional(tup_comp)
-    tup = tuple_start & typ & tup_comp & tuple_end > TupleSpec
+    tup_component = ~tuple_div & typ
+    tup = ~tuple_start & typ & (~tuple_div | tup_component[1:]) & ~tuple_end > Tup
 
-    dct = dict_start & typ & dict_div & dict_end > DictSpec
+    dct = ~dict_start & typ & ~dict_div & typ & ~dict_end > Dct
 
-    fun = tup & fn_div & typ > FuncSpec
+    unit = tuple_start & tuple_end > make_unit
+    fun = (unit | tight_typ) & ~fn_div & typ > Fun
 
-    typ += base_typ | lst | tup | dct | fun
+    parens = ~tuple_start & typ & ~tuple_end
+    tight_typ += base_typ | lst | tup | dct | parens
+    typ += fun | tight_typ
     
     @staticmethod
     def parse(s):
-        return sexpr_to_tree(TypeSpecParser.typ.parse(s))
+        return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
 
-class T:
-    @staticmethod
-    def p(s):
-        return TypeSpecParser.parse(s)
+def p(s):
+    return TypeSpecParser.parse(s)
