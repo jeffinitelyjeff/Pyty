@@ -356,10 +356,10 @@ def check_List_expr(list, t, env):
 
     assert(isinstance(list, ast.List))
 
-    if t.__class__.__name__ == "Lst":
-        element_t = t.elt_t
+    if t.is_list():
+        element_t = t.list_t()
         for x in list.elts:
-            if !check_expr(x, element_t, env):
+            if not check_expr(x, element_t, env):
                 # FIXME: specify that at least one element in the list did not
                 # conform to the type of the list.
                 return False

@@ -19,7 +19,7 @@ from logger import Logger, announce_file
 # these should be redundant, but they're necessary to refer to the specific log
 # objects.
 import ast_extensions
-import parse
+import parse_file
 import typecheck
 
 """
@@ -30,7 +30,7 @@ code file in the test_files directory).
 
 announce_file("unit_tests_core.py")
 
-log = typecheck.log = parse.log = Logger()
+log = typecheck.log = parse_file.log = Logger()
 
 class PytyTests(unittest.TestCase):
 

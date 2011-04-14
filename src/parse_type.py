@@ -3,37 +3,92 @@ from lepl import *
 
 from errors import TypeIncorrectlySpecifiedError
 
+
+class PytyType:
+    """PytyType is an outside wrapper for the Type AST returned by the parser
+    generator. Methods are provided to access element types, which are only
+    wrapped into PytyTypes once they are accessed.
+    """
+    
+    def __init__(self, t):
+        self.t = t
+
+    def is_bool(self):
+        return self.t == "bool"
+
+    def is_int(self):
+        return self.t == "int"
+
+    def is_float(self):
+        return self.t == "float"
+
+    def is_str(self):
+        return self.t == "str"
+
+    def is_list(self):
+        return self.t.__class__.__name__ == "Lst"
+
+    def is_tuple(self):
+        return self.t.__class__.__name__ == "Tup"
+
+    def is_dict(self):
+        return self.t.__class__.__name__ == "Dct"
+
+    def is_function(self):
+        return self.t.__class__.__name__ == "Fun"
+
+    def list_t(self):
+        assert(self.is_list())
+        return PytyType(self.t.elt_t())
+
+    def tuple_ts(self):
+        assert(self.is_tuple())
+        return [PytyType(x) for x in self.t.elt_ts()]
+
+    def dict_ts(self):
+        assert(self.is_dict())
+        return [PytyType(self.t.key_t()), PytyType(self.t.val_t())]
+
+    def function_ts(self):
+        assert(self.is_function())
+        return [PytyType(self.t.in_t()), PytyType(self.t.out_t())]
+
+int_t = PytyType('int')
+float_t = PytyType('float')
+bool_t = PytyType('bool')
+str_t = PytyType('str')
+
+
+
+
+
 def better_sexpr_to_tree(a):
     if type(a) == str:
         return a
     else:
         return sexpr_to_tree(a)
 
-class PytyType: pass
-
-class Lst(Node, PytyType):
+class Lst(Node):
     def elt_t(self):
-        return _Node__children[0]
+        return self._Node__children[0]
     
-class Tup(List, PytyType):
+class Tup(List):
     def elt_ts(self):
-        return t for t in self
+        return [t for t in self]
 
-class Dct(Node, PytyType):
+class Dct(Node):
     def key_t(self):
-        return _Node__children[0]
+        return self._Node__children[0]
 
     def val_t(self):
-        return _Node__children[1]
+        return self._Node__children[1]
     
-class Fun(Node, PytyType):
+class Fun(Node):
     def in_t(self):
-        return _Node__children[0]
+        return self._Node__children[0]
 
     def out_t(self):
-        return _Node__children[0]
-
-    
+        return self._Node__children[0]
 
 def make_unit(toks):
     if toks[0] == "(" and toks[1] == ")":
@@ -79,7 +134,8 @@ class TypeSpecParser:
 
     @staticmethod
     def parse(s):
-        return TypeSpecParser.typ.parse(s)[0]
+        parsed_type = TypeSpecParser.typ.parse(s)[0]
+        return PytyType(parsed_type)
 
     @staticmethod
     def print_parse(s):
@@ -87,12 +143,5 @@ class TypeSpecParser:
             return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
         except RuntimeLexerError, FullFirstMatchException:
             raise TypeIncorrectlySpecifiedError()
-
-
-
-int_t = TypeSpecParser.parse('int')
-float_t = TypeSpecParser.parse('float')
-bool_t = TypeSpecParser.parse('bool')
-str_t = TypeSpecParser.parse('str')
         
 
