@@ -74,7 +74,7 @@ def reverse_parse(type_ast):
         return "[" + recurse + "]"
     elif type_ast.__class__.__name__ == "Tup":
         recurses = [reverse_parse(t) for t in type_ast.elt_ts()]
-        if len(type_ast.elt_ts) == 1:
+        if len(type_ast.elt_ts()) == 1:
             return "(" + recurses[0] + ",)"
         else:
             return "(" + ", ".join([str(x) for x in recurses])

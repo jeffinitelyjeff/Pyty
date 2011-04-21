@@ -250,6 +250,8 @@ def check_While_stmt(stmt):
 #    - BinOp(expr left, operator op, expr right)
 #    - Compare(expr left, cmpop* ops, expr* comparators)
 #   = To Do -----------------------------------------------------------------
+#    - Subscript(expr value, slice slice, expr_context ctx)
+#    - Attribute(expr value, identifier attr, expr_context ctx)
 #    - BoolOp(boolop op, expr* values)
 #    - UnaryOp(unaryop op, expr operand)
 #    - Lambda(arguments args, expr body)
@@ -359,10 +361,30 @@ def check_List_expr(list, t, env):
         return True
 
     else:
-        # FIXME: specify that a something other than a list was typechecked as
-        # a list.
+        # FIXME: specify that a list was typechecked as something other than a
+        # list
         return False
 
+def check_Tuple_expr(tup, t, env):
+    """Checks whether the AST expression node given by C{tup} typechecks as a
+    tuple expression as specified by L{parse_type.PytyType} C{t}.
+    """
+
+    assert(isinstance(tup, ast.Tuple))
+
+    if t.is_tuple():
+        element_ts = t.tuple_ts()
+        for i in range(len(element_ts)):
+            if not check_expr(tup.elts[i], element_ts[i], env):
+                # FIXME specify that at least one element in the tuple did not
+                # conform to the corresponding type in that position.
+                return False
+        return True
+            
+    else:
+        # FIXME specify that a tuple was typechecked as something other than a
+        # tuple.
+        return False
         
     
         

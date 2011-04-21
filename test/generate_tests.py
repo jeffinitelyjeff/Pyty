@@ -73,7 +73,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
             getattr(typecheck, 'check_'+expr_kind+'_expr')
         except AttributeError:
             raise Exception("Expression test spec states that checking " +
-                            "against expressions of type " + check_type +
+                            "against expressions of type " + expr_kind +
                             ", but that functionality is not included " +
                             "in PyTy (yet).")
 
@@ -89,7 +89,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
         # make sure a valid test result was specified
         if not expected_result in ('pass', 'fail') \
             and not issubclass(eval(expected_result), Exception):
-            raise Exception("Test spec (for " + check_type +
+            raise Exception("Test spec (for " + expr_kind +
                             ") not of valid format")
 
         split_things = things_to_test.split(test_delim)
