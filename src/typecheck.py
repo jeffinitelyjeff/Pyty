@@ -386,5 +386,55 @@ def check_Tuple_expr(tup, t, env):
         # tuple.
         return False
         
-    
+def check_Subscript_expr(subs, t, env):
+    """Checks whether the AST expression node given by C{subs} typechecks as a
+    subscript expression of L{parse_type.PytyType} C{t}. If it is the subscript
+    of a list, then the list must have the type expecetd by C{t}; if it is the
+    subscript of a tuple, then the index must be an integer and the tuple must
+    have the correct type in the specified index.
+
+    FIXME currently only handles indexes, not general slices.
+    """
         
+    assert(isinstance(subs, ast.Subscript))
+
+    collection = subs.value
+    n = subs.slice.value
+
+    # if the collection is a list, then make sure the list typechecks as a list
+    # of type t.
+    if check_expr(collection, PytyType('[_]'), env):
+        list_t = PytyType("[" + str(t) + "]")
+        return check_expr(collection, list_t, env)
+
+
+    # FIXME from here on we assume the collection is a tuple, which probably
+    # isn't a safe assumption.
+
+    idx = n.n
+    if n.__class__ is not ast.Num:
+        # FIXME specify that something other than a number literal was specified
+        # for a tuple subscript.
+        return False
+    elif type(idx) is not int:
+        # FIXME specify that a non-integer number literal was specified for a
+        # tuple subscript.
+        return False
+
+    gen_tuple_t = '(' + ''.join(['gen,' for i in collection.elts]) + ')'
+
+    
+    if check_expr(collection, PytyType(gen_tuple_t), env):
+
+        specific_tuple_t = '('
+        for i in range(len(collection.elts)):
+            if i == idx:
+                specific_tuple_t += str(t)
+            else:
+                specific_tuple_t += 'gen,'
+        specific_tuple_t += ')'
+
+        return check_expr(collection, specific_tuple_t, env)
+
+
+

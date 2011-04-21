@@ -10,9 +10,12 @@ class PytyType:
     wrapped into PytyTypes once they are accessed.
     """
     
-    def __init__(self, typ):
-        self.t = typ
-
+    def __init__(self, typ = None):
+        if typ is not None:
+            self.t = typ
+        else:
+            self.t = "PytyType"
+    
     def __repr__(self):
         return reverse_parse(self.t)
 
@@ -31,17 +34,20 @@ class PytyType:
     def is_str(self):
         return self.t == "str"
 
+    def is_gen_type(self):
+        return self.t == "_"
+
     def is_list(self):
-        return self.t.__class__.__name__ == "Lst"
+        return self.t.__class__ == Lst
 
     def is_tuple(self):
-        return self.t.__class__.__name__ == "Tup"
+        return self.t.__class__ == Tup
 
     def is_dict(self):
-        return self.t.__class__.__name__ == "Dct"
+        return self.t.__class__ == Dct
 
     def is_function(self):
-        return self.t.__class__.__name__ == "Fun"
+        return self.t.__class__ == Fun
 
     def list_t(self):
         assert(self.is_list())
@@ -60,11 +66,9 @@ class PytyType:
         return [PytyType(self.t.in_t()), PytyType(self.t.out_t())]
 
     def is_subtype(self, other_t):
-        return self == other_t or (self.is_int() and other_t.is_float())
-
-
-
-
+        return other_t.is_gen_type() or \
+               self == other_t or \
+               (self.is_int() and other_t.is_float())
 
 def reverse_parse(type_ast):
     if type(type_ast) == str:
@@ -127,6 +131,7 @@ class TypeSpecParser:
     float_tok = Token(r'float')
     bool_tok = Token(r'bool')
     str_tok = Token(r'str')
+    gen_tok = Token(r'_')
 
     list_start = Token(r'\[')
     list_end = Token(r'\]')
@@ -144,7 +149,7 @@ class TypeSpecParser:
     tight_typ = Delayed()
     typ = Delayed()
 
-    base_typ = int_tok | float_tok | bool_tok | str_tok
+    base_typ = int_tok | float_tok | bool_tok | str_tok | gen_tok
 
     lst = ~list_start & typ & ~list_end > Lst
 
@@ -183,3 +188,4 @@ int_t = PytyType('int')
 float_t = PytyType('float')
 bool_t = PytyType('bool')
 str_t = PytyType('str')
+gen_t = PytyType('_')

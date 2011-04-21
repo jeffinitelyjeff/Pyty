@@ -1,3 +1,19 @@
+4-21-2011
+=========
+- Working on subscripts (ie, l = [1,2,3]; l[0]). Lists will be fine, but for
+  tuples I need to know what index it's referring to, so tuple subscripts will
+  only be able to accept number literals, which is a very annoying restriction
+  on the language, but I don't see any way around it without entering halting
+  problem land.
+- I think allowing both Load and Store contexts in the check\_Subscript\_expr
+  method should make subscripts generalizable to normal situations and
+  assignment.
+- Need to add some semblance of generic types in order to verify if a collection
+  passed to check\_Subscript_\expr is a list or a tuple; not sure how to handle
+  that.
++ Need to add ability to read tuples like (1,2,) to parser (right now it only
+  likes commas on the end if it's a single-element tuple).
+
 4-14-2011
 =========
 - Finished type specification pasrer generator using LEPL. It was a pain to get
