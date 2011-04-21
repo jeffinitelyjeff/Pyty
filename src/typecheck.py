@@ -249,6 +249,8 @@ def check_While_stmt(stmt):
 #    - Name(identifier id, expr_context ctx)
 #    - BinOp(expr left, operator op, expr right)
 #    - Compare(expr left, cmpop* ops, expr* comparators)
+#    - List(expr* elts, expr_context ctx)
+#    - Tuple(expr* elts, expr_context ctx)
 #   = To Do -----------------------------------------------------------------
 #    - Subscript(expr value, slice slice, expr_context ctx)
 #    - Attribute(expr value, identifier attr, expr_context ctx)
@@ -258,8 +260,6 @@ def check_While_stmt(stmt):
 #    - IfExp(expr test, expr body, expr orelse)
 #    - Dict(expr* keys, expr* values)
 #    - Set(expr* elts)
-#    - List(expr* elts, expr_context ctx)
-#    - Tuple(expr* elts, expr_context ctx)
 #    - Call(expr func, expr* args, keyword* keywords, expr? starargs,
 #       expr? kwargs)
 #    - Str(string s)
