@@ -1,3 +1,17 @@
+4-27-2011
+=========
+- Converted to git, and kept log history (though not sure if it remembers the
+  branches correctly, but I guess that doesn't even really matter). Here are the
+  steps that were necessary to convert, which required installing the
+  bzr-fastimport package (adapted from the top comment on
+  http://fthieme.net/en/drupal6/node/77):
+ 
+  1. git init project-git; cd project-git
+  2. bzr fast-export.py --export-marks=.git/bzr.mark /path/to/project-bzr | git
+  fast-import --import-marks=.git/git.mark --export-marks=.git/git.mark
+
+  
+
 4-21-2011
 =========
 - Working on subscripts (ie, l = [1,2,3]; l[0]). Lists will be fine, but for
