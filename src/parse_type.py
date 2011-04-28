@@ -22,6 +22,47 @@ class PytyType:
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 
+    @staticmethod
+    def list_of(t):
+        """Creates a PytyType object which represents a list of elements which
+        have type C{t}.
+
+        @type t: L{PytyType}
+        """
+
+        # t is a PytyType object, but in order to pass it as a child of a Lst
+        # node, we need to get the actual type AST, not the PytyType wrapper.
+        p = PytyType()
+        p.t = Lst(t.t)
+
+    @staticmethod
+    def tuple_of(ts):
+        """Creates a PytyType object which represents a list of elements which
+        have types C{ts}.
+
+        @type ts: [L{PytyType}]
+        """
+
+        # ts are PytyType objects, but in order to pass them as members of a Tup
+        # List, we need to get the actual type ASTs of each.
+        p = PytyType()
+        p.t = Tup([t.t for t in ts])
+        
+    @staticmethod
+    def dict_of(t0, t1):
+        """Creates a PytyType object which represents a dictionary mapping
+        elements of type C{t0} to elements of type C{t1}.
+
+        @type t0: L{PytyType}
+        @type t1: L{PytyType}
+        """
+
+        # t0 and t1 are PytyType objects, but in order to pass them as children
+        # of a Dct node, we need to get the actual type ASTs of each.
+        p = PytyType()
+        p.t = Dct(t0.t, t1.t)
+    
+
     def is_bool(self):
         return self.t == "bool"
 

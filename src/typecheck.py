@@ -402,10 +402,23 @@ def check_Subscript_expr(subs, t, env):
 
     FIXME currently only handles indexes, not general slices.
     """
-        
-    assert(isinstance(subs, ast.Subscript))
 
-    collection = subs.value
+    assert(subs.__class__ == ast.Subscript)
+
+    col = subs.value
+
+    # If the collection is a list, then make sure the list typechecks as a list
+    # of type t. Note that we don't need to worry about whether the subscription
+    # is an index or a slice when it comes to checking a list.
+    if check_expr(collection, PytyType('[_]'), env):
+        return check_expr(collection, PytyType.list_of(t), env)
+
+    """# If the subscript is just referring to a single element.
+    if subs.slice.__class__ == ast.Index:
+        n = subs.slice.value
+
+        # if the collection is a list, then make sure the """
+    
     n = subs.slice.value
 
     # if the collection is a list, then make sure the list typechecks as a list
