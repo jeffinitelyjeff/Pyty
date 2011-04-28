@@ -12,9 +12,9 @@ class PytyType:
     
     def __init__(self, typ = None):
         if typ is not None:
-            self.t = typ
+            self.t = TypeSpecParser.parse(typ)
         else:
-            self.t = "PytyType"
+            self.t = TypeSpecParser.parse("_")
     
     def __repr__(self):
         return reverse_parse(self.t)
@@ -34,7 +34,7 @@ class PytyType:
     def is_str(self):
         return self.t == "str"
 
-    def is_gen_type(self):
+    def is_gen(self):
         return self.t == "_"
 
     def is_list(self):
@@ -66,7 +66,7 @@ class PytyType:
         return [PytyType(self.t.in_t()), PytyType(self.t.out_t())]
 
     def is_subtype(self, other_t):
-        return other_t.is_gen_type() or \
+        return other_t.is_gen() or \
                self == other_t or \
                (self.is_int() and other_t.is_float())
 
@@ -91,8 +91,7 @@ def reverse_parse(type_ast):
         recurse1 = reverse_parse(type_ast.out_t())
         return recurse0 + " -> " + recurse1
     else:
-        # This should be a disjoint sum.
-        assert(False)
+        assert(False) # This should be a disjoint sum.
     
 def better_sexpr_to_tree(a):
     if type(a) == str:
@@ -168,8 +167,7 @@ class TypeSpecParser:
     @staticmethod
     def parse(s):
         try:
-            parsed_type = TypeSpecParser.typ.parse(s)[0]
-            return PytyType(parsed_type)
+            return TypeSpecParser.typ.parse(s)[0]
         except (RuntimeLexerError, FullFirstMatchException):
             raise TypeIncorrectlySpecifiedError()
         

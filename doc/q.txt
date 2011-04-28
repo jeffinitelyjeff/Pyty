@@ -5,15 +5,17 @@
 
 
 - should y = 4 = 3.0 + x fail to typecheck or throw an error if y has been
-  specified as an int?
+  specified as an int? <-- ANSWER: there should be lots of different kinds of
+  errors; there's no real "right" way to fail.
 - including assert statements under class variable declarations seems bad;
-  should this be avoided?
-- I really like the idea of adding the is_simple, is_compound, etc. methods to
+  should this be avoided? <-- ANSWER: this is good practice.
+- I really like the idea of adding the is\_simple, is\_compound, etc. methods to
   the ast.stmt class, but where is the best place to do this? my first thought
   was that it should be before those methods are used (ie, it would be added in
   the initialization of a TypeDecASTModule, since it's in placing typedecs that
   these methods are first used), but it doesn't seem appropriate to insert them
   here since it's doing a module-wide change. would the best place for it be
-  under the import statements of the ast module?
+  under the import statements of the ast module? <-- ANSWER: meh, whatever.
+
 
   

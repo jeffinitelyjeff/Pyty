@@ -393,6 +393,13 @@ def check_Subscript_expr(subs, t, env):
     subscript of a tuple, then the index must be an integer and the tuple must
     have the correct type in the specified index.
 
+    If the subscript's value (which is the collection it's subscripting) is a
+    list, then we just need to make sure that the list typechecks as a list of
+    C{t}. If the value is a tuple, then we need to make sure that the tuple
+    typechecks as a tuple of type C{PytyType * ... * PytyType * t * PytyType
+    ... * PytyType}, where C{t} is in the ith position and i is the number
+    literal that is provided as the subscription index.
+
     FIXME currently only handles indexes, not general slices.
     """
         

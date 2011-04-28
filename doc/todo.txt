@@ -31,3 +31,9 @@ Other things to do:
   variable docstring?
 
 - give meaningful error messages
+
+## For 4/28 ##
+- Complete subscription/slicing
+- Implement the basic type inference needed to typecheck something like (a,b) =
+  (5,2) (ie, we need to be able to say "does (5,2) typecheck as X," so we need
+  to figure out what X is.
