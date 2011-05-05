@@ -399,62 +399,53 @@ def check_Subscript_expr(subs, t, env):
     typechecks as a tuple of type C{PytyType * ... * PytyType * t * PytyType
     ... * PytyType}, where C{t} is in the ith position and i is the number
     literal that is provided as the subscription index.
-
-    FIXME currently only handles indexes, not general slices.
     """
 
     assert(subs.__class__ == ast.Subscript)
 
-    col = subs.value
+    collection = subs.value
 
-    # If the collection is a list, then make sure the list typechecks as a list
-    # of type t. Note that we don't need to worry about whether the subscription
-    # is an index or a slice when it comes to checking a list.
-    if check_expr(collection, PytyType('[_]'), env):
+    if collection.__class__ == ast.List:
         return check_expr(collection, PytyType.list_of(t), env)
+    elif collection.__class__ == ast.Tuple:
+        slc = collection.slice
+        if slc.__class__ == ast.Index:
+            # We're restricting tuples to be indexed by numeric literals.
+            assert(slc.value.__class__ == ast.Num)
+            return check_expr(collection[slc.value.n], t, env)
+        elif slc.__class__ == ast.Slice:
+            # We're restricting tuples to be sliced by numeric literals.
+            assert(slc.upper.__class__ == ast.Num and
+                   slc.lower.__class__ == ast.Num and
+                   slc.step.__class__ == ast.Num)
+            # We're getting a slice of a tuple, so the expected type better be a
+            # tuple.
+            # FIXME: indicate failure - say that a tuple type wasn't specified.
+            if not t.is_tuple(): return False
+            
+            lower = slf.lower if slc.lower is not None else 0
+            upper = slc.upper if slc.upper is not None else len(collection)
+            step  = slc.step  if slc.step  is not None else 1
+            # t is going to be a tuple of expected types; idxs[i] is going to be
+            # the index of the array that the expected type t[i] is expected to
+            # match with.
+            idxs = range(lower, upper, step)
+            # FIXME: indicate failure - say that one of the expressions in the
+            # tuple didn't typecheck as one of the expected types.
+            return all([check_expr(collection[idxs[i]], t[i], env)
+                        for i in idxs])
+        else:
+            # Some case I haven't considered yet.
+            # As far as I know, slices are only slices and indices.
+            assert(False)
 
-    """# If the subscript is just referring to a single element.
-    if subs.slice.__class__ == ast.Index:
-        n = subs.slice.value
-
-        # if the collection is a list, then make sure the """
-    
-    n = subs.slice.value
-
-    # if the collection is a list, then make sure the list typechecks as a list
-    # of type t.
-    if check_expr(collection, PytyType('[_]'), env):
-        list_t = PytyType("[" + str(t) + "]")
-        return check_expr(collection, list_t, env)
-
-
-    # FIXME from here on we assume the collection is a tuple, which probably
-    # isn't a safe assumption.
-
-    idx = n.n
-    if n.__class__ is not ast.Num:
-        # FIXME specify that something other than a number literal was specified
-        # for a tuple subscript.
-        return False
-    elif type(idx) is not int:
-        # FIXME specify that a non-integer number literal was specified for a
-        # tuple subscript.
-        return False
-
-    gen_tuple_t = '(' + ''.join(['gen,' for i in collection.elts]) + ')'
-
-    
-    if check_expr(collection, PytyType(gen_tuple_t), env):
-
-        specific_tuple_t = '('
-        for i in range(len(collection.elts)):
-            if i == idx:
-                specific_tuple_t += str(t)
-            else:
-                specific_tuple_t += 'gen,'
-        specific_tuple_t += ')'
-
-        return check_expr(collection, specific_tuple_t, env)
-
-
+    elif collection.__class__ == ast.Dict:
+        # FIXME: Will work on implementing this in the future, probably when
+        # there are actually dictionary types.
+        assert(False)
+    else:
+        # Some case I haven't considered yet.
+        # As far as I know, collections that can be subscripted are only lists,
+        # tuples, and dictionaries.
+        assert(False)
 

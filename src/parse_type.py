@@ -34,6 +34,14 @@ class PytyType:
         # node, we need to get the actual type AST, not the PytyType wrapper.
         p = PytyType()
         p.t = Lst(t.t)
+        return p
+
+    @staticmethod
+    def any_list():
+        """Creates a PytyType object which represents a list of any type.
+        """
+
+        return PytyType('[_]')
 
     @staticmethod
     def tuple_of(ts):
@@ -47,6 +55,7 @@ class PytyType:
         # List, we need to get the actual type ASTs of each.
         p = PytyType()
         p.t = Tup([t.t for t in ts])
+        return p
         
     @staticmethod
     def dict_of(t0, t1):
@@ -61,6 +70,7 @@ class PytyType:
         # of a Dct node, we need to get the actual type ASTs of each.
         p = PytyType()
         p.t = Dct(t0.t, t1.t)
+        return p
     
 
     def is_bool(self):
