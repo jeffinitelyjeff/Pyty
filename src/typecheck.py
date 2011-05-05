@@ -74,15 +74,34 @@ def infer_expr(e, env):
         t = infer_expr(collection)
 
         if collection.__class__ == ast.List:
-            # FIXME: implement
+            return t.list_t()
         elif collection.__class__ == ast.Tuple:
-            # FIXME: implement
+            slc = collection.slice
+            if slc.__class__ == ast.Index:
+                return t.tuple_ts()[slc.value.n]
+            elif slc.__class__ == ast.Slice:
+                # We're restricting tuples to be sliced by numeric literals.
+                assert(slc.upper.__class__ == ast.Num and
+                       slc.lower.__class__ == ast.Num and
+                       slc.step.__class__ == ast.Num)
+                
+                ts = t.tuple_ts()
+                lower = slc.lower if slc.lower is not None else 0
+                upper = slc.upper if slc.upper is not None else len(collection)
+                step  = slc.step  if slc.step  is not None else 1
+                idxs = range(lower, upper, step)
+                return tuple(ts[idxs[i]] for i in range(idxs))
+            else:
+                # Some case I haven't considered yet.
+                # As far as I know, slices are only silces and indices.
+                assert(False)
         elif collection.__class__ == ast.Dict:
-            # FIXME: implement
+            # FIXME: implement when there are dictionaries and I have time
         else:
             # Some case I hvaen't considered yet.
             assert(False)
     elif e.__class__ = ast.List:
+        return PytyType.list_of(infer_expr(e.value.elts[0]))
         # FIXME: implement
     elif e.__class__ = ast.Tuple:
         # FIXME: implement
@@ -451,6 +470,42 @@ def check_Subscript_expr(subs, t, env):
     collection = subs.value
 
     if collection.__class__ == ast.Name:
+        collection_t = infer_expr(collection, env)
+        if collection_t.is_list():
+            new_t = PytyType.list_of(t)
+        elif collection_t.is_tuple():
+            slc = collection.slice
+            if slc.__class__ == ast.Index:
+                n = slc.value.n
+                new_t = PytyType.gen_tuple_of([(t, n)])
+            elif slc.__class__ == ast.Slice:
+                # We're restricting tuples to be sliced by numeric literals.
+                assert(slc.upper.__class__ == ast.Num and
+                       slc.lower.__class__ == ast.Num and
+                       slc.step.__class__ == ast.Num)
+                # We're getting a slice of a tuple, so the expected type better
+                # be a tuple.
+                # FIXME: indicate type of failure - say that a tulpe type wasn't
+                # specified.
+                if not t.is_tuple(): return False
+                lower = slc.lower if slc.lower is not None else 0
+                upper = slc.upper if slc.upper is not None else len(collection_t)
+                step =  slc.step  if slc.step  is not None else 1
+                idxs = range(lower, upper, step)
+                new_t = PytyType.gen_tuple_of(
+                    [(collection_t[i], i) for i in idxs])
+            else:
+                # Some case I haven't considered yet.
+                # Slices should only be indices and slices.
+                assert(False)
+            return check_expr(collection, new_t, env)
+        elif collection_t.is_dict():
+            # FIXME: implement when there are dictionaries and I have time.
+        else:
+            # Some case I haven't considered yet.
+            # Subscripted collections should only be lists, tuples, and
+            # dictionaries.
+            assert(False)
         return check_expr(infer_expr(collection, env), t, env)
     if collection.__class__ == ast.List:
         return check_expr(collection, PytyType.list_of(t), env)
@@ -470,7 +525,7 @@ def check_Subscript_expr(subs, t, env):
             # FIXME: indicate failure - say that a tuple type wasn't specified.
             if not t.is_tuple(): return False
             
-            lower = slf.lower if slc.lower is not None else 0
+            lower = slc.lower if slc.lower is not None else 0
             upper = slc.upper if slc.upper is not None else len(collection)
             step  = slc.step  if slc.step  is not None else 1
             # t is going to be a tuple of expected types; idxs[i] is going to be
@@ -480,7 +535,7 @@ def check_Subscript_expr(subs, t, env):
             # FIXME: indicate failure - say that one of the expressions in the
             # tuple didn't typecheck as one of the expected types.
             return all([check_expr(collection[idxs[i]], t[i], env)
-                        for i in idxs])
+                        for i in range(idxs)])
         else:
             # Some case I haven't considered yet.
             # As far as I know, slices are only slices and indices.
