@@ -102,9 +102,8 @@ def infer_expr(e, env):
             assert(False)
     elif e.__class__ = ast.List:
         return PytyType.list_of(infer_expr(e.value.elts[0]))
-        # FIXME: implement
     elif e.__class__ = ast.Tuple:
-        # FIXME: implement
+        return PytyType.tuple_of([infer_expr(elt) for elt in e.value.elts])
     elif e.__class__ = ast.Dict:
         # FIXME: implement when there are dictionaries and I have time.
     else:
