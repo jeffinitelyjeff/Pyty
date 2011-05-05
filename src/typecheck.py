@@ -48,6 +48,51 @@ def env_get(env, var_id):
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
 
+# ------------------------------------------------------------------------------
+# BASIC TYPE INFERENCE HELPERS -------------------------------------------------
+# ------------------------------------------------------------------------------
+
+# In most cases, these functions are just wrappers for accessing the
+# environment, but there are more complicated cases like assigning to
+# subscription expressions and assigning to lists/tuples.
+
+def infer_expr(e, env):
+    """Determine the type of expression C{e} under type environment C{env}. In
+    most cases e will be a variable and this will just be a wrapper for reading
+    the environment, but this also handles simple type inference to figure out the
+    types of subscriptions and lists/tuples.
+
+    @type env: dict of str and PytyType
+    @type e: C{ast.Expr}
+    """
+
+    if e.__class__ = ast.Name:
+        return env_get(env, e.id)
+    elif e.__class__ = ast.Subscription:
+        collection = e.value
+        # Get the type of the collection.
+        t = infer_expr(collection)
+
+        if collection.__class__ == ast.List:
+            # FIXME: implement
+        elif collection.__class__ == ast.Tuple:
+            # FIXME: implement
+        elif collection.__class__ == ast.Dict:
+            # FIXME: implement
+        else:
+            # Some case I hvaen't considered yet.
+            assert(False)
+    elif e.__class__ = ast.List:
+        # FIXME: implement
+    elif e.__class__ = ast.Tuple:
+        # FIXME: implement
+    elif e.__class__ = ast.Dict:
+        # FIXME: implement when there are dictionaries and I have time.
+    else:
+        # Some case I haven't considered yet.
+        assert(False)
+
+    
 
 # ---------------------------------------------------------------------------
 # GENERAL CHECKING FUNCTIONS ------------------------------------------------
@@ -201,7 +246,7 @@ def check_Assign_stmt(stmt):
         # ensure that the variables are appearing with "store" contexts, ie
         # that they are being assigned to and not referenced. this really
         # shouldn't be a problem, but this is just to be safe.
-        assert(v.ctx.__class__.__name__ == "Store")
+        assert(v.ctx.__class__ ast.Store)
 
         t = env_get(stmt.env, v.id)
         if not check_expr(e, t, stmt.env):
@@ -405,6 +450,8 @@ def check_Subscript_expr(subs, t, env):
 
     collection = subs.value
 
+    if collection.__class__ == ast.Name:
+        return check_expr(infer_expr(collection, env), t, env)
     if collection.__class__ == ast.List:
         return check_expr(collection, PytyType.list_of(t), env)
     elif collection.__class__ == ast.Tuple:
