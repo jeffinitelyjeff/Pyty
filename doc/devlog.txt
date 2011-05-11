@@ -1,5 +1,7 @@
 5-5-2011
 ========
+- I'm starting to wonder whether it will be necessary to forbid assignments to
+  subscriptions 
 
 
 4-27-2011
