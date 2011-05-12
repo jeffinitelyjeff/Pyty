@@ -147,7 +147,23 @@ def check_stmt(stmt):
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
-    # if we get a KeyError, t
+    # if we get a KeyError, then we're inspecting an AST node that is not in
+    # the subset of the language we're considering (note: the subset is
+    # defined as whatever there are check function definitions for).
+    try:
+        result = call_function(n, stmt)
+        t_debug("return: " + str(result) + "\n--- ^ Typechecking stmt ^ ---")
+        return result
+    except KeyError:
+        t_debug("Found an AST node that is not in the subset of the " +
+                "language we're considering." +
+                "\n--- ^ Typechecking stmt ^ ---")
+        return False
+
+def check_stmt_list(stmt_list):
+    """For each stmt in C{stmt_list}, checks whether stmt is a valid
+    statement."""
+
     t_debug("---- v Typechecking stmt list v ----")
 
     for s in stmt_list:
