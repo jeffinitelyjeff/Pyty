@@ -66,9 +66,9 @@ def infer_expr(e, env):
     @type e: C{ast.Expr}
     """
 
-    if e.__class__ = ast.Name:
+    if e.__class__ == ast.Name:
         return env_get(env, e.id)
-    elif e.__class__ = ast.Subscription:
+    elif e.__class__ == ast.Subscription:
         collection = e.value
         # Get the type of the collection.
         t = infer_expr(collection)
@@ -97,15 +97,16 @@ def infer_expr(e, env):
                 assert(False)
         elif collection.__class__ == ast.Dict:
             # FIXME: implement when there are dictionaries and I have time
+            pass
         else:
-            # Some case I hvaen't considered yet.
-            assert(False)
-    elif e.__class__ = ast.List:
+            assert(False) # Some case I haven't considered yet.
+    elif e.__class__ == ast.List:
         return PytyType.list_of(infer_expr(e.value.elts[0]))
-    elif e.__class__ = ast.Tuple:
+    elif e.__class__ == ast.Tuple:
         return PytyType.tuple_of([infer_expr(elt) for elt in e.value.elts])
-    elif e.__class__ = ast.Dict:
+    elif e.__class__ == ast.Dict:
         # FIXME: implement when there are dictionaries and I have time.
+        pass
     else:
         # Some case I haven't considered yet.
         assert(False)
@@ -146,23 +147,7 @@ def check_stmt(stmt):
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
-    # if we get a KeyError, then we're inspecting an AST node that is not in
-    # the subset of the language we're considering (note: the subset is
-    # defined as whatever there are check function definitions for).
-    try:
-        result = call_function(n, stmt)
-        t_debug("return: " + str(result) + "\n--- ^ Typechecking stmt ^ ---")
-        return result
-    except KeyError:
-        t_debug("Found an AST node that is not in the subset of the " +
-                "language we're considering." +
-                "\n--- ^ Typechecking stmt ^ ---")
-        return False
-
-def check_stmt_list(stmt_list):
-    """For each stmt in C{stmt_list}, checks whether stmt is a valid
-    statement."""
-
+    # if we get a KeyError, t
     t_debug("---- v Typechecking stmt list v ----")
 
     for s in stmt_list:
@@ -264,7 +249,7 @@ def check_Assign_stmt(stmt):
         # ensure that the variables are appearing with "store" contexts, ie
         # that they are being assigned to and not referenced. this really
         # shouldn't be a problem, but this is just to be safe.
-        assert(v.ctx.__class__ ast.Store)
+        assert(v.ctx.__class__ == ast.Store)
 
         t = env_get(stmt.env, v.id)
         if not check_expr(e, t, stmt.env):
@@ -500,6 +485,7 @@ def check_Subscript_expr(subs, t, env):
             return check_expr(collection, new_t, env)
         elif collection_t.is_dict():
             # FIXME: implement when there are dictionaries and I have time.
+            pass
         else:
             # Some case I haven't considered yet.
             # Subscripted collections should only be lists, tuples, and

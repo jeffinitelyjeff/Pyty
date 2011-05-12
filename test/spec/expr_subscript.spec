@@ -27,9 +27,9 @@ expr type: Subscript
 [1, 2.0, 3.0][1] : int
 [1, 2.0, 3.0][5+3-2*2] : int
 (1, 2, 3)[5-4] : int
-[(True, False), (False, False), (True, True)][1][0+1]
-[(True, False), (False, False), (True, True)][0+1][0+1]
-(1, 2, 3)[1.0]
+[(True, False), (False, False), (True, True)][1][0+1] : bool
+[(True, False), (False, False), (True, True)][0+1][0+1] : bool
+(1, 2, 3)[1.0] : int
 
 ----TypeIncorrectlySpecifiedError----
 [(True, False), (False, False)][0] : ()

@@ -32,6 +32,8 @@ Other things to do:
 
 - give meaningful error messages
 
+- add specs to tests that allow you to declare things before all tests in a
+  mod_spec file.
 ## For 4/28 ##
 - Complete subscription/slicing
 - Implement the basic type inference needed to typecheck something like (a,b) =
