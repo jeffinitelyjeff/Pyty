@@ -41,7 +41,7 @@ def env_get(env, var_id):
     if var_id not in env:
         t_debug("Type of %s not found in %s" % (var_id, env))
         raise TypeUnspecifiedError(var=var_id,env=env)
-    
+
     # return the type stored in the environment
     return env[var_id]
 
@@ -232,6 +232,12 @@ def check_expr(expr, t, env):
 def get_stmt_func_name(stmt_type):
     return "check_%s_stmt" % stmt_type
 
+def check_FunctionDef_stmt(stmt):
+
+    assert(stmt.__class__ == ast.FunctionDef)
+
+    # how should this typecheck?
+
 def check_TypeDec_stmt(stmt):
     """Any TypeDec should typecheck correctly as long as it doesn't try to
     reassign a type."""
@@ -330,6 +336,30 @@ def check_While_stmt(stmt):
 
 def get_expr_func_name(expr_type):
     return "check_%s_expr" % expr_type
+
+def check_Call_expr(call, t, env):
+    """Checks whhether the AST expression node given by C{call} typechecks as a
+    function call expression of type C{t}."""
+
+
+    assert(call.__class__ == ast.Call)
+
+    # FIXME: this probably doesn't handle lambdas; do we want to handle that
+    # here?
+
+    fun = call.func
+    fun_t = infer_expr(fun)
+
+    # FIXME: this doesn't actually handle proper function subtyping; remeber,
+    # there's the more complicated subtyping relation for functions.
+    return fun_t.function_ts()[1].is_subtype(t) and
+        # FIXME: now check each argument, but this is slightly more complicated
+        # because the PytyType thinks of the function as a tuple...
+
+
+
+    
+    
 
 def check_Num_expr(num, t, env):
     """Checks whether the AST expression node given by C{num} typechecks as a

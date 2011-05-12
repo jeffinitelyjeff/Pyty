@@ -161,7 +161,7 @@ class TypeDec(ast.stmt):
         the '#:' in the source code).
     """
 
-    def __init__(self, targets, t, line, col):
+    def __init__(self, targets, t, line, col = None):
         """Creates a L{TypeDec} node with the supplied parameters.
 
         @type targets: list of ast.Name
@@ -179,7 +179,8 @@ class TypeDec(ast.stmt):
     
         self.targets = targets
         self.lineno = line
-        self.col_offset = col
+        if col is not None:
+            self.col_offset = col
 
         if type(t) == str:
             self.t = TypeSpecParser.parse(t)
