@@ -39,7 +39,7 @@ class PytyTests(unittest.TestCase):
         """Typechecks the string C{s} as an C{expr_type} expression."""
 
         a = ast.parse(s).body[0].value
-            
+
         f = get_expr_func_name(expr_kind)
 
         if expected == "pass" or expected == "fail":
@@ -61,7 +61,7 @@ class PytyTests(unittest.TestCase):
                 pass
             else:
                 self.fail("Should have raised error %s, but does not. (%s)."
-                          % (expected, s))                
+                          % (expected, s))
         else:
             raise TestFileFormatError("Expression tests can only be" + \
                 " specified as passing, failing, or raising an error " + \
@@ -84,7 +84,7 @@ class PytyTests(unittest.TestCase):
 
         log.debug("--- v Untyped AST v ---\n" + str(untyped_ast) +
                   "\n--- ^ Untyped AST ^ ---", DEBUG_UNTYPED_AST)
-            
+
         typedecs = parse_type_decs(filename)
 
         log.debug("--- v TypeDecs v ---\n" + str(typedecs) +
@@ -94,12 +94,12 @@ class PytyTests(unittest.TestCase):
 
         log.debug("--- v TypedAST v ---\n" + str(typed_ast) +
                   "\n--- ^ TypedAST ^ ---", DEBUG_TYPED_AST)
-            
+
         env_ast = EnvASTModule(typed_ast)
 
         log.debug("--- v EnvAST v ---\n" + str(env_ast) +
                   "\n--- ^ EnvAST ^ ---", DEBUG_ENV_AST)
-            
+
         return check_mod(env_ast.tree)
 
     def _check_mod(self, filename):

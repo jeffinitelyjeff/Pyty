@@ -17,12 +17,11 @@ def t_debug(s, cond=True):
 # ---------------------------------------------------------------------------
 
 def env_get_name(env, v):
-    """Returns the type of the variable given by the AST name node C{v} in
-    environment C{env}. Abstracts away needing to get the variable's id in or
-    der to look it up in the environment dictionary.
+    """Get type of AST name node C{v} in type environment C{env}.
 
-    @type env: dict of str and PytyType
+    @type env: {str: PType}
     @type v: C{ast.Name}
+    @rtype: C{PType}
     """
 
     return env_get(env, v.id)
@@ -80,11 +79,12 @@ def infer_expr(e, env):
             if slc.__class__ == ast.Index:
                 return t.tuple_ts()[slc.value.n]
             elif slc.__class__ == ast.Slice:
-                # We're restricting tuples to be sliced by numeric literals.
-                assert(slc.upper.__class__ == ast.Num and
+                # FIXME: gracefully fail instead of assertion error
+                assert slc.upper.__class__ == ast.Num and
                        slc.lower.__class__ == ast.Num and
-                       slc.step.__class__ == ast.Num)
-                
+                       slc.step.__class__ == ast.Num, "Pyty requires tuples \
+                       to be sliced by numeric literals"
+
                 ts = t.tuple_ts()
                 lower = slc.lower if slc.lower is not None else 0
                 upper = slc.upper if slc.upper is not None else len(collection)
@@ -92,14 +92,13 @@ def infer_expr(e, env):
                 idxs = range(lower, upper, step)
                 return tuple(ts[idxs[i]] for i in range(idxs))
             else:
-                # Some case I haven't considered yet.
-                # As far as I know, slices are only silces and indices.
-                assert(False)
+                assert False, "Slices should only be ast.Index or ast.Slice"
         elif collection.__class__ == ast.Dict:
             # FIXME: implement when there are dictionaries and I have time
             pass
         else:
-            assert(False) # Some case I haven't considered yet.
+            assert False, "Subscripted collections should only be lists, \
+            tuples, and dictionaries"
     elif e.__class__ == ast.List:
         return PytyType.list_of(infer_expr(e.value.elts[0]))
     elif e.__class__ == ast.Tuple:
@@ -108,10 +107,9 @@ def infer_expr(e, env):
         # FIXME: implement when there are dictionaries and I have time.
         pass
     else:
-        # Some case I haven't considered yet.
-        assert(False)
+        assert False, "Pyty doesn't handle inferring this type of expression"
 
-    
+
 
 # ---------------------------------------------------------------------------
 # GENERAL CHECKING FUNCTIONS ------------------------------------------------
@@ -141,9 +139,8 @@ def check_stmt(stmt):
 
     t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---")
 
-    t_debug("Throwing assertion error because this statement is simple but " +
-            "has no environment", stmt.is_simple() and not hasattr(stmt, 'env'))
-    assert(hasattr(stmt, 'env') or stmt.is_compound())
+    assert hasattr(stmt, 'env') or stmt.is_compound(), "Simple statements need
+    to have environments"
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
@@ -187,7 +184,7 @@ def check_expr(expr, t, env):
 
     t_debug("-- v Typechecking expr as " + str(t) + " v --\nExpr: " +
             str(expr) + "\nEnv: " + str(env))
-    
+
     # if we get a KeyError, then we're inspecting an AST node that is not in
     # the subset of the language we're considering (note: the subset is
     # defined as whtaever there are check function definitions for).
@@ -199,7 +196,7 @@ def check_expr(expr, t, env):
         t_debug("Found an AST node that is not in the subset of the " +
                 "language we're considering.")
         return False
-    
+
 
 # ---------------------------------------------------------------------------
 # STATEMENT CHECKING FUNCTIONS ----------------------------------------------
@@ -234,7 +231,7 @@ def get_stmt_func_name(stmt_type):
 
 def check_FunctionDef_stmt(stmt):
 
-    assert(stmt.__class__ == ast.FunctionDef)
+    assert stmt.__class__ == ast.FunctionDef
 
     # how should this typecheck?
 
@@ -242,7 +239,7 @@ def check_TypeDec_stmt(stmt):
     """Any TypeDec should typecheck correctly as long as it doesn't try to
     reassign a type."""
 
-    assert(isinstance(stmt, TypeDec))
+    assert isinstance(stmt, TypeDec)
 
     for target in stmt.targets:
         if target in stmt.old_env:
@@ -262,7 +259,7 @@ def check_Assign_stmt(stmt):
         a = b = 5
     and does not handle assigning to lists or tuples."""
 
-    assert(isinstance(stmt, ast.Assign))
+    assert isinstance(stmt, ast.Assign)
 
     e = stmt.value
 
@@ -271,7 +268,7 @@ def check_Assign_stmt(stmt):
         # ensure that the variables are appearing with "store" contexts, ie
         # that they are being assigned to and not referenced. this really
         # shouldn't be a problem, but this is just to be safe.
-        assert(v.ctx.__class__ == ast.Store)
+        assert v.ctx.__class__ == ast.Store
 
         t = env_get(stmt.env, v.id)
         if not check_expr(e, t, stmt.env):
@@ -285,7 +282,7 @@ def check_If_stmt(stmt):
     statement. This requires that the test typecheck as a bolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
-    assert(isinstance(stmt, ast.If))
+    assert isinstance(stmt, ast.If)
 
     test = stmt.test
     body = stmt.body
@@ -299,7 +296,7 @@ def check_While_stmt(stmt):
     statement. This requires that the test typecheck as a boolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
-    assert(isinstance(stmt, ast.While))
+    assert isinstance(stmt, ast.While)
 
     # this code is IDENTICAL to the If stuff; should consider refactoring into
     # helper function.
@@ -342,7 +339,7 @@ def check_Call_expr(call, t, env):
     function call expression of type C{t}."""
 
 
-    assert(call.__class__ == ast.Call)
+    assert call.__class__ == ast.Call
 
     # FIXME: this probably doesn't handle lambdas; do we want to handle that
     # here?
@@ -352,21 +349,21 @@ def check_Call_expr(call, t, env):
 
     # FIXME: this doesn't actually handle proper function subtyping; remeber,
     # there's the more complicated subtyping relation for functions.
-    return fun_t.function_ts()[1].is_subtype(t) and
+    return fun_t.function_ts()[1].is_subtype(t) # FIXME and
         # FIXME: now check each argument, but this is slightly more complicated
         # because the PytyType thinks of the function as a tuple...
 
 
 
-    
-    
+
+
 
 def check_Num_expr(num, t, env):
     """Checks whether the AST expression node given by C{num} typechecks as a
     num expression (ie, a numeric literal) of type C{t}."""
 
-    assert(isinstance(num, ast.Num))
-    
+    assert isinstance(num, ast.Num)
+
     n = num.n
 
     if t.is_int():
@@ -381,11 +378,11 @@ def check_Name_expr(name, t, env):
     name expression. Name expressions are used for variables and for boolean
     literals."""
 
-    assert(isinstance(name, ast.Name))
+    assert isinstance(name, ast.Name)
 
     # We should only reach here if we're loading the variable, not storing it.
-    assert(isinstance(name.ctx, ast.Load))
-    
+    assert isinstance(name.ctx, ast.Load)
+
     id = name.id
 
     # need to treat when the Name expr is a boolean and when it's a variable.
@@ -401,7 +398,7 @@ def check_Name_expr(name, t, env):
         if not spec_type.is_subtype(t):
             t_debug(("Variable %s has been declared of type %s, so it does not "+
                     "typecheck as type %s") % (name.id, str(spec_type), str(t)))
-        
+
         return env_get_name(env, name).is_subtype(t)
 
 def check_BinOp_expr(binop, t, env):
@@ -409,7 +406,7 @@ def check_BinOp_expr(binop, t, env):
     binary operation expression. This will only typecheck if C{t} is an int
     or a float."""
 
-    assert(isinstance(binop, ast.BinOp))
+    assert isinstance(binop, ast.BinOp)
 
     l = binop.left
     r = binop.right
@@ -426,7 +423,7 @@ def check_Compare_expr(compare, t, env):
     NOTE: Right now, this only handles binary comparisons. That is, it only
     handles expressions of the form x>y or x==y, not x==y==z or x>y>z."""
 
-    assert(isinstance(compare, ast.Compare))
+    assert isinstance(compare, ast.Compare)
 
     # the Compare AST node anticipates expressions of the form x > y > z, in
     # which case x would be left, y would be comparators[0], and z would be
@@ -443,7 +440,7 @@ def check_List_expr(list, t, env):
     list expression as specified by L{parse_type.PytyType} C{t}.
     """
 
-    assert(isinstance(list, ast.List))
+    assert isinstance(list, ast.List)
 
     if t.is_list():
         element_t = t.list_t()
@@ -464,7 +461,7 @@ def check_Tuple_expr(tup, t, env):
     tuple expression as specified by L{parse_type.PytyType} C{t}.
     """
 
-    assert(isinstance(tup, ast.Tuple))
+    assert isinstance(tup, ast.Tuple)
 
     if t.is_tuple():
         element_ts = t.tuple_ts()
@@ -474,12 +471,12 @@ def check_Tuple_expr(tup, t, env):
                 # conform to the corresponding type in that position.
                 return False
         return True
-            
+
     else:
         # FIXME specify that a tuple was typechecked as something other than a
         # tuple.
         return False
-        
+
 def check_Subscript_expr(subs, t, env):
     """Checks whether the AST expression node given by C{subs} typechecks as a
     subscript expression of L{parse_type.PytyType} C{t}. If it is the subscript
@@ -495,12 +492,14 @@ def check_Subscript_expr(subs, t, env):
     literal that is provided as the subscription index.
     """
 
-    assert(subs.__class__ == ast.Subscript)
+    assert subs.__class__ == ast.Subscript
 
     collection = subs.value
 
     if collection.__class__ == ast.Name:
+
         collection_t = infer_expr(collection, env)
+
         if collection_t.is_list():
             new_t = PytyType.list_of(t)
         elif collection_t.is_tuple():
@@ -509,10 +508,12 @@ def check_Subscript_expr(subs, t, env):
                 n = slc.value.n
                 new_t = PytyType.gen_tuple_of([(t, n)])
             elif slc.__class__ == ast.Slice:
-                # We're restricting tuples to be sliced by numeric literals.
-                assert(slc.upper.__class__ == ast.Num and
+
+                assert slc.upper.__class__ == ast.Num and
                        slc.lower.__class__ == ast.Num and
-                       slc.step.__class__ == ast.Num)
+                       slc.step.__class__ == ast.Num, "Pyty restricts tuples \
+                       to be sliced by numeric literals"
+
                 # We're getting a slice of a tuple, so the expected type better
                 # be a tuple.
                 # FIXME: indicate type of failure - say that a tulpe type wasn't
@@ -525,37 +526,45 @@ def check_Subscript_expr(subs, t, env):
                 new_t = PytyType.gen_tuple_of(
                     [(collection_t[i], i) for i in idxs])
             else:
-                # Some case I haven't considered yet.
-                # Slices should only be indices and slices.
-                assert(False)
+                assert False, "Slices should only be ast.Index or ast.Slice"
             return check_expr(collection, new_t, env)
         elif collection_t.is_dict():
             # FIXME: implement when there are dictionaries and I have time.
             pass
         else:
-            # Some case I haven't considered yet.
-            # Subscripted collections should only be lists, tuples, and
-            # dictionaries.
-            assert(False)
+            assert False, "Subscripted collections should only be lists, \
+            tuples, and dictionaries"
+
         return check_expr(infer_expr(collection, env), t, env)
+
     if collection.__class__ == ast.List:
+
         return check_expr(collection, PytyType.list_of(t), env)
+
     elif collection.__class__ == ast.Tuple:
+
         slc = collection.slice
         if slc.__class__ == ast.Index:
-            # We're restricting tuples to be indexed by numeric literals.
-            assert(slc.value.__class__ == ast.Num)
+
+            # FIXME: Graceful failure instead of assertion error.
+            assert slc.value.__class__ == ast.Num, "Pyty restricts tuples to \
+            be indexed by numeric literals"
+
             return check_expr(collection[slc.value.n], t, env)
+
         elif slc.__class__ == ast.Slice:
-            # We're restricting tuples to be sliced by numeric literals.
-            assert(slc.upper.__class__ == ast.Num and
+
+            # FIXME: Graceful failure instead of assertion error.
+            assert slc.upper.__class__ == ast.Num and
                    slc.lower.__class__ == ast.Num and
-                   slc.step.__class__ == ast.Num)
+                   slc.step.__class__ == ast.Num, "Pyty restricts tuples to be \
+                   sliced by numeric literals"
+
             # We're getting a slice of a tuple, so the expected type better be a
             # tuple.
             # FIXME: indicate failure - say that a tuple type wasn't specified.
             if not t.is_tuple(): return False
-            
+
             lower = slc.lower if slc.lower is not None else 0
             upper = slc.upper if slc.upper is not None else len(collection)
             step  = slc.step  if slc.step  is not None else 1
@@ -567,18 +576,24 @@ def check_Subscript_expr(subs, t, env):
             # tuple didn't typecheck as one of the expected types.
             return all([check_expr(collection[idxs[i]], t[i], env)
                         for i in range(idxs)])
+
         else:
+
             # Some case I haven't considered yet.
             # As far as I know, slices are only slices and indices.
-            assert(False)
+            assert False, "Slices should only be ast.Slice or ast.Index"
 
     elif collection.__class__ == ast.Dict:
+
         # FIXME: Will work on implementing this in the future, probably when
         # there are actually dictionary types.
-        assert(False)
+        assert False, "Haven't implemented dictionary slicing yet"
+
     else:
-        # Some case I haven't considered yet.
-        # As far as I know, collections that can be subscripted are only lists,
-        # tuples, and dictionaries.
-        assert(False)
+
+        # FIXME: According to http://docs.python.org/library/stdtypes.html,
+        # all sequence types (str, unicode, list, tuple, bytearray, buffer,
+        # xrange), support slicing.
+        assert False, "Pyty only supports lists, tuples, and dictionaries as \
+        sliceable collections."
 

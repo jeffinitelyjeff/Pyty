@@ -7,7 +7,7 @@ from parse_type import PytyType, TypeSpecParser
 from settings import *
 from logger import Logger
 from errors import *
-from epydoc import docparser
+# from epydoc import docparser ; may need this for functions
 
 log = None
 
@@ -46,7 +46,6 @@ def parse_type_decs(filename):
 
         m = re.match(_TYPEDEC_REGEX, l)
 
-
         p_debug(" tdec --> " + l[:-1], m)
         p_debug("          " + l[:-1], not m)
 
@@ -59,37 +58,39 @@ def parse_type_decs(filename):
 
     p_debug("--- ^ Typedec parsing ^ ---")
 
-    p_debug("--- v Function typedec parsing v ---")
+    # FIXME: Function stuff
+    # p_debug("--- v Function typedec parsing v ---")
 
-    d = docparser.parse_docs(filename)
+    # d = docparser.parse_docs(filename)
 
-    for v in filter(lambda x: --IS X A FUNCTION VARIABLE?--, d.variables):
-        docstring = d.variables[v].value.docstring
+    # for v in filter(lambda x: --IS X A FUNCTION VARIABLE?--, d.variables):
+    #     docstring = d.variables[v].value.docstring
 
-        # partypes is going to be a list of 2-tuples of parameter name and type
-        partypes = []
-        for line in filter(lambda x: re.match(r'\s*@type (.*): (.*)', x),
-                           docstring.split('\n')):
-            groups = re.match(r'\s*@type (.*): (.*)', line).groups()
-            partypes.append((groups[0], groups[1]))
+    #     # partypes is going to be a list of 2-tuples of parameter name and type
+    #     partypes = []
+    #     for line in filter(lambda x: re.match(r'\s*@type (.*): (.*)', x),
+    #                        docstring.split('\n')):
+    #         groups = re.match(r'\s*@type (.*): (.*)', line).groups()
+    #         partypes.append((groups[0], groups[1]))
 
-        rtype_line = filter(lambda x: re.match(r'\s*@rtype: .*', x),
-               docstring.split('\n'))[0]
-        rtype = re.match(r'\s*@rtype: (.*)', rtype_line).groups()[0]
+    #     rtype_line = filter(lambda x: re.match(r'\s*@rtype: .*', x),
+    #            docstring.split('\n'))[0]
+    #     rtype = re.match(r'\s*@rtype: (.*)', rtype_line).groups()[0]
 
-        tdecs.append(make_function_tdec(partypes, rtype))
+    #     tdecs.append(make_function_tdec(partypes, rtype))
 
-    p_debug("--- ^ Function typedec parsing ^ ---")
-            
+    # p_debug("--- ^ Function typedec parsing ^ ---")
+
     return tdecs
 
-def make_function_tdec(partypes, rtype, lineno, func_name):
-    # FIXME: this should be somehow built into the parser; this is a hack.
-    t = TypeSpecParser.parse("(" + ', '.join(partype) + ") -> " + rtype)
+# FIXME: Function stuff
+# def make_function_tdec(partypes, rtype, lineno, func_name):
+#     # FIXME: this should be somehow built into the parser; this is a hack.
+#     t = TypeSpecParser.parse("(" + ', '.join(partype) + ") -> " + rtype)
 
-    return TypeDec([func_name], t, lineno)
-    
-    
+#     return TypeDec([func_name], t, lineno)
+
+
 
 def parse_type_dec(line, lineno, var_name, type_spec):
     """Constructs a L{ast_extensions.TypeDec} from the type declaration in the
