@@ -139,7 +139,7 @@ def check_stmt(stmt):
 
     t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---")
 
-    assert hasattr(stmt, 'env') or stmt.is_compound(), "Simple statements need
+    assert hasattr(stmt, 'env') or stmt.is_compound(), "Simple statements need \
     to have environments"
 
     n = get_stmt_func_name(stmt.__class__.__name__)
