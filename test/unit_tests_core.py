@@ -11,7 +11,7 @@ sys.path.insert(0, '../src')
 from ast_extensions import *
 from typecheck import *
 from parse_file import *
-from parse_type import TypeSpecParser
+from parse_type import PytyType
 from errors import *
 import errors
 from settings import *
@@ -43,7 +43,7 @@ class PytyTests(unittest.TestCase):
         f = get_expr_func_name(expr_kind)
 
         if expected == "pass" or expected == "fail":
-            t = TypeSpecParser.parse(type)
+            t = PytyType(type)
 
         if expected == "pass":
             self.assertEqual(True, call_function(f, a, t, {}),
@@ -55,7 +55,7 @@ class PytyTests(unittest.TestCase):
             # if the expected value is an error, then make sure it
             # raises the right error.
             try:
-                t = TypeSpecParser.parse(type)
+                t = PytyType(type)
                 call_function(f, a, t, {})
             except eval(expected):
                 pass

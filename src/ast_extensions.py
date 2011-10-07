@@ -1,7 +1,7 @@
 import ast
 import logging
 
-from util import are_disjoint, disjoint_sums_of
+from util import are_disjoint, disjoint_sums_of, cname
 from parse_type import PytyType, TypeSpecParser
 
 def dump_self(self):
@@ -136,7 +136,7 @@ class TypeStore():
 
     def __repr__(self):
         return "TypeStore()"
-           
+
 class TypeDec(ast.stmt):
     """
     A TypeDec is an AST statement node which represents the assertion that a
@@ -166,7 +166,7 @@ class TypeDec(ast.stmt):
 
         @type targets: list of ast.Name
         @param targets: The list of variables which are having their types
-            declared. 
+            declared.
         @type t: PytyType
         @param t: The type which the C{targets} are declared as. If a string is
             provided, then a PytyType object will be created based on this
@@ -176,16 +176,23 @@ class TypeDec(ast.stmt):
         @type col: int
         @param col: The column number of the source code for the declaration.
         """
-    
+
         self.targets = targets
         self.lineno = line
         if col is not None:
             self.col_offset = col
 
         if type(t) == str:
-            self.t = TypeSpecParser.parse(t)
-        else:
+            self.t = PytyType(t)
+            assert self.t.__class__ == PytyType, \
+                   ("Got a %s back from TypeSpecParser.parse, not a PytyType" %
+                    cname(self.t.__class__))
+        elif t.__class__ == PytyType:
             self.t = t
+        else:
+            assert False, ("t needs to be specified as str or PytyType, not " +
+                           cname(t))
+
 
         # these are instance variables provided by AST nodes to allow traversal
         # / parsing of the nodes.
@@ -198,7 +205,7 @@ class TypeDec(ast.stmt):
     # well leave it out and keep things consistent?
     ## def __repr__(self):
     ##     result = "TypeDec : ( "
-        
+
     ##     for target in self.targets:
     ##         result += target.id + ","
     ##     result = result[0:-1]
@@ -207,7 +214,7 @@ class TypeDec(ast.stmt):
     ##               " col " + str(self.col_offset)
 
     ##     return result
-        
+
 
     @staticmethod
     def is_typedec(node):
@@ -309,7 +316,7 @@ class TypeDecASTModule:
 
         self.clone = clone
         self.typedecs = typedecs
-        
+
         # place each type declaration
         for typedec in typedecs:
             self.place_typedec(typedec)
@@ -321,7 +328,7 @@ class TypeDecASTModule:
         """Returns the original tree if this L{TypeDecAST} was initialized as a
         copy (with the clone flag), and returns C{None} otherwise.
         """
-        
+
         if clone:
             return self.original_tree
         else:
@@ -332,9 +339,9 @@ class TypeDecASTModule:
         essentially a wrapper for the L{TypeDec} method which places the typedec
         in a specified AST.
         """
-        
+
         typedec.place_in_module(self.tree)
-        
+
 ### ----------------------------------------------------------------------------
 ### Functions to add environment info to an AST populated with TypeDec nodes ---
 ### ----------------------------------------------------------------------------
@@ -359,13 +366,13 @@ class EnvASTModule(TypeDecASTModule):
         @param typed_tree: The L{TypeDecASTModule} to use to create the
         C{EnvASTModule}.
         """
-        
+
         # unwrap the TypeDecASTModule
         typed_tree = typed_tree.tree
-        
+
         # make sure that it is initialized with a module AST node.
         assert(typed_tree.__class__.__name__ == "Module")
-        
+
         if clone:
             self.tree = copy.deepcopy(typed_tree)
         else:
@@ -379,7 +386,7 @@ class EnvASTModule(TypeDecASTModule):
     def _embed_environment(self):
         """For each statement node of this L{EnvASTModule}'s underlying AST,
         adds an instance variable called C{env} which is the type environment at
-        that stage of execution. 
+        that stage of execution.
         """
 
         return EnvASTModule._embed_environment_stmt_list(self.tree.body, {})
@@ -429,12 +436,12 @@ class EnvASTModule(TypeDecASTModule):
 
             # this method should never be called when self.tree is a module.
             assert(False)
-            
+
         elif isinstance(node, ast.expr):
 
             # no environment will be added, so return None to signal this.
             return None
-        
+
         elif isinstance(node, ast.stmt):
             stmt = node
 
@@ -503,7 +510,7 @@ class EnvASTModule(TypeDecASTModule):
                 l = list(stmt._attributes)
                 l.append('env')
                 stmt._attributes = tuple(l)
-                
+
                 stmt_lists = stmt.stmt_lists()
 
                 for stmt_list in stmt_lists:

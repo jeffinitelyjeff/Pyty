@@ -3,7 +3,7 @@ import ast
 import logging
 
 from ast_extensions import TypeDec, TypeStore, TypeDecASTModule, EnvASTModule
-from parse_type import PytyType, TypeSpecParser
+from parse_type import PytyType
 from settings import *
 from logger import Logger
 from errors import *
@@ -117,5 +117,5 @@ def parse_type_dec(line, lineno, var_name, type_spec):
 
     col_offset = line.index("#:")
 
-    return TypeDec([name_node], TypeSpecParser.parse(type_spec), lineno,
+    return TypeDec([name_node], PytyType(type_spec), lineno,
                    col_offset)
