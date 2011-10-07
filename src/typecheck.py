@@ -63,9 +63,9 @@ def infer_expr(e, env):
         # Get the type of the collection.
         t = infer_expr(collection, env)
 
-        if collection.__class__ == ast.List:
+        if t.is_list():
             return t.list_t()
-        elif collection.__class__ == ast.Tuple:
+        elif t.is_tuple():
             slc = collection.slice
             if slc.__class__ == ast.Index:
                 return t.tuple_ts()[slc.value.n]
@@ -87,7 +87,7 @@ def infer_expr(e, env):
             else:
                 assert False, ("Slices should only be ast.Index or ast.Slice, "
                                "not " + cname(slc))
-        elif collection.__class__ == ast.Dict:
+        elif t.is_dict():
             # FIXME: implement when there are dictionaries and I have time
             pass
         else:
