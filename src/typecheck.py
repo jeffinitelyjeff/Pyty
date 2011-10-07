@@ -338,7 +338,6 @@ def check_Call_expr(call, t, env):
     """Checks whhether the AST expression node given by C{call} typechecks as a
     function call expression of type C{t}."""
 
-
     assert call.__class__ == ast.Call
 
     # FIXME: this probably doesn't handle lambdas; do we want to handle that
@@ -352,10 +351,6 @@ def check_Call_expr(call, t, env):
     return fun_t.function_ts()[1].is_subtype(t) # FIXME and
         # FIXME: now check each argument, but this is slightly more complicated
         # because the PytyType thinks of the function as a tuple...
-
-
-
-
 
 
 def check_Num_expr(num, t, env):
