@@ -80,8 +80,8 @@ def infer_expr(e, env):
                 return t.tuple_ts()[slc.value.n]
             elif slc.__class__ == ast.Slice:
                 # FIXME: gracefully fail instead of assertion error
-                assert slc.upper.__class__ == ast.Num and
-                       slc.lower.__class__ == ast.Num and
+                assert slc.upper.__class__ == ast.Num and \
+                       slc.lower.__class__ == ast.Num and \
                        slc.step.__class__ == ast.Num, "Pyty requires tuples \
                        to be sliced by numeric literals"
 
