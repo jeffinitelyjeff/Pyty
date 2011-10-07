@@ -17,24 +17,14 @@ def t_debug(s, cond=True):
 # HELPER FUNCTIONS ----------------------------------------------------------
 # ---------------------------------------------------------------------------
 
-def env_get_name(env, v):
-    """Get type of AST name node C{v} in type environment C{env}.
+def env_get(env, var_id):
+    """Look up variable id C{var_id} in type environment C{env}.
 
     @type env: {str: PType}
-    @type v: C{ast.Name}
+    @type var_id: C{str}
     @rtype: C{PType}
-    """
-
-    return env_get(env, v.id)
-
-def env_get(env, var_id):
-    """Returns the type of the variable given by AST node C{v} in environment
-    C{env}. Abstracts away needing to get the variable's name in order to look
-    it up in the environment dictionary. Also throws a TypeUnspecifiedError if
-    C{v} is not in C{env}.
-
-    @type env: dict of str and PytyType
-    @type v: C{ast.Name}
+    @raise L{TypeUnspecifiedError}: If C{env} does not have information about
+    C{var_id}
     """
 
     # make sure the variable is in the environment
@@ -279,7 +269,7 @@ def check_Assign_stmt(stmt):
                ("Assignment target variables should only appear in the Store "
                 "context, not " + cname(v.ctx))
 
-        t = env_get(stmt.env, v.id)
+        t = infer_expr(v, stmt.env)
         if not check_expr(e, t, stmt.env):
             return False
 
@@ -397,13 +387,13 @@ def check_Name_expr(name, t, env):
     else:
         # if not checking for a boolean, then we must be looking for a variable,
         # so we need to see if it matches the type in the environment.
-        spec_type = env_get_name(env, name)
+        spec_type = infer_expr(name, env)
 
         if not spec_type.is_subtype(t):
             t_debug(("Variable %s has been declared of type %s, so it does not "+
                     "typecheck as type %s") % (name.id, str(spec_type), str(t)))
 
-        return env_get_name(env, name).is_subtype(t)
+        return infer_expr(name, env).is_subtype(t)
 
 def check_BinOp_expr(binop, t, env):
     """Checks whether the AST expression node given by C{expr} typechecks as a
