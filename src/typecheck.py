@@ -509,8 +509,8 @@ def check_Subscript_expr(subs, t, env):
                 new_t = PytyType.gen_tuple_of([(t, n)])
             elif slc.__class__ == ast.Slice:
 
-                assert slc.upper.__class__ == ast.Num and
-                       slc.lower.__class__ == ast.Num and
+                assert slc.upper.__class__ == ast.Num and \
+                       slc.lower.__class__ == ast.Num and \
                        slc.step.__class__ == ast.Num, "Pyty restricts tuples \
                        to be sliced by numeric literals"
 
@@ -555,10 +555,10 @@ def check_Subscript_expr(subs, t, env):
         elif slc.__class__ == ast.Slice:
 
             # FIXME: Graceful failure instead of assertion error.
-            assert slc.upper.__class__ == ast.Num and
-                   slc.lower.__class__ == ast.Num and
-                   slc.step.__class__ == ast.Num, "Pyty restricts tuples to be \
-                   sliced by numeric literals"
+            assert (slc.upper.__class__ == ast.Num and
+                    slc.lower.__class__ == ast.Num and
+                    slc.step.__class__ == ast.Num), "Pyty restricts tuples to \
+                    be sliced by numeric literals"
 
             # We're getting a slice of a tuple, so the expected type better be a
             # tuple.
