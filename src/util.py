@@ -6,7 +6,20 @@ Contains useful helper functions that are not directly tied to the purpose of
 other source code files.
 """
 
-### Set operations -------------------------------------------------------------
+### Some short hand
+
+def cname(obj):
+    """Returns the name of the class of the provided object. This is helpful
+    because there are many assert statements which center around checking the
+    types of objects, and so it helps to include the name of classes in
+    assertion errors.
+
+    @rtype: C{str}.
+    """
+
+    return obj.__class__.__name__
+
+### Set operations
 
 def are_disjoint(set1, set2):
     """Determines whether two sets are disjoint.
@@ -19,7 +32,7 @@ def are_disjoint(set1, set2):
     @return: C{True} if C{set1} and C{set2} are disjoint (ie, if they do not
     share any common elements).
     """
-    
+
     return set1.intersection(set2) == set([])
 
 def disjoint_sums_of(sets, union):
@@ -34,7 +47,7 @@ def disjoint_sums_of(sets, union):
     @rtype: C{bool}
     @return: C{True} if C{union} is the disjoint sum of the sets in C{sets}.
     """
-    
+
     u = set([])
 
     for i in range(len(sets)):
