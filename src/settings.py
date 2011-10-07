@@ -1,6 +1,6 @@
 import logging
 
-LOG_LEVEL = logging.DEBUG 
+LOG_LEVEL = logging.DEBUG
 LOGFILE = "test_log.log"  # log file lives in the root of the app
 LOG_DIR = "../"           # all logging will be called from either src/ or
                           # test/, which have the root as their parent, and we
@@ -19,10 +19,10 @@ SPEC_EXPR_PREFIX = "expr_" # prefix for files specifying expr tests
 SPEC_MOD_PREFIX = "mod_"   # prefix for files specifying module tests
 
 FILE_DEBUG = True
-DEBUG_SUBJECT_FILE = "mod_while9.py"
+DEBUG_SUBJECT_FILE = "mod_while6.py"
 DEBUG_TYPEDEC_PARSING = False
 DEBUG_UNTYPED_AST     = False
 DEBUG_TYPEDECS        = False
 DEBUG_TYPED_AST       = False
-DEBUG_ENV_AST         = True
+DEBUG_ENV_AST         = False
 DEBUG_TYPECHECK       = True

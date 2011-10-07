@@ -61,7 +61,7 @@ def infer_expr(e, env):
     elif e.__class__ == ast.Subscript:
         collection = e.value
         # Get the type of the collection.
-        t = infer_expr(collection)
+        t = infer_expr(collection, env)
 
         if collection.__class__ == ast.List:
             return t.list_t()
@@ -94,9 +94,9 @@ def infer_expr(e, env):
             assert False, ("Subscripted collections should only be lists, "
                            "tuples, and dictionaries, not " + cname(collection))
     elif e.__class__ == ast.List:
-        return PytyType.list_of(infer_expr(e.value.elts[0]))
+        return PytyType.list_of(infer_expr(e.value.elts[0], env))
     elif e.__class__ == ast.Tuple:
-        return PytyType.tuple_of([infer_expr(elt) for elt in e.value.elts])
+        return PytyType.tuple_of([infer_expr(elt, env) for elt in e.value.elts])
     elif e.__class__ == ast.Dict:
         # FIXME: implement when there are dictionaries and I have time.
         pass
@@ -343,7 +343,7 @@ def check_Call_expr(call, t, env):
     # here?
 
     fun = call.func
-    fun_t = infer_expr(fun)
+    fun_t = infer_expr(fun, env)
 
     # FIXME: this doesn't actually handle proper function subtyping; remeber,
     # there's the more complicated subtyping relation for functions.
