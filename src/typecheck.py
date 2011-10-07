@@ -502,81 +502,21 @@ def check_Subscript_expr(subs, t, env):
     assert subs.__class__ == ast.Subscript
 
     collection = subs.value
+    collection_t = infer_expr(collection, env)
 
-    print infer_expr(collection, env)
-
-    if collection.__class__ == ast.Name:
-
-        collection_t = infer_expr(collection, env)
-
-        if collection_t.is_list():
-            new_t = PytyType.list_of(t)
-        elif collection_t.is_tuple():
-            slc = collection.slice
-            if slc.__class__ == ast.Index:
-                n = slc.value.n
-                new_t = PytyType.gen_tuple_of([(t, n)])
-            elif slc.__class__ == ast.Slice:
-
-                assert (slc.upper.__class__ == ast.Num and
-                        slc.lower.__class__ == ast.Num and
-                        slc.step.__class__ == ast.Num), \
-                       ("Pyty restricts tuples to be sliced by numeric "
-                        "literals, not by (%s, %s, %s)" %
-                        (cname(slc.upper), cname(slc.lower), cname(slc.step)))
-
-                # We're getting a slice of a tuple, so the expected type better
-                # be a tuple.
-                # FIXME: indicate type of failure - say that a tulpe type wasn't
-                # specified.
-                if not t.is_tuple(): return False
-                lower = slc.lower if slc.lower is not None else 0
-                upper = slc.upper if slc.upper is not None else len(collection_t)
-                step =  slc.step  if slc.step  is not None else 1
-                idxs = range(lower, upper, step)
-                new_t = PytyType.gen_tuple_of(
-                    [(collection_t[i], i) for i in idxs])
-            else:
-                assert False, ("Slices should only be ast.Index or ast.Slice, "
-                               "not " + cname(slc))
-            return check_expr(collection, new_t, env)
-        elif collection_t.is_dict():
-            # FIXME: implement when there are dictionaries and I have time.
-            pass
-        else:
-            assert False, ("Subscripted collections should only be lists, "
-                           "tuples, and dictionaries, not " + cname(collection))
-
-        return check_expr(collection, new_t, env)
-
-    if collection.__class__ == ast.List:
-
+    if collection_t.is_list():
         return check_expr(collection, PytyType.list_of(t), env)
-
-    elif collection.__class__ == ast.Tuple:
-
+    elif collection_t.is_tuple():
         slc = subs.slice
         if slc.__class__ == ast.Index:
-
-            if slc.value.__class__ != ast.Num:
-                return False # Pyty restricts tuple index to numeric literals,
-                             # should gracefully fail here and let the user know
-                             # that we just can't help them.
-            elif type(slc.value.n) != int:
-                return False # If we have a numeric literal, it better be an
-                             # int. Should actually fail here.
-            else:
-                return check_expr(collection.elts[slc.value.n], t, env)
-
+            new_t = PytyType.gen_tuple_of([(t, slc.value.n)])
         elif slc.__class__ == ast.Slice:
-
-            # FIXME: Graceful failure instead of assertion error.
             if (slc.upper.__class__ != ast.Num or
                     slc.lower.__class__ != ast.Num or
                     slc.step.__class__ != ast.Num):
                 return False # Pyty restricts tuple slices to numeric literals,
                              # should gracefully fail here and let the user know
-                             # that we just can't help them.
+                             # that we just can't help them FIXME.
             elif (type(slc.upper) != int or
                     type(slc.lower) != int or
                     type(slc.step) != int):
@@ -596,27 +536,15 @@ def check_Subscript_expr(subs, t, env):
                 idxs = range(lower, upper, step)
                 # FIXME: indicate failure - say that one of the expressions in the
                 # tuple didn't typecheck as one of the expected types.
-                return all([check_expr(collection[idxs[i]], t[i], env)
-                            for i in range(idxs)])
-
+                return all([check_expr(collection.elts[idxs[i]], t[i], env)
+                            for i in idxs])
         else:
-
-            # Some case I haven't considered yet.
-            # As far as I know, slices are only slices and indices.
-            assert False, ("Slices should only be ast.Slice or ast.Index, "
+            assert False, ("Slices should only be ast.Index or ast.Slice, "
                            "not " + cname(slc))
-
-    elif collection.__class__ == ast.Dict:
-
-        # FIXME: Will work on implementing this in the future, probably when
-        # there are actually dictionary types.
-        assert False, "Haven't implemented dictionary slicing yet"
-
+    elif collection_t.is_dict():
+        # FIXME: implement
+        return False
     else:
-
-        # FIXME: According to http://docs.python.org/library/stdtypes.html,
-        # all sequence types (str, unicode, list, tuple, bytearray, buffer,
-        # xrange), support slicing.
-        assert False, ("Pyty only supports lists, tuples, and dictionaries as "
-                       "subscriptable collections, not " + cname(collection))
+        assert False, ("Subscripted collections should only be lists, tuples, "
+                       "tuples, and dictionaries, not " + collection_t)
 
