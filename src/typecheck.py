@@ -270,7 +270,9 @@ def check_Assign_stmt(stmt):
                 "context, not " + cname(v.ctx))
 
         t = infer_expr(v, stmt.env)
-        if not check_expr(e, t, stmt.env):
+
+        # Tuples and tuple subscription aren't allowed in assignment.
+        if t.is_tuple() or not check_expr(e, t, stmt.env):
             return False
 
     # return True if we reached here, meaning that it matched with all targets
@@ -532,7 +534,7 @@ def check_Subscript_expr(subs, t, env):
             assert False, ("Subscripted collections should only be lists, "
                            "tuples, and dictionaries, not " + cname(collection))
 
-        return check_expr(infer_expr(collection, env), t, env)
+        return check_expr(collection, new_t, env)
 
     if collection.__class__ == ast.List:
 
@@ -540,7 +542,7 @@ def check_Subscript_expr(subs, t, env):
 
     elif collection.__class__ == ast.Tuple:
 
-        slc = collection.slice
+        slc = subs.slice
         if slc.__class__ == ast.Index:
 
             # FIXME: Graceful failure instead of assertion error.
@@ -596,5 +598,5 @@ def check_Subscript_expr(subs, t, env):
         # all sequence types (str, unicode, list, tuple, bytearray, buffer,
         # xrange), support slicing.
         assert False, ("Pyty only supports lists, tuples, and dictionaries as "
-                       "sliceable collections, not " + cname(collection))
+                       "subscriptable collections, not " + cname(collection))
 
