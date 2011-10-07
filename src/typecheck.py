@@ -550,7 +550,7 @@ def check_Subscript_expr(subs, t, env):
                    ("Pyty restricts tuples to be indexed by numeric literals, "
                     "not by " + cname(slc.value))
 
-            return check_expr(collection[slc.value.n], t, env)
+            return check_expr(collection.elts[slc.value.n], t, env)
 
         elif slc.__class__ == ast.Slice:
 
