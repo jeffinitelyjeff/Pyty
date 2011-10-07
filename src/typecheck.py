@@ -591,8 +591,8 @@ def check_Subscript_expr(subs, t, env):
 
             # Some case I haven't considered yet.
             # As far as I know, slices are only slices and indices.
-            assert False, ("Slices should only be ast.Slice or ast.Index, not "
-                           cname(slc))
+            assert False, ("Slices should only be ast.Slice or ast.Index, "
+                           "not " + cname(slc))
 
     elif collection.__class__ == ast.Dict:
 
