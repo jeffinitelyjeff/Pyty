@@ -57,7 +57,10 @@ def infer_expr(e, env):
     """
 
     if e.__class__ == ast.Name:
-        return env_get(env, e.id)
+        if e.id == 'True' or e.id == 'False':
+            return bool_t
+        else:
+            return env_get(env, e.id)
     elif e.__class__ == ast.Subscript:
         collection = e.value
         # Get the type of the collection.
@@ -94,12 +97,20 @@ def infer_expr(e, env):
             assert False, ("Subscripted collections should only be lists, "
                            "tuples, and dictionaries, not " + cname(collection))
     elif e.__class__ == ast.List:
-        return PytyType.list_of(infer_expr(e.value.elts[0], env))
+        return PytyType.list_of(infer_expr(e.elts[0], env))
     elif e.__class__ == ast.Tuple:
-        return PytyType.tuple_of([infer_expr(elt, env) for elt in e.value.elts])
+        return PytyType.tuple_of([infer_expr(elt, env) for elt in e.elts])
     elif e.__class__ == ast.Dict:
         # FIXME: implement when there are dictionaries and I have time.
         pass
+    elif e.__class__ == ast.Num:
+        if type(e.n) == int:
+            return int_t
+        elif type(e.n) == float:
+            return float_t
+        else:
+            assert False, ("Only handling int and float numbers for now, "
+                           "not " + cname(e.n))
     else:
         assert False, "Pyty doesn't handle inferring " + cname(e)
 
@@ -491,6 +502,8 @@ def check_Subscript_expr(subs, t, env):
     assert subs.__class__ == ast.Subscript
 
     collection = subs.value
+
+    print infer_expr(collection, env)
 
     if collection.__class__ == ast.Name:
 
