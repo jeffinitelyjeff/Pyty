@@ -545,39 +545,46 @@ def check_Subscript_expr(subs, t, env):
         slc = subs.slice
         if slc.__class__ == ast.Index:
 
-            # FIXME: Graceful failure instead of assertion error.
-            assert slc.value.__class__ == ast.Num, \
-                   ("Pyty restricts tuples to be indexed by numeric literals, "
-                    "not by " + cname(slc.value))
-
-            return check_expr(collection.elts[slc.value.n], t, env)
+            if slc.value.__class__ != ast.Num:
+                return False # Pyty restricts tuple index to numeric literals,
+                             # should gracefully fail here and let the user know
+                             # that we just can't help them.
+            elif type(slc.value.n) != int:
+                return False # If we have a numeric literal, it better be an
+                             # int. Should actually fail here.
+            else:
+                return check_expr(collection.elts[slc.value.n], t, env)
 
         elif slc.__class__ == ast.Slice:
 
             # FIXME: Graceful failure instead of assertion error.
-            assert (slc.upper.__class__ == ast.Num and
-                    slc.lower.__class__ == ast.Num and
-                    slc.step.__class__ == ast.Num), \
-                   ("Pyty restricts tuples to be sliced by numeric literals, "
-                    "not by (%s, %s, %s)" %
-                    (cname(slc.upper), cname(slc.lower), cname(slc.step)))
+            if slc.upper.__class__ != ast.Num or
+                    slc.lower.__class__ != ast.Num or
+                    slc.step.__class__ != ast.Num:
+                return False # Pyty restricts tuple slices to numeric literals,
+                             # should gracefully fail here and let the user know
+                             # that we just can't help them.
+            elif type(type(slc.upper) != int or
+                    type(slc.lower) != int or
+                    type(slc.step) != int):
+                return False # If we have numeric literals, they better be
+                             # ints. Should actually fail here.
+            else:
+                # We're getting a slice of a tuple, so the expected type better
+                # be a tuple.
+                if not t.is_tuple(): return False # a tuple type wasn't specified
 
-            # We're getting a slice of a tuple, so the expected type better be a
-            # tuple.
-            # FIXME: indicate failure - say that a tuple type wasn't specified.
-            if not t.is_tuple(): return False
-
-            lower = slc.lower if slc.lower is not None else 0
-            upper = slc.upper if slc.upper is not None else len(collection)
-            step  = slc.step  if slc.step  is not None else 1
-            # t is going to be a tuple of expected types; idxs[i] is going to be
-            # the index of the array that the expected type t[i] is expected to
-            # match with.
-            idxs = range(lower, upper, step)
-            # FIXME: indicate failure - say that one of the expressions in the
-            # tuple didn't typecheck as one of the expected types.
-            return all([check_expr(collection[idxs[i]], t[i], env)
-                        for i in range(idxs)])
+                lower = slc.lower if slc.lower is not None else 0
+                upper = slc.upper if slc.upper is not None else len(collection)
+                step  = slc.step  if slc.step  is not None else 1
+                # t is going to be a tuple of expected types; idxs[i] is going
+                # to be the index of the array that the expected type t[i] is
+                # expected to match with.
+                idxs = range(lower, upper, step)
+                # FIXME: indicate failure - say that one of the expressions in the
+                # tuple didn't typecheck as one of the expected types.
+                return all([check_expr(collection[idxs[i]], t[i], env)
+                            for i in range(idxs)])
 
         else:
 
