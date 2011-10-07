@@ -180,6 +180,9 @@ def check_expr(expr, t, env):
     functions which typecheck C{code} as the specific kind of expression. The
     function to call is chosen from the class name of C{node}."""
 
+    assert isinstance(expr, ast.expr), "Should be typechecking an expr node"
+    assert isinstance(t, PytyType), "Should be checking against PytyType"
+
     n = get_expr_func_name(expr.__class__.__name__)
 
     t_debug("-- v Typechecking expr as " + str(t) + " v --\nExpr: " +
