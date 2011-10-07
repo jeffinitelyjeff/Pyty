@@ -58,7 +58,7 @@ def infer_expr(e, env):
 
     if e.__class__ == ast.Name:
         return env_get(env, e.id)
-    elif e.__class__ == ast.Subscription:
+    elif e.__class__ == ast.Subscript:
         collection = e.value
         # Get the type of the collection.
         t = infer_expr(collection)
