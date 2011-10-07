@@ -122,7 +122,7 @@ def check_mod(node):
     t_debug("----- v Typechecking module v -----")
 
     if node.__class__ != ast.Module:
-        t_debug("Returning false cuz this isn't a module")
+        t_debug("Returning false because this isn't a module")
         t_debug("----- ^ Typechecking module ^ -----")
         return False
 
