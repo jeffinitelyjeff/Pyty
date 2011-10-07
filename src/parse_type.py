@@ -9,13 +9,13 @@ class PytyType:
     generator. Methods are provided to access element types, which are only
     wrapped into PytyTypes once they are accessed.
     """
-    
+
     def __init__(self, typ = None):
         if typ is not None:
             self.t = TypeSpecParser.parse(typ)
         else:
             self.t = TypeSpecParser.parse("_")
-    
+
     def __repr__(self):
         return reverse_parse(self.t)
 
@@ -56,7 +56,7 @@ class PytyType:
         p = PytyType()
         p.t = Tup([t.t for t in ts])
         return p
-        
+
     @staticmethod
     def dict_of(t0, t1):
         """Creates a PytyType object which represents a dictionary mapping
@@ -71,7 +71,7 @@ class PytyType:
         p = PytyType()
         p.t = Dct(t0.t, t1.t)
         return p
-    
+
 
     def is_bool(self):
         return self.t == "bool"
@@ -132,7 +132,7 @@ def reverse_parse(type_ast):
         if len(type_ast.elt_ts()) == 1:
             return "(" + recurses[0] + ",)"
         else:
-            return "(" + ", ".join([str(x) for x in recurses])
+            return "(" + ", ".join([str(x) for x in recurses]) + ")"
     elif type_ast.__class__.__name__ == "Dct":
         recurse0 = reverse_parse(type_ast.key_t())
         recurse1 = reverse_parse(type_ast.val_t())
@@ -143,7 +143,7 @@ def reverse_parse(type_ast):
         return recurse0 + " -> " + recurse1
     else:
         assert(False) # This should be a disjoint sum.
-    
+
 def better_sexpr_to_tree(a):
     if type(a) == str:
         return a
@@ -153,7 +153,7 @@ def better_sexpr_to_tree(a):
 class Lst(Node):
     def elt_t(self):
         return self._Node__children[0]
-    
+
 class Tup(List):
     def elt_ts(self):
         return [t for t in self]
@@ -164,7 +164,7 @@ class Dct(Node):
 
     def val_t(self):
         return self._Node__children[1]
-    
+
 class Fun(Node):
     def in_t(self):
         return self._Node__children[0]
@@ -174,7 +174,7 @@ class Fun(Node):
 
 def make_unit(toks):
     if toks[0] == "(" and toks[1] == ")":
-        return "unit" 
+        return "unit"
 
 class TypeSpecParser:
     int_tok = Token(r'int')
@@ -221,7 +221,7 @@ class TypeSpecParser:
             return TypeSpecParser.typ.parse(s)[0]
         except (RuntimeLexerError, FullFirstMatchException):
             raise TypeIncorrectlySpecifiedError()
-        
+
 
     @staticmethod
     def print_parse(s):
@@ -229,7 +229,7 @@ class TypeSpecParser:
             return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
         except (RuntimeLexerError, FullFirstMatchException):
             raise TypeIncorrectlySpecifiedError()
-        
+
 
 # NOTE this is a little bit hacky; we're passing the parsed type because we know
 # what it should be.
