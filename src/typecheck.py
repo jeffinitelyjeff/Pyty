@@ -558,13 +558,13 @@ def check_Subscript_expr(subs, t, env):
         elif slc.__class__ == ast.Slice:
 
             # FIXME: Graceful failure instead of assertion error.
-            if slc.upper.__class__ != ast.Num or
+            if (slc.upper.__class__ != ast.Num or
                     slc.lower.__class__ != ast.Num or
-                    slc.step.__class__ != ast.Num:
+                    slc.step.__class__ != ast.Num):
                 return False # Pyty restricts tuple slices to numeric literals,
                              # should gracefully fail here and let the user know
                              # that we just can't help them.
-            elif type(type(slc.upper) != int or
+            elif (type(slc.upper) != int or
                     type(slc.lower) != int or
                     type(slc.step) != int):
                 return False # If we have numeric literals, they better be
