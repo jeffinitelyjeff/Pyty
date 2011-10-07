@@ -121,7 +121,7 @@ def check_mod(node):
 
     t_debug("----- v Typechecking module v -----")
 
-    if not isinstance(node, ast.Module):
+    if node.__class__ != ast.Module:
         t_debug("Returning false cuz this isn't a module")
         t_debug("----- ^ Typechecking module ^ -----")
         return False
@@ -239,7 +239,7 @@ def check_TypeDec_stmt(stmt):
     """Any TypeDec should typecheck correctly as long as it doesn't try to
     reassign a type."""
 
-    assert isinstance(stmt, TypeDec)
+    assert stmt.__class__ == TypeDec
 
     for target in stmt.targets:
         if target in stmt.old_env:
@@ -259,7 +259,7 @@ def check_Assign_stmt(stmt):
         a = b = 5
     and does not handle assigning to lists or tuples."""
 
-    assert isinstance(stmt, ast.Assign)
+    assert stmt.__class__ == ast.Assign
 
     e = stmt.value
 
@@ -282,7 +282,7 @@ def check_If_stmt(stmt):
     statement. This requires that the test typecheck as a bolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
-    assert isinstance(stmt, ast.If)
+    assert stmt.__class__ == ast.If
 
     test = stmt.test
     body = stmt.body
@@ -296,7 +296,7 @@ def check_While_stmt(stmt):
     statement. This requires that the test typecheck as a boolean and that the
     body and orelse branches both typecheck as lists of statements."""
 
-    assert isinstance(stmt, ast.While)
+    assert stmt.__class__ == ast.While
 
     # this code is IDENTICAL to the If stuff; should consider refactoring into
     # helper function.
@@ -362,14 +362,14 @@ def check_Num_expr(num, t, env):
     """Checks whether the AST expression node given by C{num} typechecks as a
     num expression (ie, a numeric literal) of type C{t}."""
 
-    assert isinstance(num, ast.Num)
+    assert num.__class__ == ast.Num
 
     n = num.n
 
     if t.is_int():
-        return isinstance(n, int)
+        return type(n) == int
     if t.is_float():
-        return isinstance(n, float) or isinstance(n, int)
+        return type(n) in [int, float]
     else:
         return False
 
@@ -378,10 +378,10 @@ def check_Name_expr(name, t, env):
     name expression. Name expressions are used for variables and for boolean
     literals."""
 
-    assert isinstance(name, ast.Name)
+    assert name.__class__ == ast.Name
 
     # We should only reach here if we're loading the variable, not storing it.
-    assert isinstance(name.ctx, ast.Load)
+    assert name.ctx.__class__ == ast.Load
 
     id = name.id
 
@@ -406,7 +406,7 @@ def check_BinOp_expr(binop, t, env):
     binary operation expression. This will only typecheck if C{t} is an int
     or a float."""
 
-    assert isinstance(binop, ast.BinOp)
+    assert binop.__class__ == ast.BinOp
 
     l = binop.left
     r = binop.right
@@ -423,7 +423,7 @@ def check_Compare_expr(compare, t, env):
     NOTE: Right now, this only handles binary comparisons. That is, it only
     handles expressions of the form x>y or x==y, not x==y==z or x>y>z."""
 
-    assert isinstance(compare, ast.Compare)
+    assert compare.__class__ == ast.Compare
 
     # the Compare AST node anticipates expressions of the form x > y > z, in
     # which case x would be left, y would be comparators[0], and z would be
@@ -440,7 +440,7 @@ def check_List_expr(list, t, env):
     list expression as specified by L{parse_type.PytyType} C{t}.
     """
 
-    assert isinstance(list, ast.List)
+    assert list.__class__ == ast.List
 
     if t.is_list():
         element_t = t.list_t()
@@ -461,7 +461,7 @@ def check_Tuple_expr(tup, t, env):
     tuple expression as specified by L{parse_type.PytyType} C{t}.
     """
 
-    assert isinstance(tup, ast.Tuple)
+    assert tup.__class__ == ast.Tuple
 
     if t.is_tuple():
         element_ts = t.tuple_ts()
