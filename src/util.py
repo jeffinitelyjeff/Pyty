@@ -12,12 +12,16 @@ def cname(obj):
     """Returns the name of the class of the provided object. This is helpful
     because there are many assert statements which center around checking the
     types of objects, and so it helps to include the name of classes in
-    assertion errors.
+    assertion errors. Will also include the module name if it exists, so we get
+    things like ast.Name instead of just Name.
 
     @rtype: C{str}.
     """
 
-    return obj.__class__.__name__
+    if hasattr(obj, "__module__"):
+        return obj.__module__ + "." + obj.__class__.__name__
+    else:
+        return obj.__class__.__name__
 
 ### Set operations
 
