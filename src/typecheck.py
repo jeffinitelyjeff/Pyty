@@ -569,10 +569,22 @@ def check_Subscript_Index_expr(subs, t, env):
     environment `env`. Assumes `subs` is a Subscript node representing an index.
 
     `ast.Subscript`
-      - `value`: the collection being subscripted
+      - `value`: the collection being subscripted (`ast.List` or `ast.Tuple`)
+        + `elts`: the elements of the collection
       - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
       - `slice`: `ast.Index`
         + `value`: expr used as subscript index
+
+    `ast.List`
+      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
+      - `elts`: the elements of the list
+
+    `ast.Tuple`
+      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
+      - `elts`: the elements of the tuple
+
+    `ast.Num`
+      - `n`: the value of the number
     """
 
     assert subs.__class__ == ast.Subscript
@@ -580,6 +592,7 @@ def check_Subscript_Index_expr(subs, t, env):
 
     col = subs.value
     idx = subs.slice.value
+    els = subs.value.elts
 
     # We actually need to know the type of the item we're indexing. It's not
     # enough to know the type of the AST node; we have to do a limited form of
@@ -588,11 +601,42 @@ def check_Subscript_Index_expr(subs, t, env):
     col_t = infer_expr(col, env)
 
     if col_t.is_list():
+
         # The index must be an int, and the collection must be a list of the
         # expected type.
         return (check_expr(idx, int_t, env) and
                 check_expr(col, PytyType.list_of(t), env))
+
     elif col_t.is_tuple():
+
+        # # The index must be a numeric literal.
+        # if type(idx) != ast.Num: return False
+
+        # n = idx.n
+
+        # # The index must be an integer numeric literal.
+        # if type(n) != int: return False
+
+        # # The collection must be long enough to be indexed by `idx`.
+        # if len(els) < n: return False
+
+        # # The element of the tuple at the subscripted position must typecheck as
+        # # the expected type.
+        # return check_expr(els[n], t, env)
+
+        # FIXME I THINK THIS IS WRONG BECAUSE WE CAN'T JUST ACCESS THE TULPE; WE
+        # DON'T KNOW IT'S A TUPLE LITERAL
+        return (type(idx) == ast.Num and
+                type(idx.n) == int and
+                len(els) > idx.n and
+                check_expr(els[idx.n], t, env))
+
+
+
+
+
+
+
         # Check if the collection is a tuple with the desired type in the
         # specified index.
         # FIXME: need to make sure the index is an int literal
