@@ -485,18 +485,20 @@ def check_Tuple_expr(tup, t, env):
         return False
 
 def check_Subscript_expr(subs, t, env):
-    """Checks whether the AST expression node given by C{subs} typechecks as a
-    subscript expression of L{parse_type.PytyType} C{t}. If it is the subscript
-    of a list, then the list must have the type expecetd by C{t}; if it is the
-    subscript of a tuple, then the index must be an integer and the tuple must
-    have the correct type in the specified index.
+    """
+    Check if AST Subscript expr node `subs` typechecks as type `t` under
+    environment `env`.
 
-    If the subscript's value (which is the collection it's subscripting) is a
-    list, then we just need to make sure that the list typechecks as a list of
-    C{t}. If the value is a tuple, then we need to make sure that the tuple
-    typechecks as a tuple of type C{PytyType * ... * PytyType * t * PytyType
-    ... * PytyType}, where C{t} is in the ith position and i is the number
-    literal that is provided as the subscription index.
+    `ast.Subscript`
+      - `value`: the collection being subscripted
+      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
+      - `slice`: kind of subscript (`ast.Index` or `ast.Load`)
+
+    For the purposes of typechecking, we can mostly ignore the context because
+    this should be automatically handled by the structure of the typechecking
+    algorithm. `ast.Store` contexts only show up on the left-hand side of
+    assignment statements, so they will be typechecked by the assignment
+    statement typechecking rule, not by the generic subscript typechecking rule.
     """
 
     assert subs.__class__ == ast.Subscript
@@ -563,24 +565,33 @@ def check_Subscript_expr(subs, t, env):
 
 def check_Subscript_Index_expr(subs, t, env):
     """
-    Check if AST Subscript expr node `subs` typechecks as type `t`. Assumes
-    `subs` is a Subscript node representing an index, not a slice (ie, l[2], not
-    l[2:5]).
+    Check if AST Subscript expr node `subs` typechecks as type `t` under
+    environment `env`. Assumes `subs` is a Subscript node representing an index.
+
+    `ast.Subscript`
+      - `value`: the collection being subscripted
+      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
+      - `slice`: `ast.Index`
+        + `value`: expr used as subscript index
     """
 
     assert subs.__class__ == ast.Subscript
     assert subs.slice.__class__ == ast.Index
 
-    # To typecheck an index expression, we actually need to know the type of the
-    # item we're indexing. It's not enough to know the type of the AST node; we
-    # have to do a limited form of type inference to determine the actual type.
+    col = subs.value
+    idx = subs.slice.value
+
+    # We actually need to know the type of the item we're indexing. It's not
+    # enough to know the type of the AST node; we have to do a limited form of
+    # type inference to determine the actual type.
     col = subs.value
     col_t = infer_expr(col, env)
 
     if col_t.is_list():
-        # Check if the collection is a list of the desired type.
-        # FIXME: need to check if the index typechecks as int
-        return check_expr(col, PytyType.list_of(t), env)
+        # The index must be an int, and the collection must be a list of the
+        # expected type.
+        return (check_expr(idx, int_t, env) and
+                check_expr(col, PytyType.list_of(t), env))
     elif col_t.is_tuple():
         # Check if the collection is a tuple with the desired type in the
         # specified index.
