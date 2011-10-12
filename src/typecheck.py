@@ -56,6 +56,8 @@ def infer_expr(e, env):
     @type e: C{ast.Expr}
     """
 
+    # FIXME clean this up and write up inference algorithm
+
     if e.__class__ == ast.Name:
         if e.id == 'True' or e.id == 'False':
             return bool_t
@@ -569,22 +571,13 @@ def check_Subscript_Index_expr(subs, t, env):
     environment `env`. Assumes `subs` is a Subscript node representing an index.
 
     `ast.Subscript`
-      - `value`: the collection being subscripted (`ast.List` or `ast.Tuple`)
-        + `elts`: the elements of the collection
+      - `value`: the collection being subscripted (`ast.Name` or a collection literal)
       - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
       - `slice`: `ast.Index`
         + `value`: expr used as subscript index
 
-    `ast.List`
-      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
-      - `elts`: the elements of the list
-
-    `ast.Tuple`
-      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
-      - `elts`: the elements of the tuple
-
     `ast.Num`
-      - `n`: the value of the number
+      - `n`: the number value
     """
 
     assert subs.__class__ == ast.Subscript
@@ -592,7 +585,6 @@ def check_Subscript_Index_expr(subs, t, env):
 
     col = subs.value
     idx = subs.slice.value
-    els = subs.value.elts
 
     # We actually need to know the type of the item we're indexing. It's not
     # enough to know the type of the AST node; we have to do a limited form of
@@ -609,41 +601,18 @@ def check_Subscript_Index_expr(subs, t, env):
 
     elif col_t.is_tuple():
 
-        # # The index must be a numeric literal.
-        # if type(idx) != ast.Num: return False
+        col_ts = col_t.tuple_ts()
 
-        # n = idx.n
+        # FIXME: need to ensure type inference algorithm can actually get full
+        # list of tuple types.
 
-        # # The index must be an integer numeric literal.
-        # if type(n) != int: return False
-
-        # # The collection must be long enough to be indexed by `idx`.
-        # if len(els) < n: return False
-
-        # # The element of the tuple at the subscripted position must typecheck as
-        # # the expected type.
-        # return check_expr(els[n], t, env)
-
-        # FIXME I THINK THIS IS WRONG BECAUSE WE CAN'T JUST ACCESS THE TULPE; WE
-        # DON'T KNOW IT'S A TUPLE LITERAL
         return (type(idx) == ast.Num and
                 type(idx.n) == int and
-                len(els) > idx.n and
-                check_expr(els[idx.n], t, env))
+                len(col_ts) > idx.n and
+                col_ts[idx.n].is_subtype(t))
 
-
-
-
-
-
-
-        # Check if the collection is a tuple with the desired type in the
-        # specified index.
-        # FIXME: need to make sure the index is an int literal
-        # FIXME: need to document the structure of the AST node
-        # FIXME: need to actually work on the PytyType implementation of this
-        # (being able to specify a tuple with the type in the desired slot)
     else:
+
         # FIXME: I think ast.Index should only happen on list and tuple, need to
         # verify this.
 
@@ -666,7 +635,9 @@ def check_Subscript_Slice_expr(subs, t, env):
     if col_t.is_list():
         # The type of the resulting slice should be the same as the type of the
         # original collection.
-        # FIXME: need to check if the slice arguments typecheck as int
+        # FIXME: need to check if
+
+the slice arguments typecheck as int
         return check_expr(col, t, env)
     elif col_t.is_tuple():
         # FIXME: Check if the collection is a tuple with the the desired types
@@ -674,7 +645,6 @@ def check_Subscript_Slice_expr(subs, t, env):
     else:
         # FIXME: I think ast.Slice should only happen on list and tuple, need ot
         # verify this.
-
 
 
 
