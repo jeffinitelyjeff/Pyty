@@ -734,8 +734,8 @@ def check_Subscript_Index_expr(subs, t, env):
     col = subs.value
     col_t = infer_expr(col, env)
 
-    assert col_t.is_list() or col_t.is_tuple, \
-       "Subscripted collection type should be list or tuple, not " + col_t
+    assert col_t.is_list() or col_t.is_tuple(), \
+       "Subscripted collection type should be list or tuple, not %s" % col_t
 
     if col_t.is_list():
 

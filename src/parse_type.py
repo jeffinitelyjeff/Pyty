@@ -11,7 +11,9 @@ class PytyType:
     """
 
     def __init__(self, typ = None):
-        if typ is not None:
+        if typ.__class__ in [Lst, Tup, Dct, Fun]:
+            self.t = typ
+        elif typ is not None:
             self.t = TypeSpecParser.parse(typ)
         else:
             self.t = TypeSpecParser.parse("_")
@@ -124,25 +126,25 @@ class PytyType:
 def reverse_parse(type_ast):
     if type(type_ast) == str:
         return type_ast
-    elif type_ast.__class__.__name__ == "Lst":
+    elif type_ast.__class__ == Lst:
         recurse = reverse_parse(type_ast.elt_t())
         return "[" + recurse + "]"
-    elif type_ast.__class__.__name__ == "Tup":
+    elif type_ast.__class__ == Tup:
         recurses = [reverse_parse(t) for t in type_ast.elt_ts()]
         if len(type_ast.elt_ts()) == 1:
             return "(" + recurses[0] + ",)"
         else:
             return "(" + ", ".join([str(x) for x in recurses]) + ")"
-    elif type_ast.__class__.__name__ == "Dct":
+    elif type_ast.__class__ == Dct:
         recurse0 = reverse_parse(type_ast.key_t())
         recurse1 = reverse_parse(type_ast.val_t())
         return "{" + recurse0 + " : " + recurse1 + "}"
-    elif type_ast.__class__.__name__ == "Fun":
+    elif type_ast.__class__ == Fun:
         recurse0 = reverse_parse(type_ast.in_t())
         recurse1 = reverse_parse(type_ast.out_t())
         return recurse0 + " -> " + recurse1
     else:
-        assert False, "Weird type_ast class name: " + type_ast.__class__.__name__
+        assert False, "Weird type_ast class name: " + str(type_ast.__class__)
 
 def better_sexpr_to_tree(a):
     if type(a) == str:
@@ -220,7 +222,7 @@ class TypeSpecParser:
         try:
             return TypeSpecParser.typ.parse(s)[0]
         except (RuntimeLexerError, FullFirstMatchException):
-            raise TypeIncorrectlySpecifiedError()
+            raise TypeIncorrectlySpecifiedError(s)
 
 
     @staticmethod
