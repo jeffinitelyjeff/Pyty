@@ -76,11 +76,14 @@ class TypeSpecTests(unittest.TestCase):
         eq( p('[[[str]]]'),
             s(Lst(Lst(Lst('str')))) )
 
+        eq( p('[(int, bool)]'),
+            s(Lst(Tup(['int', 'bool']))) )
 
-        # self.assertEqual(p('[(int,{float: str})]'),
-        #                  s(Lst(Tup(['int', Dct('float', 'str')]))))
-        # self.assertEqual(p('[(int,{float:str})]'),
-        #                  p('[(int, {float: str})]'))
+        eq( p('[(int,{float:str})]'),
+            p('[(int, {float: str})]') )
+
+        eq( p('[(int, {float: str})]'),
+            s(Lst(Tup(['int', Dct('float', 'str')]))) )
 
     def test_tuple(self):
         eq = self.assertEqual

@@ -735,7 +735,8 @@ def check_Subscript_Index_expr(subs, t, env):
     col_t = infer_expr(col, env)
 
     assert col_t.is_list() or col_t.is_tuple(), \
-       "Subscripted collection type should be list or tuple, not %s" % col_t
+       "Subscripted collection type should be list or tuple, not %s" % col_t + \
+       "\n" + ast.dump(subs) + str(infer_expr(ast.parse("(True, 4)").body[0].value, {}))
 
     if col_t.is_list():
 
