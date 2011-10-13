@@ -202,14 +202,14 @@ def infer_Subscript_expr(subs, env):
     """
 
     assert subs.__class__ == ast.Subscript
-    assert subs.slice.__class__ in [ast.Index, ast.Slice],
+    assert subs.slice.__class__ in [ast.Index, ast.Slice], \
         ("Subscript slice should only be ast.Index or ast.Slice, not " +
          cname(subs.slice))
 
     col = sub.value
     col_t = infer_expr(col, env)
 
-    assert col_t.is_list() or col_t.is_tuple(),
+    assert col_t.is_list() or col_t.is_tuple(), \
         ("The collection being subscripted should be a list or tuple type, "
          "not " + col_t)
 
@@ -505,7 +505,7 @@ def check_Call_expr(call, t, env):
 
     # FIXME: this doesn't actually handle proper function subtyping; remeber,
     # there's the more complicated subtyping relation for functions.
-    return fun_t.function_ts()[1].is_subtype(t) # FIXME and
+    return fun_t.function_ts()[1].is_subtype(t)
         # FIXME: now check each argument, but this is slightly more complicated
         # because the PytyType thinks of the function as a tuple...
 
@@ -639,10 +639,10 @@ def check_Subscript_expr(subs, t, env):
       - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
       - `slice`: kind of subscript (`ast.Index` or `ast.Load`)
 
-    For the purposes of typechecking, we can mostly ignore the context because
-    this should be automatically handled by the structure of the typechecking
-    algorithm. `ast.Store` contexts only show up on the left-hand side of
-    assignment statements, so they will be typechecked by the assignment
+    For the purposes of typechecking, we should be able to ignore the context
+    because this should be automatically handled by the structure of the
+    typechecking algorithm. `ast.Store` contexts only show up on the left-hand
+    side of assignment statements, so they will be typechecked by the assignment
     statement typechecking rule, not by the generic subscript typechecking rule.
     """
 
@@ -714,8 +714,7 @@ def check_Subscript_Index_expr(subs, t, env):
     environment `env`. Assumes `subs` is a Subscript node representing an index.
 
     `ast.Subscript`
-      - `value`: the collection being subscripted (`ast.Name` or a collection literal)
-      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
+      - `value`: the collection being subscripted
       - `slice`: `ast.Index`
         + `value`: expr used as subscript index
 
@@ -735,35 +734,45 @@ def check_Subscript_Index_expr(subs, t, env):
     col = subs.value
     col_t = infer_expr(col, env)
 
+    assert col_t.is_list() or col_t.is_tuple, \
+       "Subscripted collection type should be list or tuple, not " + col_t
+
     if col_t.is_list():
 
-        # The index must be an int, and the collection must be a list of the
-        # expected type.
+        # The index must typecheck as an int, and the collection must typecheck
+        # as a list of the expected type.
         return (check_expr(idx, int_t, env) and
                 check_expr(col, PytyType.list_of(t), env))
 
-    elif col_t.is_tuple():
+    else: # col_t.is_tuple()
 
         col_ts = col_t.tuple_ts()
 
         # FIXME: need to ensure type inference algorithm can actually get full
         # list of tuple types.
 
+        # The index must be be a nonnegative int smaller than the length of the
+        # tuple, and the type at the specified position must be a subtype of the
+        # expected type.
         return (type(idx) == ast.Num and
                 type(idx.n) == int and
-                len(col_ts) > idx.n and
+                0 <= idx.n < len(col_ts) and
                 col_ts[idx.n].is_subtype(t))
-
-    else:
-
-        # FIXME: I think ast.Index should only happen on list and tuple, need to
-        # verify this.
 
 def check_Subscript_Slice_expr(subs, t, env):
     """
     Check if AST Subscript expr node `subs` typechecks as type `t` under type
-    environment `env`. Assumes `subs` is a Subscript node representing a slice,
-    not an index (ie, l[2:5], not l[3]).
+    environment `env`. Assumes `subs` is a Subscript node representing a slice.
+
+    `ast.Subscript`
+      - `value`: the collection being subscripted
+      - `slice`: `ast.Slice`
+        + `lower`: expr used as first arg to slice
+        + `upper`: expr used as second arg to slice
+        + `step`: expr used as third arg to slice
+
+    `ast.Num`
+      - `n`: the number value
     """
 
     assert subs.__class__ == ast.Subscript
@@ -771,21 +780,50 @@ def check_Subscript_Slice_expr(subs, t, env):
 
     # To typecheck a slice expression, we actually need to know the type of the
     # item we're indexing. It's not enough to know the type of the AST node; we
-    # ahev to do a limited form of type inference to determine the actual type.
+    # have to do a limited form of type inference to determine the actual type.
     col = subs.value
     col_t = infer_expr(col, env)
 
+    assert col_t.is_list() or col_t.is_tuple(), \
+        "Subscripted collection must be list or tuple type, not " + col_t
+
+    l = subs.slice.lower
+    u = subs.slice.upper
+    s = subs.slice.step
+
     if col_t.is_list():
-        # The type of the resulting slice should be the same as the type of the
-        # original collection.
-        # FIXME: need to check if the slice arguments typecheck as int
-        return check_expr(col, t, env)
-    elif col_t.is_tuple():
-        # FIXME: Check if the collection is a tuple with the the desired types
-        # in the desired locations by getting the types of t?
-    else:
-        # FIXME: I think ast.Slice should only happen on list and tuple, need ot
-        # verify this.
+
+        # We must be expecting a list, the slice parameters must typecheck as
+        # ints, and the collection must be storing something that's a subtype of
+        # what's being stored in the expected type.
+        return ( t.is_list() and
+                 (l is None or check_expr(l, int_t, env)) and
+                 (u is None or check_expr(u, int_t, env)) and
+                 (s is None or check_expr(s, int_t, env)) and
+                 col_t.list_t().is_subtype(t.list_t()) )
+
+    else: # col_t.is_tuple()
+
+        # Rule out some easy failure cases.
+        if not t.is_tuple():
+            return False # TODO Not expecting a tuple type
+        elif [x.__class__ == ast.Num for x in [l, u, s]] != [True, True, True]:
+            return False # TODO Not numeric literals
+        elif [type(x) == int for x in [l, u, s]] != [True, True, True]:
+            return False # TODO Not int literals
+        else:
+
+            low = l if l is not None else 0
+            upp = u if u is not None else len(col_t)
+            stp = s if s is not None else 1
+
+            # Get the indices the slice will hit.
+            idxs = range(low, upp, step)
+
+            # Each hit type must be a subtype of the corresponding expected type.
+            return all([
+                col_t.tuple_ts()[i].is_subtype(t.tuple_ts()[i]) for i in idxs])
+
 
 
 
