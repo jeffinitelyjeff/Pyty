@@ -55,7 +55,7 @@ def infer_expr(e, env):
     assert isinstance(e, ast.expr), \
            "Should be inferring type of an expr node, not a " + cname(e)
 
-    n = get_infer_expr_func_name(expr.__class__.__name__)
+    n = get_infer_expr_func_name(e.__class__.__name__)
 
     # If we get a KeyError, then we're trying to infer the type of an AST node
     # that is not in the very limited subset of the language that we're trying
@@ -206,7 +206,7 @@ def infer_Subscript_expr(subs, env):
         ("Subscript slice should only be ast.Index or ast.Slice, not " +
          cname(subs.slice))
 
-    col = sub.value
+    col = subs.value
     col_t = infer_expr(col, env)
 
     assert col_t.is_list() or col_t.is_tuple(), \
@@ -219,7 +219,7 @@ def infer_Subscript_expr(subs, env):
 
             # If we access an individual element of a list of type [a], then the
             # individual element has type a.
-            return t.list_t()
+            return col_t.list_t()
 
         else: # this means col_t.is_tuple()
 
