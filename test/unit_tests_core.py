@@ -40,7 +40,7 @@ class PytyTests(unittest.TestCase):
 
         a = ast.parse(s).body[0].value
 
-        f = get_expr_func_name(expr_kind)
+        f = get_check_expr_func_name(expr_kind)
 
         if expected == "pass" or expected == "fail":
             t = PytyType(type)
