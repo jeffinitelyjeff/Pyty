@@ -195,7 +195,69 @@ def infer_Tuple_expr(tup, env):
 
     return PytyType.tuple_of([infer_expr(el, env) for el in els])
 
+def infer_Subscript_expr(subs, env):
+    """
+    Determine the type of AST `Subscript` expression under type environment
+    `env`.
+    """
 
+    assert subs.__class__ == ast.Subscript
+    assert subs.slice.__class__ in [ast.Index, ast.Slice],
+        ("Subscript slice should only be ast.Index or ast.Slice, not " +
+         cname(subs.slice))
+
+    col = sub.value
+    col_t = infer_expr(col, env)
+
+    assert col_t.is_list() or col_t.is_tuple(),
+        ("The collection being subscripted should be a list or tuple type, "
+         "not " + col_t)
+
+    if subs.slice.__class__ == ast.Index:
+
+        if col_t.is_list():
+
+            # If we access an individual element of a list of type [a], then the
+            # individual element has type a.
+            return t.list_t()
+
+        else: # this means col_t.is_tuple()
+
+            # We're assuming that the expression properly typechecks, so we know
+            # that the slice index is a nonnegative int literal.
+            idx = col.slice.value.n
+
+            # Best way to explain this is to look at the inference rule for
+            # tuple indexing.
+            return col_t.tuple_ts()[idx]
+
+            # FIXME: Need to better handle uniform tuples.
+
+    else: # this means subs.slice.__class__ == ast.Slice
+
+        if col_t.is_list():
+
+            # If we access a slice of a list of type [a], then the slice has
+            # type [a].
+            return t
+
+        else: # this means col_t.is_tuple()
+
+            # FIXME: Need to better handle uniform tuples.
+
+            slc = subs.slice
+
+            # We're assuming that the expression properly typechecks, so we know
+            # that the slice parameters are nonnegative int literals.
+            l = slc.lower.n if slc.lower is not None else 0
+            u = slc.upper.n if slc.upper is not None else len(col_t)
+            s = slc.step.n  if slc.step  is not None else 1
+            idxs = range(l, u, s)
+
+            # Best way to explain this is to look at the inference rule for
+            # tuple slicing.
+            return PytyType.tuple_of(
+                [t.tuple_ts()[idxs[i]] for i in range(idxs)])
 
 
 
