@@ -51,7 +51,7 @@ def parse_type_decs(filename):
 
         if m:
             var_name = m.group('id')
-            type_spec = m.group('t')
+            type_spec = m.group('t').split('#')[0].strip()
 
             tdec = parse_type_dec(l, lineno, var_name, type_spec)
             tdecs.append(tdec)

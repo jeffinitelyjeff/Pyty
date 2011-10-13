@@ -70,7 +70,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
         # function in typecheck.py to actually deal with that kind of
         # expression.
         try:
-            getattr(typecheck, 'check_'+expr_kind+'_expr')
+            getattr(typecheck, "check_%s_expr" % expr_kind)
         except AttributeError:
             raise Exception("Expression test spec states that checking " +
                             "against expressions of type " + expr_kind +
@@ -78,7 +78,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
                             "in PyTy (yet).")
 
     # delete the stuff above the first test
-    del split_text[0] 
+    del split_text[0]
 
     # go through each test specification
     while len(split_text) > 0:
@@ -89,11 +89,10 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
         # make sure a valid test result was specified
         if not expected_result in ('pass', 'fail') \
             and not issubclass(eval(expected_result), Exception):
-            raise Exception("Test spec (for " + expr_kind +
-                            ") not of valid format")
+            raise Exception("Test spec (for %s) not of valid format" % expr_kind)
 
         split_things = things_to_test.split(test_delim)
-        
+
         if expr_kind == "mod":
 
             for mod in split_things:
@@ -107,7 +106,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
                         g.write(mod)
 
                     test = _mod_test_function_def(file_name,
-                                                  TEST_CODE_SUBDIR+file_name) 
+                                                  TEST_CODE_SUBDIR+file_name)
                     tests = tests + test
 
         else:
@@ -118,13 +117,13 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
                     count += 1
 
                     actual_expr = expr.split(':')[0].strip()
-                    type = expr.split(':')[1].strip()
+                    type = expr.split(':')[1].split('#')[0].strip()
 
                     test_name = spec_file.split('.')[0]+str(count)
-                    
+
                     test = _expr_test_function_def(test_name, actual_expr,
                                                    expr_kind, type, expected_result)
-                    
+
                     tests = tests + test
 
         # get rid of this section of tests to proceed
@@ -137,7 +136,7 @@ def create_expression_tests(spec_file):
     with open(SPEC_SUBDIR + spec_file, 'r') as f:
         text = f.read()
         expr_type = text.split('expr type: ')[1].split('\n')[0].strip()
-    
+
     return _create_generic_tests(spec_file, '----', '\n', expr_type)
 
 def create_module_tests(spec_file):
@@ -150,7 +149,7 @@ for file_name in os.listdir(TEST_CODE_SUBDIR):
 tests = ""
 
 # create new tests (this creates files to contain the module tests as an
-# intermediate step). 
+# intermediate step).
 for file_name in os.listdir(SPEC_SUBDIR):
     if file_name.endswith('.spec'):
         if file_name.startswith(SPEC_EXPR_PREFIX):
