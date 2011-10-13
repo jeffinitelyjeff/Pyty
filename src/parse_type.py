@@ -101,19 +101,19 @@ class PytyType:
         return self.t.__class__ == Fun
 
     def list_t(self):
-        assert(self.is_list())
+        assert self.is_list()
         return PytyType(self.t.elt_t())
 
     def tuple_ts(self):
-        assert(self.is_tuple())
+        assert self.is_tuple()
         return [PytyType(x) for x in self.t.elt_ts()]
 
     def dict_ts(self):
-        assert(self.is_dict())
+        assert self.is_dict()
         return [PytyType(self.t.key_t()), PytyType(self.t.val_t())]
 
     def function_ts(self):
-        assert(self.is_function())
+        assert self.is_function()
         return [PytyType(self.t.in_t()), PytyType(self.t.out_t())]
 
     def is_subtype(self, other_t):
@@ -142,7 +142,7 @@ def reverse_parse(type_ast):
         recurse1 = reverse_parse(type_ast.out_t())
         return recurse0 + " -> " + recurse1
     else:
-        assert(False) # This should be a disjoint sum.
+        assert False, "Weird type_ast class name: " + type_ast.__class__.__name__
 
 def better_sexpr_to_tree(a):
     if type(a) == str:
