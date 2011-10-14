@@ -230,7 +230,7 @@ class TypeSpecParser:
         try:
             return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
         except (RuntimeLexerError, FullFirstMatchException):
-            raise TypeIncorrectlySpecifiedError()
+            raise TypeIncorrectlySpecifiedError(s)
 
 
 # NOTE this is a little bit hacky; we're passing the parsed type because we know

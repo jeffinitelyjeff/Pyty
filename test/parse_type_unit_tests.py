@@ -5,12 +5,11 @@ from lepl import *
 # Include src in the Python search path
 sys.path.insert(0, '../src')
 
-from parse_type import *
-
-p = TypeSpecParser.print_parse
-s = better_sexpr_to_tree
+from parse_type import (PytyType, TypeSpecParser, better_sexpr_to_tree, Lst, Tup,
+                        Dct, Fun)
 
 class PytyTypeTests(unittest.TestCase):
+
     def test_is_basetype(self):
         true = self.assertTrue
 
@@ -46,107 +45,198 @@ class PytyTypeTests(unittest.TestCase):
         true( PytyType("{int:_}").is_dict() )
         true( PytyType("{(int,int):float}").is_dict() )
 
-class TypeSpecTests(unittest.TestCase):
-    def test_base_types(self):
-        eq = self.assertEqual
+base_ts = ['int', 'float', 'bool', 'str']
 
-        eq( p('int'), 'int' )
-        eq( p('float'), 'float' )
-        eq( p('bool'), 'bool' )
-        eq( p('str'), 'str' )
+class TypeSpecTests(unittest.TestCase):
+
+    def spec_has_repr(self, spec, repr):
+        """
+        Asserts that `spec`, a string representing a PytyType, has the structure
+        specified by `repr`.
+        """
+
+        self.assertEqual(TypeSpecParser.print_parse(spec),
+                         better_sexpr_to_tree(repr))
+
+
+    def test_base_types(self):
+        for base_t in base_ts:
+            self.spec_has_repr(base_t, base_t)
 
     def test_list(self):
-        eq = self.assertEqual
 
-        eq( p('[int]'),
-            s(Lst('int')) )
-
-        eq( p('[ str ]'),
-            p('[str]') )
-
-        eq( p('[    float]'),
-            p('[float     ]') )
-
-        eq( p('[bool]'),
-            s(Lst('bool')) )
-
-        eq( p('[[float]]'),
-            s(Lst(Lst('float'))) )
-
-        eq( p('[[[str]]]'),
-            s(Lst(Lst(Lst('str')))) )
-
-        eq( p('[(int, bool)]'),
-            s(Lst(Tup(['int', 'bool']))) )
-
-        eq( p('[(int,{float:str})]'),
-            p('[(int, {float: str})]') )
-
-        eq( p('[(int, {float: str})]'),
-            s(Lst(Tup(['int', Dct('float', 'str')]))) )
+        for t in base_ts:
+            self.spec_has_repr("[%s]" % t, Lst(t))
+            self.spec_has_repr("[   %s]" % t, Lst(t))
+            self.spec_has_repr("[ %s  ]" % t, Lst(t))
+            self.spec_has_repr("[%s   ]" % t, Lst(t))
 
     def test_tuple(self):
-        eq = self.assertEqual
 
-        eq( p('(int,)'),
-            s(Tup(['int'])) )
+        for t0 in base_ts:
 
-        eq( p('(  int, )'),
-            p('(int,)') )
+            self.spec_has_repr("(%s,)" % t0, Tup([t0]))
+            self.spec_has_repr("(%s,   )" % t0, Tup([t0]))
+            self.spec_has_repr("(%s   ,)" % t0, Tup([t0]))
+            self.spec_has_repr("(  %s, )" % t0, Tup([t0]))
+            self.spec_has_repr("(  %s ,)" % t0, Tup([t0]))
+            self.spec_has_repr("(   %s,)" % t0, Tup([t0]))
 
-        eq( p('( bool,   str , float  , int )'),
-            p('(bool,str,float,int)') )
+            for t1 in base_ts:
 
-        eq( p('(bool,str,float,int)'),
-            p('(bool, str, float, int)') )
+                self.spec_has_repr("(%s, %s)" % (t0, t1), Tup([t0, t1]))
+                self.spec_has_repr("(%s,   %s)" % (t0, t1), Tup([t0, t1]))
+                self.spec_has_repr("(%s  , %s)" % (t0, t1), Tup([t0, t1]))
+                self.spec_has_repr("(%s   ,%s)" % (t0, t1), Tup([t0, t1]))
+                self.spec_has_repr("(%s, %s,)" % (t0, t1), Tup([t0, t1]))
 
-        eq( p('(bool, float)'),
-            s(Tup(['bool', 'float'])) )
+                for t2 in base_ts:
 
-        eq( p('(int, str, float)'),
-            s(Tup(['int', 'str', 'float'])) )
+                    self.spec_has_repr("(%s, %s, %s)" % (t0, t1, t2),
+                                       Tup([t0, t1, t2]))
+                    self.spec_has_repr("(%s, %s, %s,)" % (t0, t1, t2),
+                                       Tup([t0, t1, t2]))
 
-        eq( p('([int],)'),
-            s(Tup([Lst('int')])) )
+                    for t3 in base_ts:
 
-        eq( p('([bool], [str])'),
-            s(Tup([Lst('bool'), Lst('str')])) )
-
-        eq( p('(int, {float:str})'),
-            s(Tup(['int', Dct('float', 'str')])) )
+                        self.spec_has_repr("(%s, %s, %s, %s)" % (t0, t1, t2, t3),
+                                           Tup([t0, t1, t2, t3]))
+                        self.spec_has_repr("(%s, %s, %s, %s,)" % (t0, t1, t2, t3),
+                                           Tup([t0, t1, t2, t3]))
 
     def test_dict(self):
-        eq = self.assertEqual
 
-        eq( p('{int: float}'),
-            s(Dct('int', 'float')) )
+        for t0 in base_ts:
 
-        eq( p('{str: int}'),
-            p('{ str : int }') )
+            for t1 in base_ts:
 
-        eq( p('{str: int}'),
-            p('{str:int}') )
-
-        eq( p('{str: [float]}'),
-            s(Dct('str', Lst('float'))) )
-
-        eq( p('{float: (int, [str], bool)}'),
-            s(Dct('float', Tup(['int', Lst('str'), 'bool']))) )
+                self.spec_has_repr("{%s: %s}" % (t0, t1), Dct(t0, t1))
+                self.spec_has_repr("{%s :%s}" % (t0, t1), Dct(t0, t1))
+                self.spec_has_repr("{%s : %s}" % (t0, t1), Dct(t0, t1))
+                self.spec_has_repr("{  %s:%s}" % (t0, t1), Dct(t0, t1))
+                self.spec_has_repr("{ %s:%s  }" % (t0, t1), Dct(t0, t1))
+                self.spec_has_repr("{  %s :%s}" % (t0, t1), Dct(t0, t1))
 
     def test_func(self):
-        eq = self.assertEqual
 
-        eq( p('(int,) -> float'),
-            s(Fun(Tup(['int']), 'float')) )
+        for t0 in base_ts:
 
-        eq( p('int ->float '),
-            p('(int) -> float') )
+            self.spec_has_repr("()->%s" % t0, Fun('unit', t0))
+            self.spec_has_repr("()-> %s" % t0, Fun('unit', t0))
+            self.spec_has_repr("() -> %s" % t0, Fun('unit', t0))
+            # FIXME
+            # self.spec_has_repr("%s->()" % t0, Fun(t0, 'unit'))
+            # self.spec_has_repr("%s-> ()" % t0, Fun(t0, 'unit'))
+            # self.spec_has_repr("%s -> ()" % t0, Fun(t0, 'unit'))
 
-        eq( p('() -> int'),
-            s(Fun('unit', 'int')) )
+            for t1 in base_ts:
 
-        eq( p('([float],) -> int'),
-            s(Fun(Tup([Lst('float')]), 'int')) )
+                self.spec_has_repr("%s->%s" % (t0, t1), Fun(t0, t1))
+                self.spec_has_repr("%s-> %s" % (t0, t1), Fun(t0, t1))
+                self.spec_has_repr("%s -> %s" % (t0, t1), Fun(t0, t1))
+                self.spec_has_repr(" %s   ->  %s" % (t0, t1), Fun(t0, t1))
+
+    def test_nesting(self):
+
+        for t0 in base_ts:
+
+            self.spec_has_repr("[(%s,)]" % t0, Lst(Tup([t0])))
+            self.spec_has_repr("([%s],)" % t0, Tup([Lst(t0)]))
+
+            for t1 in base_ts:
+
+                self.spec_has_repr("[(%s, %s)]" % (t0, t1),
+                                   Lst(Tup([t0, t1])))
+                self.spec_has_repr("[{%s: %s}]" % (t0, t1),
+                                   Lst(Dct(t0, t1)))
+                self.spec_has_repr("[%s -> %s]" % (t0, t1),
+                                   Lst(Fun(t0, t1)))
+                self.spec_has_repr("([%s], [%s])" % (t0, t1),
+                                   Tup([Lst(t0), Lst(t1)]))
+                self.spec_has_repr("((%s,), (%s,))" % (t0, t1),
+                                   Tup([Tup([t0]), Tup([t1])]))
+                self.spec_has_repr("{[%s]: [%s]}" % (t0, t1),
+                                   Dct(Lst(t0), Lst(t1)))
+                self.spec_has_repr("{(%s,): (%s,)}" % (t0, t1),
+                                   Dct(Tup([t0]), Tup([t1])))
+                self.spec_has_repr("[%s] -> [%s]" % (t0, t1),
+                                   Fun(Lst(t0), Lst(t1)))
+                self.spec_has_repr("(%s,) -> (%s,)" % (t0, t1),
+                                   Fun(Tup([t0]), Tup([t1])))
+
+                for t2 in base_ts:
+
+                    self.spec_has_repr("[(%s, %s, %s)]" % (t0, t1, t2),
+                                       Lst(Tup([t0, t1, t2])))
+                    self.spec_has_repr("([%s], [%s], [%s])" % (t0, t1, t2),
+                                       Tup([Lst(t0), Lst(t1), Lst(t2)]))
+                    self.spec_has_repr("((%s,), (%s,), (%s,))" % (t0, t1, t2),
+                                       Tup([Tup([t0]), Tup([t1]), Tup([t2])]))
+
+                    self.spec_has_repr("([(%s, %s)], %s)" % (t0, t1, t2),
+                                       Tup([Lst(Tup([t0, t1])), t2]))
+                    self.spec_has_repr("([{%s: %s}], %s)" % (t0, t1, t2),
+                                       Tup([Lst(Dct(t0, t1)), t2]))
+                    self.spec_has_repr("([%s -> %s], %s)" % (t0, t1, t2),
+                                       Tup([Lst(Fun(t0, t1)), t2]))
+                    self.spec_has_repr("(([%s], [%s]), %s)" % (t0, t1, t2),
+                                       Tup([Tup([Lst(t0), Lst(t1)]), t2]))
+                    self.spec_has_repr("(((%s,), (%s,)), %s)" % (t0, t1, t2),
+                                       Tup([Tup([Tup([t0]), Tup([t1])]), t2]))
+                    self.spec_has_repr("({[%s]: [%s]}, %s)" % (t0, t1, t2),
+                                       Tup([Dct(Lst(t0), Lst(t1)), t2]))
+                    self.spec_has_repr("({(%s,): (%s,)}, %s)" % (t0, t1, t2),
+                                       Tup([Dct(Tup([t0]), Tup([t1])), t2]))
+                    self.spec_has_repr("([%s] -> [%s], %s)" % (t0, t1, t2),
+                                       Tup([Fun(Lst(t0), Lst(t1)), t2]))
+                    self.spec_has_repr("((%s,) -> (%s,), %s)" % (t0, t1, t2),
+                                       Tup([Fun(Tup([t0]), Tup([t1])), t2]))
+
+                    # FIXME Should rethink this; dict keys can't be arbitrary
+                    # expressions
+                    self.spec_has_repr("{[(%s, %s)]: %s}" % (t0, t1, t2),
+                                       Dct(Lst(Tup([t0, t1])), t2))
+                    self.spec_has_repr("{[{%s: %s}]: %s}" % (t0, t1, t2),
+                                       Dct(Lst(Dct(t0, t1)), t2))
+                    self.spec_has_repr("{[%s -> %s]: %s}" % (t0, t1, t2),
+                                       Dct(Lst(Fun(t0, t1)), t2))
+                    self.spec_has_repr("{([%s], [%s]): %s}" % (t0, t1, t2),
+                                       Dct(Tup([Lst(t0), Lst(t1)]), t2))
+                    self.spec_has_repr("{((%s,), (%s,)): %s}" % (t0, t1, t2),
+                                       Dct(Tup([Tup([t0]), Tup([t1])]), t2))
+                    self.spec_has_repr("{{[%s]: [%s]}: %s}" % (t0, t1, t2),
+                                       Dct(Dct(Lst(t0), Lst(t1)), t2))
+                    self.spec_has_repr("{{(%s,): (%s,)}: %s}" % (t0, t1, t2),
+                                       Dct(Dct(Tup([t0]), Tup([t1])), t2))
+                    self.spec_has_repr("{[%s] -> [%s]: %s}" % (t0, t1, t2),
+                                       Dct(Fun(Lst(t0), Lst(t1)), t2))
+                    self.spec_has_repr("{(%s,) -> (%s,): %s}" % (t0, t1, t2),
+                                       Dct(Fun(Tup([t0]), Tup([t1])), t2))
+
+                    self.spec_has_repr("[(%s, %s)] -> %s" % (t0, t1, t2),
+                                       Fun(Lst(Tup([t0, t1])), t2))
+                    self.spec_has_repr("[{%s: %s}] -> %s" % (t0, t1, t2),
+                                       Fun(Lst(Dct(t0, t1)), t2))
+                    self.spec_has_repr("[%s -> %s] -> %s" % (t0, t1, t2),
+                                       Fun(Lst(Fun(t0, t1)), t2))
+                    self.spec_has_repr("([%s], [%s]) -> %s" % (t0, t1, t2),
+                                       Fun(Tup([Lst(t0), Lst(t1)]), t2))
+                    self.spec_has_repr("((%s,), (%s,)) -> %s" % (t0, t1, t2),
+                                       Fun(Tup([Tup([t0]), Tup([t1])]), t2))
+                    self.spec_has_repr("{[%s]: [%s]} -> %s" % (t0, t1, t2),
+                                       Fun(Dct(Lst(t0), Lst(t1)), t2))
+                    self.spec_has_repr("{(%s,): (%s,)} -> %s" % (t0, t1, t2),
+                                       Fun(Dct(Tup([t0]), Tup([t1])), t2))
+                    self.spec_has_repr("([%s] -> [%s]) -> %s" % (t0, t1, t2),
+                                       Fun(Fun(Lst(t0), Lst(t1)), t2))
+                    self.spec_has_repr("((%s,) -> (%s,)) -> %s" % (t0, t1, t2),
+                                       Fun(Fun(Tup([t0]), Tup([t1])), t2))
+
+                    # self.spec_has_repr("[%s] -> ([%s] -> %s)" % (t0, t1, t2),
+                    #                    Fun(Fun(Lst(t0), Lst(t1)), t2))
+                    # self.spec_has_repr("(%s,) -> ((%s,) -> %s)" % (t0, t1, t2),
+                    #                    Fun(Fun(Tup([t0]), Tup([t1])), t2))
+
 
 if __name__ == '__main__':
     unittest.main()
