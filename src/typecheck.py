@@ -285,14 +285,16 @@ def check_expr(expr, t, env):
 #    - Assign(expr* targets, expr value)
 #    - If(expr test, stmt* body, stmt* orelse)
 #    - While(expr test, stmt* body, stmt* orelse)
+#    - Print(expr? dest, expr* values, bool nl)
 #   = To Do -----------------------------------------------------------------
+#    - AugAssign(expr target, operator op, expr value)
+#    - For(expr test, expr iter, stmt* body, stmt* orelse)
+
 #    - FunctionDef(identifier name, arguments args, stmt* body, expr*
 #       decorator_list)
 #    - ClassDef(identifier name, expr* bases, stmt* body, expr* decorator_list)
 #    - Return(expr? value)
 #    - Delete(expr* targets)
-#    - AugAssign(expr target, operator op, expr value)
-#    - For(expr test, expr iter, stmt* body, stmt* orelse)
 #    - With(expr context_expr, expr? optional_vars, stmt* body)
 #    - Raise(expr? type, expr? inst, expr? tback)
 #    - TryExcept(stmt* body, excepthandler* handlers, stmt* orelse)
@@ -300,7 +302,6 @@ def check_expr(expr, t, env):
 #    - Assert(expr test, expr? msg)
 #    - Import(alias* names)
 #    - ImportFrom(identifier? module, alias* names, int? level)
-#    - Print(expr? dest, expr* values, bool nl)
 #    - Pass
 #    - Break
 #    - Continue
@@ -387,6 +388,57 @@ def check_While_stmt(stmt):
 
     return check_expr(test, bool_t, stmt.env) and \
            check_stmt_list(body) and check_stmt_list(orelse)
+
+def check_Print_stmt(stmt):
+    """
+    Checks whether AST statement node `stmt` typechecks as a print statement under
+    the environment stored within the node.
+
+    I guess a print statement always typechecks?
+    """
+
+    assert stmt.__class__ == ast.Print
+
+    return True
+
+def check_Pass_stmt(stmt):
+    """
+    Checks whether AST statement node `stmt` typechecks as a print statement
+    under the environment stored within the node.
+
+    A pass statement should always typecheck.
+    """
+
+    assert stmt.__class__ == ast.Pass
+
+    return True
+
+def check_Break_stmt(stmt):
+    """
+    Checks whether AST statement node `stmt` typechecks as a break statement
+    under the environment stored within the node.
+
+    A break statement should always typecheck.
+    """
+
+    assert stmt.__class__ == ast.Break
+
+    return True
+
+def check_Continue_stmt(stmt):
+    """
+    Checks whether AST statement node `stmt` typechecks as a continue statement
+    under the environment stored within the nod.
+
+    A continue statement should always typecheck.
+    """
+
+    assert stmt.__class__ == ast.Continue
+
+    return True
+
+
+
 
 # ---------------------------------------------------------------------------
 # EXPRESSION CHECKING FUNCTIONS ---------------------------------------------
