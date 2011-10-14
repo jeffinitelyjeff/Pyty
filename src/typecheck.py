@@ -451,11 +451,11 @@ def check_Continue_stmt(stmt):
 #    - Compare(expr left, cmpop* ops, expr* comparators)
 #    - List(expr* elts, expr_context ctx)
 #    - Tuple(expr* elts, expr_context ctx)
+#    - UnaryOp(unaryop op, expr operand)
 #   = To Do -----------------------------------------------------------------
 #    - Subscript(expr value, slice slice, expr_context ctx)
 #    - Attribute(expr value, identifier attr, expr_context ctx)
 #    - BoolOp(boolop op, expr* values)
-#    - UnaryOp(unaryop op, expr operand)
 #    - Lambda(arguments args, expr body)
 #    - IfExp(expr test, expr body, expr orelse)
 #    - Dict(expr* keys, expr* values)
@@ -543,6 +543,42 @@ def check_BinOp_expr(binop, t, env):
     # typecheck as that type.
     return (t.is_int() or t.is_float()) and \
         check_expr(l, t, env) and check_expr(r, t, env)
+
+def check_UnaryOp_expr(unop, t, env):
+    """
+    Checks whether AST expr node `unop` typechecks as type `t` under type
+    environment `env`.
+
+    - Invert is the bitwise inverse and can only be applied to ints
+    - Not can be applied to bools
+    - UAdd and USub can be applied to any numbers
+
+    `ast.UnaryOp`:
+      - `op`: the operator (`ast.UAdd`, etc.)
+      - `operand`: the operand expr
+    """
+
+    assert unop.__class__ == ast.UnaryOp
+
+    rator = unop.op
+    rand = unop.operand
+
+    assert rator.__class__ in [ast.Invert, ast.Not, ast.UAdd, ast.USub]
+
+    if rator.__class__ == ast.Invert:
+
+        # FIXME need to write out inf rule to make sure this is correct
+        return int_t.is_subtype(t) and check_expr(rand, int_t, env)
+
+    elif rator.__class__ == ast.Not:
+
+        return t.is_bool() and check_expr(rand, bool_t, env)
+
+    else: # equiv to rator.__class__ == ast.UAdd or ast.USub
+
+        # FIXME need to write out inference rule for this to be clear it's
+        # correct
+        return t.is_subtype(float_t) and check_expr(rand, t, env)
 
 def check_Compare_expr(compare, t, env):
     """Checks whethre the AST expression node given by C{compare} typechecks
