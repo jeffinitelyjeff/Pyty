@@ -5,6 +5,7 @@ expr type: Tuple
 (1,2,3) : (int, int, int)
 (1,) : (int,)
 (True,) : (bool,)
+(True, False) : (bool, bool)
 (1.0, 2.0) : (float, float)
 (-1.0, 4.5) : (float, float)
 (True, 4, -3.0, True) : (bool, int, float, bool)

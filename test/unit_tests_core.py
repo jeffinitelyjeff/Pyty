@@ -47,10 +47,10 @@ class PytyTests(unittest.TestCase):
 
         if expected == "pass":
             self.assertEqual(True, call_function(f, a, t, {}),
-                         "Should typecheck as (%s) but does not (%s)." % (t,s))
+                             "%s should typecheck as %s but does not." % (s,t))
         elif expected == "fail":
             self.assertEqual(False, call_function(f, a, t, {}),
-                             "Shouldn't typecheck as (%s) but does. (%s)." % (t,s))
+                             "%s shouldn't typecheck as %s but does." % (s, t))
         elif issubclass(eval(expected), Exception):
             # if the expected value is an error, then make sure it
             # raises the right error.
