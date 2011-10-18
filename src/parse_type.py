@@ -11,12 +11,12 @@ class PytyType:
     """
 
     def __init__(self, typ = None):
-        if typ.__class__ in [Lst, Tup, Dct, Fun]:
-            self.t = typ
-        elif typ is not None:
+        if typ is None:
+            self.t = TypeSpecParser.parse("_")
+        elif type(typ) is str:
             self.t = TypeSpecParser.parse(typ)
         else:
-            self.t = TypeSpecParser.parse("_")
+            self.t = typ
 
     def __repr__(self):
         return reverse_parse(self.t)
@@ -32,11 +32,13 @@ class PytyType:
         @type t: L{PytyType}
         """
 
-        # t is a PytyType object, but in order to pass it as a child of a Lst
-        # node, we need to get the actual type AST, not the PytyType wrapper.
-        p = PytyType()
-        p.t = Lst(t.t)
-        return p
+        return PytyType(Lst([t.t]))
+
+        # # t is a PytyType object, but in order to pass it as a child of a Lst
+        # # node, we need to get the actual type AST, not the PytyType wrapper.
+        # p = PytyType()
+        # p.t = Lst(t.t)
+        # return p
 
     @staticmethod
     def any_list():
@@ -71,7 +73,7 @@ class PytyType:
         # t0 and t1 are PytyType objects, but in order to pass them as children
         # of a Dct node, we need to get the actual type ASTs of each.
         p = PytyType()
-        p.t = Dct(t0.t, t1.t)
+        p.t = Dct([t0.t, t1.t])
         return p
 
 
