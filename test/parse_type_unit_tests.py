@@ -59,6 +59,26 @@ class TypeSpecTests(unittest.TestCase):
                          better_sexpr_to_tree(repr))
 
 
+    def test_parsing(self):
+
+        # FIXME this should probably be more comprehensive; these current tests
+        # are desigend to catch a specific error.
+        s = better_sexpr_to_tree
+
+        for t0 in base_ts:
+
+            self.assertEqual( s(Lst(t0)), "Lst\n `- '%s'" % t0 )
+            self.assertEqual( s(Tup([t0])), "Tup\n `- '%s'" % t0 )
+
+            for t1 in base_ts:
+
+                self.assertEqual( s(Tup([t0,t1])),
+                                  "Tup\n +- '%s'\n `- '%s'" % (t0, t1) )
+                self.assertEqual( s(Lst(Tup([t0,t1]))),
+                                  "Lst\n `- Tup\n     +- '%s'\n     `- '%s'" %
+                                  (t0, t1) )
+
+
     def test_base_types(self):
         for base_t in base_ts:
             self.spec_has_repr(base_t, base_t)
