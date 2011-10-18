@@ -154,7 +154,7 @@ def better_sexpr_to_tree(a):
 
 class Lst(List):
     def elt_t(self):
-        return self._Node__children[0]
+        return self[0]
 
 class Tup(List):
     def elt_ts(self):
@@ -162,17 +162,17 @@ class Tup(List):
 
 class Dct(List):
     def key_t(self):
-        return self._Node__children[0]
+        return self[0]
 
     def val_t(self):
-        return self._Node__children[1]
+        return self[1]
 
 class Fun(List):
     def in_t(self):
-        return self._Node__children[0]
+        return self[0]
 
     def out_t(self):
-        return self._Node__children[0]
+        return self[1]
 
 def make_unit(toks):
     if toks[0] == "(" and toks[1] == ")":
