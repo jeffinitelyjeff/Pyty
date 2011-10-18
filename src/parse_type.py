@@ -152,7 +152,7 @@ def better_sexpr_to_tree(a):
     else:
         return sexpr_to_tree(a)
 
-class Lst(Node):
+class Lst(List):
     def elt_t(self):
         return self._Node__children[0]
 
@@ -160,14 +160,14 @@ class Tup(List):
     def elt_ts(self):
         return [t for t in self]
 
-class Dct(Node):
+class Dct(List):
     def key_t(self):
         return self._Node__children[0]
 
     def val_t(self):
         return self._Node__children[1]
 
-class Fun(Node):
+class Fun(List):
     def in_t(self):
         return self._Node__children[0]
 

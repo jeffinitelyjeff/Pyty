@@ -59,7 +59,7 @@ class TypeSpecTests(unittest.TestCase):
                          better_sexpr_to_tree(repr))
 
 
-    def test_parsing(self):
+    def test_parse_tree(self):
 
         # FIXME this should probably be more comprehensive; these current tests
         # are desigend to catch a specific error.
