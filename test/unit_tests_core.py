@@ -35,7 +35,7 @@ log = typecheck.log = parse_file.log = Logger()
 
 class PytyTests(unittest.TestCase):
 
-    def _check_expr(self, s, expr_kind, type, expected):
+    def _check_expr(self, s, expr_kind, typ, expected):
         """Typechecks the string C{s} as an C{expr_type} expression."""
 
         a = ast.parse(s).body[0].value
@@ -43,7 +43,7 @@ class PytyTests(unittest.TestCase):
         f = get_check_expr_func_name(expr_kind)
 
         if expected == "pass" or expected == "fail":
-            t = PytyType(type)
+            t = PytyType(typ)
 
         if expected == "pass":
             self.assertEqual(True, call_function(f, a, t, {}),
@@ -55,7 +55,7 @@ class PytyTests(unittest.TestCase):
             # if the expected value is an error, then make sure it
             # raises the right error.
             try:
-                t = PytyType(type)
+                t = PytyType(typ)
                 call_function(f, a, t, {})
             except eval(expected):
                 pass
