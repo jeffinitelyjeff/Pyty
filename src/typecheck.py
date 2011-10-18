@@ -350,7 +350,13 @@ def check_Assign_stmt(stmt):
                ("Assignment target variables should only appear in the Store "
                 "context, not " + cname(v.ctx))
 
+        # FIXME
+        # `infer_expr` assumes that the expression typechecks correctly. For
+        # now, we just verify that it also typechecks correctly after inferring
+        # the type; there is probably a more elegant way to do this.
         t = infer_expr(v, stmt.env)
+        if not check_expr(v, t, stmt.env):
+            return False
 
         # Tuples and tuple subscription aren't allowed in assignment.
         if t.is_tuple() or not check_expr(e, t, stmt.env):
@@ -507,9 +513,13 @@ def check_Name_expr(name, t, env):
     literals."""
 
     assert name.__class__ == ast.Name
-    assert name.ctx.__class__ == ast.Load, \
-           ("We should only be typechecking a Name node when it is being "
-            "loaded, not when its context is " + cname(name.ctx))
+
+    # FIXME have reverted on this assertion; am now typechecking left-hand sides
+    # of assignments after performing type inference, since `infer_expr` assumes
+    # that the expression correctly typechecks and it may not.
+    # assert name.ctx.__class__ == ast.Load, \
+    #        ("We should only be typechecking a Name node when it is being "
+    #         "loaded, not when its context is " + cname(name.ctx))
 
     id = name.id
 
