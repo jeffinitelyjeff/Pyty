@@ -820,9 +820,9 @@ def check_Subscript_Slice_expr(subs, t, env):
         # Rule out some easy failure cases.
         if not t.is_tuple():
             return False # TODO Not expecting a tuple type
-        elif [x.__class__ == ast.Num for x in [l, u, s]] != [True, True, True]:
+        elif [x.__class__ is ast.Num for x in [l, u, s]] != [True, True, True]:
             return False # TODO Not numeric literals
-        elif [type(x) == int for x in [l, u, s]] != [True, True, True]:
+        elif [type(x) is int for x in [l, u, s]] != [True, True, True]:
             return False # TODO Not int literals
         else:
 
@@ -836,7 +836,3 @@ def check_Subscript_Slice_expr(subs, t, env):
             # Each hit type must be a subtype of the corresponding expected type.
             return all([
                 col_t.tuple_ts()[i].is_subtype(t.tuple_ts()[i]) for i in idxs])
-
-
-
-
