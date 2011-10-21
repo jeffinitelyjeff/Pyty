@@ -820,9 +820,9 @@ def check_Subscript_Slice_expr(subs, t, env):
         # Rule out some easy failure cases.
         if not t.is_tuple():
             return False # TODO Not expecting a tuple type
-        elif [x.__class__ is ast.Num for x in [l, u, s]] != [True, True, True]:
+        elif not all(x.__class__ is ast.Num for x in [l,u,s]):
             return False # TODO Not numeric literals
-        elif [type(x) is int for x in [l, u, s]] != [True, True, True]:
+        elif not all(type(x) is int for x in [l,u,s]):
             return False # TODO Not int literals
         else:
 
