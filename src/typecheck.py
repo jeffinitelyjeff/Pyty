@@ -807,14 +807,13 @@ def check_Subscript_Slice_expr(subs, t, env):
 
     if col_t.is_list():
 
-        # We must be expecting a list, the slice parameters must typecheck as
-        # ints, and the collection must be storing something that's a subtype of
-        # what's being stored in the expected type.
-        return ( t.is_list() and
-                 (l is None or check_expr(l, int_t, env)) and
+        # The slice parameters must typecheck as ints, and the original
+        # collection must typecheck as the expected type (slice of a list is
+        # also a list).
+        return ( (l is None or check_expr(l, int_t, env)) and
                  (u is None or check_expr(u, int_t, env)) and
                  (s is None or check_expr(s, int_t, env)) and
-                 col_t.list_t().is_subtype(t.list_t()) )
+                 check_expr(col, t, env) )
 
     else: # col_t.is_tuple()
 
