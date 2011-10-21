@@ -768,8 +768,8 @@ def check_Subscript_Index_expr(subs, t, env):
         # The index must be be a nonnegative int smaller than the length of the
         # tuple, and the type at the specified position must be a subtype of the
         # expected type.
-        return (type(idx) == ast.Num and
-                type(idx.n) == int and
+        return (idx.__class__ is ast.Num and
+                type(idx.n) is int and
                 0 <= idx.n < len(col_ts) and
                 col_ts[idx.n].is_subtype(t))
 
