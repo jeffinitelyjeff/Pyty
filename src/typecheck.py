@@ -672,9 +672,7 @@ def check_List_expr(list, t, env):
         e_t = t.list_t()
         return all(check_expr(e, e_t, env) for e in es)
     else:
-        # FIXME: specify that a list was typechecked as something other than a
-        # list
-        return False
+        return False # desired type not a list
 
 def check_Tuple_expr(tup, t, env):
     """Checks whether the AST expression node given by C{tup} typechecks as a
@@ -683,19 +681,13 @@ def check_Tuple_expr(tup, t, env):
 
     assert tup.__class__ == ast.Tuple
 
-    if t.is_tuple():
-        element_ts = t.tuple_ts()
-        for i in range(len(element_ts)):
-            if not check_expr(tup.elts[i], element_ts[i], env):
-                # FIXME specify that at least one element in the tuple did not
-                # conform to the corresponding type in that position.
-                return False
-        return True
+    es = tup.elts
 
+    if t.is_tuple():
+        e_ts = t.tuple_ts()
+        return all(check_expr(es[i], e_ts[i], env) for i in range(len(e_ts)))
     else:
-        # FIXME specify that a tuple was typechecked as something other than a
-        # tuple.
-        return False
+        return False # desired type is not a tuple
 
 def check_Subscript_expr(subs, t, env):
     """
