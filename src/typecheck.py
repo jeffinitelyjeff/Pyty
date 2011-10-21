@@ -675,8 +675,13 @@ def check_List_expr(list, t, env):
         return False # desired type not a list
 
 def check_Tuple_expr(tup, t, env):
-    """Checks whether the AST expression node given by C{tup} typechecks as a
-    tuple expression as specified by L{parse_type.PytyType} C{t}.
+    """
+    Check if AST Tuple expr node `tup` typechecks as type `t` under type
+    environment `env`.
+
+    `ast.Tuple`
+      - `elts`: Python list of contained expr nodes
+      - `ctx`: context of the expr (e.g., load, store)
     """
 
     assert tup.__class__ == ast.Tuple
@@ -715,58 +720,6 @@ def check_Subscript_expr(subs, t, env):
     else:
         assert False, ("Slices should be ast.Index or ast.Slice, "
                        "not %" % cname(subs.slice))
-
-#     # To typecheck a subscript expression, we actually need to know the type of
-#     # the item we're subscripting. It's not enough to know the type of the AST
-#     # node; we have to do a limited form of type inference to determine the
-#     # actula type.
-#     collection = subs.value
-#     collection_t = infer_expr(collection, env)
-
-#     if collection_t.is_list():
-#         return check_expr(collection, PytyType.list_of(t), env)
-#     elif collection_t.is_tuple():
-#         slc = subs.slice
-#         if slc.__class__ == ast.Index:
-#             new_t = PytyType.gen_tuple_of([(t, slc.value.n)])
-#         elif slc.__class__ == ast.Slice:
-#             if (slc.upper.__class__ != ast.Num or
-#                     slc.lower.__class__ != ast.Num or
-#                     slc.step.__class__ != ast.Num):
-#                 return False # Pyty restricts tuple slices to numeric literals,
-#                              # should gracefully fail here and let the user know
-#                              # that we just can't help them FIXME.
-#             elif (type(slc.upper) != int or
-#                     type(slc.lower) != int or
-#                     type(slc.step) != int):
-#                 return False # If we have numeric literals, they better be
-#                              # ints. Should actually fail here.
-#             else:
-#                 # We're getting a slice of a tuple, so the expected type better
-#                 # be a tuple.
-#                 if not t.is_tuple(): return False # a tuple type wasn't specified
-
-#                 lower = slc.lower if slc.lower is not None else 0
-#                 upper = slc.upper if slc.upper is not None else len(collection)
-#                 step  = slc.step  if slc.step  is not None else 1
-#                 # t is going to be a tuple of expected types; idxs[i] is going
-#                 # to be the index of the array that the expected type t[i] is
-#                 # expected to match with.
-#                 idxs = range(lower, upper, step)
-#                 # FIXME: indicate failure - say that one of the expressions in the
-#                 # tuple didn't typecheck as one of the expected types.
-#                 return all([check_expr(collection.elts[idxs[i]], t[i], env)
-#                             for i in idxs])
-#         else:
-#             assert False, ("Slices should only be ast.Index or ast.Slice, "
-#                            "not " + cname(slc))
-#     elif collection_t.is_dict():
-#         # FIXME: implement
-#         return False
-#     else:
-#         assert False, ("Subscripted collections should only be lists, tuples, "
-#                        "tuples, and dictionaries, not " + collection_t)
-
 
 def check_Subscript_Index_expr(subs, t, env):
     """
