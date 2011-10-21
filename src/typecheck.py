@@ -499,6 +499,8 @@ def check_Num_expr(num, t, env):
 
     `ast.Num`
       - `n`: the numeric literal (as a Python object)
+
+    FIXME see assignment_rules.pdf
     """
 
     assert num.__class__ == ast.Num
@@ -531,6 +533,8 @@ def check_Name_expr(name, t, env):
     typechecks correctly, which isn't always the case; to fix this, we also
     verify that something checks as the type we infer, which means we'll end up
     checking name loads.
+
+    FIXME see assignment_rules.pdf
     """
 
     assert name.__class__ == ast.Name
@@ -570,6 +574,8 @@ def check_BinOp_expr(binop, t, env):
       - `left`: left expr
       - `op`: the operator (an `ast.operator`)
       - `right`: right expr
+
+    FIXME see assignment_rules.pdf
     """
 
     assert binop.__class__ == ast.BinOp
@@ -584,7 +590,7 @@ def check_BinOp_expr(binop, t, env):
 
 def check_UnaryOp_expr(unop, t, env):
     """
-    Checks whether AST expr node `unop` typechecks as type `t` under type
+    Check if AST UnaryOp expr node `unop` typechecks as type `t` under type
     environment `env`.
 
     - Invert is the bitwise inverse and can only be applied to ints
@@ -594,6 +600,8 @@ def check_UnaryOp_expr(unop, t, env):
     `ast.UnaryOp`:
       - `op`: the operator (an `ast.unaryop`)
       - `operand`: operand expr
+
+    FIXME see assignment_rules.pdf
     """
 
     assert unop.__class__ == ast.UnaryOp
@@ -619,17 +627,26 @@ def check_UnaryOp_expr(unop, t, env):
         return t.is_subtype(float_t) and check_expr(rand, t, env)
 
 def check_Compare_expr(compare, t, env):
-    """Checks whethre the AST expression node given by C{compare} typechecks
-    as a compare expression. The specified C{t} must be a boolean for this to
-    typecheck correctly.
-    NOTE: Right now, this only handles binary comparisons. That is, it only
-    handles expressions of the form x>y or x==y, not x==y==z or x>y>z."""
+    """
+    Check if AST Compare expr node `compare` typechecks as type `t` under type
+    environment `env`.
+
+    `ast.Compare`
+      - `left`: the left-most expression
+      - `ops`: list of comparison operators (all `ast.cmpop`)
+      - `comparators`: list of subsequent expressions
+
+    A chained comparison expression is structured like so:
+    `left` `ops[0]` `comparators[0]` `ops[1]` `comparators[1]` ...
+
+    NOTE This doesn't handle chained comparison.
+
+    FIXME see assignment_rules.pdf
+    FIXME add is/isnot/in/notin
+    """
 
     assert compare.__class__ == ast.Compare
 
-    # the Compare AST node anticipates expressions of the form x > y > z, in
-    # which case x would be left, y would be comparators[0], and z would be
-    # comparators[1]
     l = compare.left
     r = compare.comparators[0]
 
@@ -638,21 +655,22 @@ def check_Compare_expr(compare, t, env):
            and check_expr(r, float_t, env)
 
 def check_List_expr(list, t, env):
-    """Checks whether the AST expression node given by C{list} typechecks as a
-    list expression as specified by L{parse_type.PytyType} C{t}.
+    """
+    Check if AST List expr node `list` typechecks as type `t` under type
+    environment `env`.
+
+    `ast.List`
+      - `elts`: Python list of contained expr nodes
+      - `ctx': context of the expr (e.g., load, store)
     """
 
     assert list.__class__ == ast.List
 
-    if t.is_list():
-        element_t = t.list_t()
-        for x in list.elts:
-            if not check_expr(x, element_t, env):
-                # FIXME: specify that at least one element in the list did not
-                # conform to the type of the list.
-                return False
-        return True
+    es = list.elts
 
+    if t.is_list():
+        e_t = t.list_t()
+        return all(check_expr(e, e_t, env) for e in es)
     else:
         # FIXME: specify that a list was typechecked as something other than a
         # list
