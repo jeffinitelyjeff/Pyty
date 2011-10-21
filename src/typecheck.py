@@ -493,8 +493,13 @@ def check_Call_expr(call, t, env):
 
 
 def check_Num_expr(num, t, env):
-    """Checks whether the AST expression node given by C{num} typechecks as a
-    num expression (ie, a numeric literal) of type C{t}."""
+    """
+    Check if AST Num expr node `num` typechecks as type `t` under type
+    environment `env`.
+
+    `ast.Num`
+      - `n`: the numeric literal (as a Python object)
+    """
 
     assert num.__class__ == ast.Num
 
@@ -508,15 +513,29 @@ def check_Num_expr(num, t, env):
         return False
 
 def check_Name_expr(name, t, env):
-    """Checks whether the AST expression node given by C{name} typechecks as a
-    name expression. Name expressions are used for variables and for boolean
-    literals."""
+    """
+    Check if AST Name expr node `name` typechecks as type `t` under type
+    environment `env`.
+
+    `ast.Name`
+      - `id`: the identifier (as a Python `str`)
+      - `ctx`: the context (e.g., load, store) in which the expr is used
+
+    The AST treats `True` and `False` as Name nodes with id of `"True"` or
+    `"False"`, strangely enough.
+
+    Ideally, we should only be accessing name nodes in the load context, since
+    the type checking rule for an assignment statement should handle all the
+    cases where they are in load contexts. We currently have to typecheck load
+    variables because the limited type inference assumes everything it infers
+    typechecks correctly, which isn't always the case; to fix this, we also
+    verify that something checks as the type we infer, which means we'll end up
+    checking name loads.
+    """
 
     assert name.__class__ == ast.Name
 
-    # FIXME have reverted on this assertion; am now typechecking left-hand sides
-    # of assignments after performing type inference, since `infer_expr` assumes
-    # that the expression correctly typechecks and it may not.
+    # FIXME reverted this assumption for time being
     # assert name.ctx.__class__ == ast.Load, \
     #        ("We should only be typechecking a Name node when it is being "
     #         "loaded, not when its context is " + cname(name.ctx))
@@ -529,6 +548,9 @@ def check_Name_expr(name, t, env):
         # we're actually typechecking it as a boolean.
         return t.is_bool()
     else:
+        # FIXME should litearlly look in dictionry, not use infer_expr;
+        # infer_expr is too abstract/general.
+
         # if not checking for a boolean, then we must be looking for a variable,
         # so we need to see if it matches the type in the environment.
         spec_type = infer_expr(name, env)
@@ -540,9 +562,15 @@ def check_Name_expr(name, t, env):
         return infer_expr(name, env).is_subtype(t)
 
 def check_BinOp_expr(binop, t, env):
-    """Checks whether the AST expression node given by C{expr} typechecks as a
-    binary operation expression. This will only typecheck if C{t} is an int
-    or a float."""
+    """
+    Check if AST BinOp expr node `binop` typechecks as type `t` under type
+    environment `env`:
+
+    `ast.BinOp`
+      - `left`: left expr
+      - `op`: the operator (an `ast.operator`)
+      - `right`: right expr
+    """
 
     assert binop.__class__ == ast.BinOp
 
@@ -564,8 +592,8 @@ def check_UnaryOp_expr(unop, t, env):
     - UAdd and USub can be applied to any numbers
 
     `ast.UnaryOp`:
-      - `op`: the operator (`ast.UAdd`, etc.)
-      - `operand`: the operand expr
+      - `op`: the operator (an `ast.unaryop`)
+      - `operand`: operand expr
     """
 
     assert unop.__class__ == ast.UnaryOp
