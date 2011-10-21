@@ -732,7 +732,7 @@ def check_Subscript_Index_expr(subs, t, env):
         + `value`: expr used as subscript index
 
     `ast.Num`
-      - `n`: the number value
+      - `n`: the numeric literal (as a Python object)
     """
 
     assert subs.__class__ == ast.Subscript
