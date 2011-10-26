@@ -222,6 +222,30 @@ def check_Assign_stmt(stmt):
     # return True if we reached here, meaning that it matched with all targets
     return True
 
+def check_AugAssign_stmt(stmt):
+    """
+    Check whether augment assignment node `stmt` typechecks under its embedded
+    environment.
+
+    `ast.AugAssign`
+      - `target`: the expression being assigned to.
+      - `op`: the operation.
+      - `value`: the expression `op`ed to `target`.
+      - `env`: the type environment of this statement.
+    """
+
+    assert stmt.__class__ == ast.AugAssign
+
+    tar = stmt.target
+    op = stmt.op
+    val = stmt.value
+    env = stmt.env
+
+    binop_node = ast.BinOp(tar, op, val)
+    ts = [int_t, float_t, bool_t, str_t]
+
+    return any(check_BinOp_expr(binop_node, t, env) for t in ts)
+
 def check_Delete_stmt(stmt):
     """
     Check whether delete node `stmt` typechecks under its embedded environment.
