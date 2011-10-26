@@ -36,6 +36,30 @@ a = b = c = 5
 #: c : int
 a = b = c = 5
 ---
+#: a : int
+#: b : float
+a, b = 1, 2.1
+---
+#: a : int
+#: b : float
+(a, b) = (1, 2.1)
+---
+#: a : int
+#: b : int
+[a, b] = [1, 2]
+---
+#: a : float
+#: b : float
+[a, b] = [1, 2]
+---
+#: a : float
+#: b : float
+a, b = 1, 2.1
+---
+#: a : float
+#: b : float
+a, b = 1, 2
+---
 
 ----fail----
 
@@ -56,6 +80,26 @@ b = 3.2
 #: b : int
 #: c : int
 a = b = c = 5.0
+---
+#: a : int
+#: b : bool
+[a, b] = [1, True]
+---
+#: a : float
+#: b : (float,)
+[a, b] = [1, (1,)]
+---
+#: t : (int, bool, float)
+t = (1, True, 5.0)
+t[0] = 0
+---
+#: t : (int, bool, float)
+t = (1, True, 5.0)
+t[1] = False
+---
+#: t : (int, bool, float)
+t = (1, True, 5.0)
+t[2] = 5.1
 ---
 
 ----TypeUnspecifiedError----

@@ -19,7 +19,7 @@ SPEC_EXPR_PREFIX = "expr_" # prefix for files specifying expr tests
 SPEC_MOD_PREFIX = "mod_"   # prefix for files specifying module tests
 
 FILE_DEBUG = True
-DEBUG_SUBJECT_FILE = "mod_collection_assignment6.py"
+DEBUG_SUBJECT_FILE = "mod_assignment11.py"
 DEBUG_TYPEDEC_PARSING = False
 DEBUG_UNTYPED_AST     = False
 DEBUG_TYPEDECS        = False

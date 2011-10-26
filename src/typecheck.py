@@ -215,8 +215,8 @@ def check_Assign_stmt(stmt):
         if not check_expr(v, t, stmt.env):
             return False
 
-        # Tuples and tuple subscription aren't allowed in assignment.
-        if t.is_tuple() or not check_expr(e, t, stmt.env):
+        # How to allow assigning to a tuple, but not to a subscripted tuple?
+        if not check_expr(e, t, stmt.env):
             return False
 
     # return True if we reached here, meaning that it matched with all targets
