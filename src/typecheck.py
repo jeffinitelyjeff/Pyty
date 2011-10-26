@@ -6,7 +6,7 @@ from errors import TypeUnspecifiedError, ASTTraversalError
 from parse_type import PytyType, int_t, float_t, bool_t, str_t, gen_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
-from ast_extensions import *
+from ast_extensions import TypeDec
 from infer import infer_expr
 
 log = None
