@@ -7,7 +7,7 @@ from datetime import datetime
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from errors import *
+from errors import TypeIncorrectlySpecifiedError, TypeUnspecifiedError
 import typecheck
 from settings import *
 from logger import announce_file
