@@ -13,8 +13,7 @@ from typecheck import (check_expr, check_mod, get_check_expr_func_name,
                        call_function)
 from parse_file import parse_type_decs
 from parse_type import PytyType
-from errors import *
-import errors
+from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 from settings import *
 from logger import Logger, announce_file
 
