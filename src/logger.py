@@ -1,7 +1,7 @@
 import math
 
 import logging
-from settings import *
+from settings import LOG_LEVEL, LOG_DIR, LOGFILE, FILE_DEBUG
 
 logging.basicConfig(level=LOG_LEVEL, filename=LOG_DIR+LOGFILE,
                     format='%(asctime)s: %(message)s',
@@ -12,7 +12,7 @@ _MARGIN = len('%s, %s %s %s %s:%s:%s: ' %
 
 class Logger:
     nl = "\n" + (" " * _MARGIN)
-    
+
     def __init__(self):
         self.in_debug_file = False
 
