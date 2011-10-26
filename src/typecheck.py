@@ -225,14 +225,7 @@ def check_If_stmt(stmt):
       - `orelse`: Python list of statements to run if `test` is false.
     """
 
-    assert stmt.__class__ == ast.If
-
-    test = stmt.test
-    body = stmt.body
-    orelse = stmt.orelse
-
-    return check_expr(test, bool_t, stmt.env) and \
-           check_stmt_list(body) and check_stmt_list(orelse)
+    return check_If_While_stmt(stmt)
 
 def check_While_stmt(stmt):
     """
@@ -247,8 +240,18 @@ def check_While_stmt(stmt):
 
     assert stmt.__class__ == ast.While
 
-    # this code is IDENTICAL to the If stuff; should consider refactoring into
-    # helper function.
+    return check_If_While_stmt(stmt)
+
+def check_If_While_stmt(stmt):
+    """
+    Check whether while or if node `stmt` typechecks under its embedded
+    environment (and the environments embedded within each child statement,
+    since `stmt` is a compouund statement).
+
+    'ast.If` and `ast.While` have identical structure, so this is a helper
+    function to house the identical logic.
+    """
+
     test = stmt.test
     body = stmt.body
     orelse = stmt.orelse
