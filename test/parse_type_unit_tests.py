@@ -1,6 +1,6 @@
 import sys
 import unittest
-from lepl import *
+from lepl import sexpr_to_tree
 
 # Include src in the Python search path
 sys.path.insert(0, '../src')

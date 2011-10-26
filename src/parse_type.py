@@ -1,5 +1,6 @@
 import re
-from lepl import *
+from lepl import (List, Token, Delayed, RuntimeLexerError,
+                  FullFirstMatchException, sexpr_to_tree)
 
 from errors import TypeIncorrectlySpecifiedError
 
