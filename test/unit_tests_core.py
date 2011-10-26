@@ -14,7 +14,8 @@ from typecheck import (check_expr, check_mod, get_check_expr_func_name,
 from parse_file import parse_type_decs
 from parse_type import PytyType
 from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
-from settings import *
+from settings import (TEST_CODE_SUBDIR, DEBUG_SUBJECT_FILE, DEBUG_UNTYPED_AST,
+                      DEBUG_TYPED_AST, DEBUG_ENV_AST, DEBUG_TYPEDECS)
 from logger import Logger, announce_file
 
 # these should be redundant, but they're necessary to refer to the specific log
