@@ -9,7 +9,8 @@ sys.path.insert(0, '../src')
 
 from errors import TypeIncorrectlySpecifiedError, TypeUnspecifiedError
 import typecheck
-from settings import *
+from settings import (TEST_CODE_SUBDIR, SPEC_SUBDIR, SPEC_EXPR_PREFIX,
+                      SPEC_MOD_PREFIX, UNIT_TEST_CORE, UNIT_TEST_OUTPUT)
 from logger import announce_file
 
 """
