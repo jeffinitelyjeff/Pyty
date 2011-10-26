@@ -8,7 +8,6 @@ import ast
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from ast_extensions import *
 from typecheck import *
 from parse_file import *
 from parse_type import PytyType
