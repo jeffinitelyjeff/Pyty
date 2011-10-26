@@ -3,8 +3,8 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError, ASTTraversalError
-from parse_type import *
-from settings import *
+from parse_type import PytyType, int_t, float_t, bool_t, str_t, gen_t
+from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import *
 from infer import infer_expr
