@@ -222,6 +222,30 @@ def check_Assign_stmt(stmt):
     # return True if we reached here, meaning that it matched with all targets
     return True
 
+def check_Delete_stmt(stmt):
+    """
+    Check whether delete node `stmt` typechecks under its embedded environment.
+
+    NOTE: The python language reference is a bit unclear about what can actually
+    be deleted. This assumes that only identifiers, lists, and subscripts can be
+    deleted.
+
+    `ast.Delete`
+      - `targets` : a Python list of expressions to be deleted.
+      - `env`: the type environment of this statement.
+    """
+
+    assert stmt.__class__ == ast.Delete
+
+    tars = stmt.targets
+    env = stmt.env
+
+    assert all(tar.ctx.__class__ == ast.Del for tar in tars), \
+        "Each target should have a delete context"
+
+    return all(tar.__class__ in [ast.Name, ast.List, ast.Subscript]
+               for tar in tars)
+
 def check_If_stmt(stmt):
     """
     Check whether if statement node `stmt` typechecks under its embedded
@@ -580,8 +604,8 @@ def check_Subscript_expr(subs, t, env):
 
     `ast.Subscript`
       - `value`: the collection being subscripted
-      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
       - `slice`: kind of subscript (`ast.Index` or `ast.Load`)
+      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
 
     For the purposes of typechecking, we should be able to ignore the context
     because this should be automatically handled by the structure of the
