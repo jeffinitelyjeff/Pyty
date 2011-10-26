@@ -4,7 +4,7 @@ import logging
 
 from ast_extensions import TypeDec, TypeStore, TypeDecASTModule, EnvASTModule
 from parse_type import PytyType
-from settings import *
+from settings import DEBUG_TYPEDEC_PARSING
 from logger import Logger
 from errors import *
 # from epydoc import docparser ; may need this for functions
