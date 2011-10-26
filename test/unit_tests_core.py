@@ -8,7 +8,8 @@ import ast
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from typecheck import *
+from typecheck import (check_expr, check_mod, get_check_expr_func_name,
+                       call_function)
 from parse_file import *
 from parse_type import PytyType
 from errors import *
