@@ -21,6 +21,21 @@ f = -4.2
 #: f : float
 f = 3.2
 ---
+#: a : float
+#: b : float
+#: c : float
+a = b = c = 5.0
+---
+#: a : float
+#: b : float
+#: c : float
+a = b = c = 5
+---
+#: a : float
+#: b : int
+#: c : int
+a = b = c = 5
+---
 
 ----fail----
 
@@ -36,6 +51,11 @@ i = 3.3
 ---
 #: b : bool
 b = 3.2
+---
+#: a : int
+#: b : int
+#: c : int
+a = b = c = 5.0
 ---
 
 ----TypeUnspecifiedError----
