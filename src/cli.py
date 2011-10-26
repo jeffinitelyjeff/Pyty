@@ -2,7 +2,7 @@ import ast
 
 from logger import Logger
 from typecheck import check_expr, infer_expr
-from parse_type import PytyType
+from parse_type import PType
 
 import typecheck
 
@@ -27,5 +27,5 @@ if __name__ == '__main__':
         if infer:
             print infer_expr(e, {})
         else:
-            t = PytyType(raw_input('Expected type: '))
+            t = PType(raw_input('Expected type: '))
             print check_expr(e, t, {})

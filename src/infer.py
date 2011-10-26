@@ -3,7 +3,7 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError
-from parse_type import PytyType, int_t, float_t, bool_t, str_t, gen_t
+from parse_type import PType, int_t, float_t, bool_t, str_t, gen_t
 from settings import DEBUG_INFER
 
 log = None
@@ -92,7 +92,7 @@ def infer_List_expr(lst, env):
 
     els = lst.elts
 
-    return PytyType.list_of(infer_expr(els[0], env))
+    return PType.list_of(infer_expr(els[0], env))
 
 def infer_Tuple_expr(tup, env):
     """
@@ -103,7 +103,7 @@ def infer_Tuple_expr(tup, env):
 
     els = tup.elts
 
-    return PytyType.tuple_of([infer_expr(el, env) for el in els])
+    return PType.tuple_of([infer_expr(el, env) for el in els])
 
 def infer_Subscript_expr(subs, env):
     """
@@ -166,5 +166,5 @@ def infer_Subscript_expr(subs, env):
 
             # Best way to explain this is to look at the inference rule for
             # tuple slicing.
-            return PytyType.tuple_of(
+            return PType.tuple_of(
                 [t.tuple_ts()[idxs[i]] for i in range(idxs)])

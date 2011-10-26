@@ -4,10 +4,10 @@ from lepl import *
 from errors import TypeIncorrectlySpecifiedError
 
 
-class PytyType:
-    """PytyType is an outside wrapper for the Type AST returned by the parser
+class PType:
+    """PType is an outside wrapper for the Type AST returned by the parser
     generator. Methods are provided to access element types, which are only
-    wrapped into PytyTypes once they are accessed.
+    wrapped into PTypes once they are accessed.
     """
 
     def __init__(self, typ = None):
@@ -26,53 +26,53 @@ class PytyType:
 
     @staticmethod
     def list_of(t):
-        """Creates a PytyType object which represents a list of elements which
+        """Creates a PType object which represents a list of elements which
         have type C{t}.
 
-        @type t: L{PytyType}
+        @type t: L{PType}
         """
 
-        return PytyType(Lst([t.t]))
+        return PType(Lst([t.t]))
 
-        # # t is a PytyType object, but in order to pass it as a child of a Lst
-        # # node, we need to get the actual type AST, not the PytyType wrapper.
-        # p = PytyType()
+        # # t is a PType object, but in order to pass it as a child of a Lst
+        # # node, we need to get the actual type AST, not the PType wrapper.
+        # p = PType()
         # p.t = Lst(t.t)
         # return p
 
     @staticmethod
     def any_list():
-        """Creates a PytyType object which represents a list of any type.
+        """Creates a PType object which represents a list of any type.
         """
 
-        return PytyType('[_]')
+        return PType('[_]')
 
     @staticmethod
     def tuple_of(ts):
-        """Creates a PytyType object which represents a list of elements which
+        """Creates a PType object which represents a list of elements which
         have types C{ts}.
 
-        @type ts: [L{PytyType}]
+        @type ts: [L{PType}]
         """
 
-        # ts are PytyType objects, but in order to pass them as members of a Tup
+        # ts are PType objects, but in order to pass them as members of a Tup
         # List, we need to get the actual type ASTs of each.
-        p = PytyType()
+        p = PType()
         p.t = Tup([t.t for t in ts])
         return p
 
     @staticmethod
     def dict_of(t0, t1):
-        """Creates a PytyType object which represents a dictionary mapping
+        """Creates a PType object which represents a dictionary mapping
         elements of type C{t0} to elements of type C{t1}.
 
-        @type t0: L{PytyType}
-        @type t1: L{PytyType}
+        @type t0: L{PType}
+        @type t1: L{PType}
         """
 
-        # t0 and t1 are PytyType objects, but in order to pass them as children
+        # t0 and t1 are PType objects, but in order to pass them as children
         # of a Dct node, we need to get the actual type ASTs of each.
-        p = PytyType()
+        p = PType()
         p.t = Dct([t0.t, t1.t])
         return p
 
@@ -106,19 +106,19 @@ class PytyType:
 
     def list_t(self):
         assert self.is_list()
-        return PytyType(self.t.elt_t())
+        return PType(self.t.elt_t())
 
     def tuple_ts(self):
         assert self.is_tuple()
-        return [PytyType(x) for x in self.t.elt_ts()]
+        return [PType(x) for x in self.t.elt_ts()]
 
     def dict_ts(self):
         assert self.is_dict()
-        return [PytyType(self.t.key_t()), PytyType(self.t.val_t())]
+        return [PType(self.t.key_t()), PType(self.t.val_t())]
 
     def function_ts(self):
         assert self.is_function()
-        return [PytyType(self.t.in_t()), PytyType(self.t.out_t())]
+        return [PType(self.t.in_t()), PType(self.t.out_t())]
 
     def is_subtype(self, other_t):
         return other_t.is_gen() or \
@@ -237,8 +237,8 @@ class TypeSpecParser:
 
 # NOTE this is a little bit hacky; we're passing the parsed type because we know
 # what it should be.
-int_t = PytyType('int')
-float_t = PytyType('float')
-bool_t = PytyType('bool')
-str_t = PytyType('str')
-gen_t = PytyType('_')
+int_t = PType('int')
+float_t = PType('float')
+bool_t = PType('bool')
+str_t = PType('str')
+gen_t = PType('_')

@@ -3,7 +3,7 @@ import ast
 import logging
 
 from ast_extensions import TypeDec, TypeStore, TypeDecASTModule, EnvASTModule
-from parse_type import PytyType
+from parse_type import PType
 from settings import DEBUG_TYPEDEC_PARSING
 from logger import Logger
 # from epydoc import docparser ; may need this for functions
@@ -116,5 +116,5 @@ def parse_type_dec(line, lineno, var_name, type_spec):
 
     col_offset = line.index("#:")
 
-    return TypeDec([name_node], PytyType(type_spec), lineno,
+    return TypeDec([name_node], PType(type_spec), lineno,
                    col_offset)

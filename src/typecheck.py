@@ -3,7 +3,7 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError, ASTTraversalError
-from parse_type import PytyType, int_t, float_t, bool_t, str_t, gen_t
+from parse_type import PType, int_t, float_t, bool_t, str_t, gen_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec
@@ -21,22 +21,32 @@ def call_function(fun_name, *args, **kwargs):
 # GENERAL CHECKING FUNCTIONS ------------------------------------------------
 # ---------------------------------------------------------------------------
 
-def check_mod(node):
-    """Checks whether the L{ast_extensions.EnvASTModule} node given by C{node}
-    typechecks as a module with the environments defined in the AST structure."""
+def check_mod(mod):
+    """
+    Check whether the module node `mod` typechecks under its embedded
+    environments.
+    """
 
     t_debug("----- v Typechecking module v -----")
 
-    if node.__class__ != ast.Module:
+    if mod.__class__ != ast.Module:
         t_debug("Returning false because this isn't a module")
         t_debug("----- ^ Typechecking module ^ -----")
         return False
 
-    result = check_stmt_list(node.body)
+    result = check_stmt_list(mod.body)
     t_debug("return: " + str(result) + "\n----- ^ Typechecking module ^ -----")
     return result
 
 def check_stmt(stmt):
+    """
+    Check whether the statement node `stmt` typechecks under its embedded
+    environment.
+
+    Each kind of statement has only one type assignment rule, so this is syntax
+    directed and we just test the type assignment rule for the appropriate kind
+    of statement node.
+    """
     """Checks whether the AST node given by C{node} typechecks as a statement.
     The requirements for typechecking as a statement depend on what kind of
     statement C{node} is, and so this function calls one of several functions
@@ -91,8 +101,8 @@ def check_expr(expr, t, env):
 
     assert isinstance(expr, ast.expr), \
            "Should be typechecking an expr node, not a " + cname(expr)
-    assert isinstance(t, PytyType), \
-           "Should be checking against a PytyType, not a " + cname(t)
+    assert isinstance(t, PType), \
+           "Should be checking against a PType, not a " + cname(t)
 
     n = get_check_expr_func_name(expr.__class__.__name__)
 
@@ -175,7 +185,7 @@ def check_TypeDec_stmt(stmt):
 def check_Assign_stmt(stmt):
     """
     Check whether assignment node `stmt` typechecks under its embedded
-    environment (and the environments embedded within each child statement).
+    environment.
 
     NOTE: This currently only handles assignments with identifiers as the
     left-hand side, not lists, tuples, etc.
@@ -183,6 +193,7 @@ def check_Assign_stmt(stmt):
     `ast.Assign`
       - `value`: the value being assigned.
       - `targets`: Python list of the expressions being assigned to.
+      - `env`: the type environment of this statement.
     """
 
     assert stmt.__class__ == ast.Assign
@@ -214,7 +225,8 @@ def check_Assign_stmt(stmt):
 def check_If_stmt(stmt):
     """
     Check whether if statement node `stmt` typechecks under its embedded
-    environment.
+    environment (and the environments embedded within each child statement,
+    since `stmt` is a compound statement).
 
     We currently assume that the test must be a boolean, which is not considered
     very Pythonic by some.
@@ -223,6 +235,7 @@ def check_If_stmt(stmt):
       - `test`: the expression being tested.
       - `body`: Python list of statements to run if `test` is true.
       - `orelse`: Python list of statements to run if `test` is false.
+      - `env`: the type environment of this statement.
     """
 
     return check_If_While_stmt(stmt)
@@ -230,12 +243,14 @@ def check_If_stmt(stmt):
 def check_While_stmt(stmt):
     """
     Check whether while node `stmt` typechecks under its embedded environment
-    (and the environments embedded within each child statement).
+    (and the environments embedded within each child statement, since `stmt` is
+    a compound statement).
 
     `ast.While`
       - `test`: the expression being tested each iteration.
       - `body`: Python list of statements to run on each iteration.
       - `orelse`: Python list of statements to run if `test` is false.
+      - `env`: the type environment of this statement.
     """
 
     assert stmt.__class__ == ast.While
@@ -353,7 +368,7 @@ def check_Call_expr(call, t, env):
     # there's the more complicated subtyping relation for functions.
     return fun_t.function_ts()[1].is_subtype(t)
         # FIXME: now check each argument, but this is slightly more complicated
-        # because the PytyType thinks of the function as a tuple...
+        # because the PType thinks of the function as a tuple...
 
 
 def check_Num_expr(num, t, env):
@@ -620,7 +635,7 @@ def check_Subscript_Index_expr(subs, t, env):
         # The index must typecheck as an int, and the collection must typecheck
         # as a list of the expected type.
         return (check_expr(idx, int_t, env) and
-                check_expr(col, PytyType.list_of(t), env))
+                check_expr(col, PType.list_of(t), env))
 
     else: # col_t.is_tuple()
 

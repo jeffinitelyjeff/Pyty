@@ -5,45 +5,45 @@ from lepl import *
 # Include src in the Python search path
 sys.path.insert(0, '../src')
 
-from parse_type import (PytyType, TypeSpecParser, better_sexpr_to_tree, Lst, Tup,
+from parse_type import (PType, TypeSpecParser, better_sexpr_to_tree, Lst, Tup,
                         Dct, Fun)
 
-class PytyTypeTests(unittest.TestCase):
+class PTypeTests(unittest.TestCase):
 
     def test_is_basetype(self):
         true = self.assertTrue
 
-        true( PytyType("bool").is_bool() )
-        true( PytyType("int").is_int() )
-        true( PytyType("float").is_float() )
-        true( PytyType("str").is_str() )
-        true( PytyType("_").is_gen() )
-        true( PytyType().is_gen() )
+        true( PType("bool").is_bool() )
+        true( PType("int").is_int() )
+        true( PType("float").is_float() )
+        true( PType("str").is_str() )
+        true( PType("_").is_gen() )
+        true( PType().is_gen() )
 
     def test_is_list(self):
         true = self.assertTrue
 
-        true( PytyType("[int]").is_list() )
-        true( PytyType("[float]").is_list() )
-        true( PytyType("[_]").is_list() )
-        true( PytyType("[{float:str}]").is_list() )
+        true( PType("[int]").is_list() )
+        true( PType("[float]").is_list() )
+        true( PType("[_]").is_list() )
+        true( PType("[{float:str}]").is_list() )
 
     def test_is_tuple(self):
         true = self.assertTrue
 
-        true( PytyType("(float,bool,int)").is_tuple() )
-        true( PytyType("(bool,)").is_tuple() )
-        true( PytyType("(bool,float,_,int,bool)").is_tuple() )
-        true( PytyType("([int],[bool])").is_tuple() )
-        true( PytyType("({int:float},{float:int})").is_tuple() )
+        true( PType("(float,bool,int)").is_tuple() )
+        true( PType("(bool,)").is_tuple() )
+        true( PType("(bool,float,_,int,bool)").is_tuple() )
+        true( PType("([int],[bool])").is_tuple() )
+        true( PType("({int:float},{float:int})").is_tuple() )
 
     def test_is_dict(self):
         true = self.assertTrue
 
-        true( PytyType("{int:float}").is_dict() )
-        true( PytyType("{_:int}").is_dict() )
-        true( PytyType("{int:_}").is_dict() )
-        true( PytyType("{(int,int):float}").is_dict() )
+        true( PType("{int:float}").is_dict() )
+        true( PType("{_:int}").is_dict() )
+        true( PType("{int:_}").is_dict() )
+        true( PType("{(int,int):float}").is_dict() )
 
 base_ts = ['int', 'float', 'bool', 'str']
 
@@ -51,7 +51,7 @@ class TypeSpecTests(unittest.TestCase):
 
     def spec_has_repr(self, spec, repr):
         """
-        Asserts that `spec`, a string representing a PytyType, has the structure
+        Asserts that `spec`, a string representing a PType, has the structure
         specified by `repr`.
         """
 

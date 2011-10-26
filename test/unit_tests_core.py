@@ -12,7 +12,7 @@ from ast_extensions import TypeDecASTModule, EnvASTModule
 from typecheck import (check_expr, check_mod, get_check_expr_func_name,
                        call_function)
 from parse_file import parse_type_decs
-from parse_type import PytyType
+from parse_type import PType
 from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 from settings import (TEST_CODE_SUBDIR, DEBUG_SUBJECT_FILE, DEBUG_UNTYPED_AST,
                       DEBUG_TYPED_AST, DEBUG_ENV_AST, DEBUG_TYPEDECS)
@@ -45,7 +45,7 @@ class PytyTests(unittest.TestCase):
         f = get_check_expr_func_name(expr_kind)
 
         if expected == "pass" or expected == "fail":
-            t = PytyType(typ)
+            t = PType(typ)
 
         if expected == "pass":
             self.assertEqual(True, call_function(f, a, t, {}),
@@ -57,7 +57,7 @@ class PytyTests(unittest.TestCase):
             # if the expected value is an error, then make sure it
             # raises the right error.
             try:
-                t = PytyType(typ)
+                t = PType(typ)
                 call_function(f, a, t, {})
             except eval(expected):
                 pass

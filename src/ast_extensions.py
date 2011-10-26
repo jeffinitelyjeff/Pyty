@@ -2,7 +2,7 @@ import ast
 import logging
 
 from util import are_disjoint, disjoint_sums_of, cname
-from parse_type import PytyType, TypeSpecParser
+from parse_type import PType, TypeSpecParser
 
 def dump_self(self):
     return ast.dump(self)
@@ -151,8 +151,8 @@ class TypeDec(ast.stmt):
 
     @type targets: list of ast.Name
     @ivar targets: The list of variables which are having their types declared.
-    @type t: PytyType
-    @ivar t: A PytyType object representing the type which the C{targets} are
+    @type t: PType
+    @ivar t: A PType object representing the type which the C{targets} are
         being declared as.
     @type lineno: int
     @ivar lineno: The line number of the declaration in the source code.
@@ -167,9 +167,9 @@ class TypeDec(ast.stmt):
         @type targets: list of ast.Name
         @param targets: The list of variables which are having their types
             declared.
-        @type t: PytyType
+        @type t: PType
         @param t: The type which the C{targets} are declared as. If a string is
-            provided, then a PytyType object will be created based on this
+            provided, then a PType object will be created based on this
             string.
         @type line: int
         @param line: The line number of the source code for the declaration.
@@ -183,14 +183,14 @@ class TypeDec(ast.stmt):
             self.col_offset = col
 
         if type(t) == str:
-            self.t = PytyType(t)
-            assert self.t.__class__ == PytyType, \
-                   ("Got a %s back from TypeSpecParser.parse, not a PytyType" %
+            self.t = PType(t)
+            assert self.t.__class__ == PType, \
+                   ("Got a %s back from TypeSpecParser.parse, not a PType" %
                     cname(self.t.__class__))
-        elif t.__class__ == PytyType:
+        elif t.__class__ == PType:
             self.t = t
         else:
-            assert False, ("t needs to be specified as str or PytyType, not " +
+            assert False, ("t needs to be specified as str or PType, not " +
                            cname(t))
 
 
@@ -351,7 +351,7 @@ class EnvASTModule(TypeDecASTModule):
     contained in the wrapped AST has an additional field to represent the type
     environment for the execution of that statement. The environments are stored
     as dictionaries called C{env}, and are mappings from variable identifiers to
-    L{PytyType} objects.
+    L{PType} objects.
 
     @type tree: C{ast.Module}
     @ivar tree: The AST backing this L{EnvASTModule}, which has been modified to
