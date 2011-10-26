@@ -8,9 +8,10 @@ import ast
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
+from ast_extensions import TypeDecASTModule, EnvASTModule
 from typecheck import (check_expr, check_mod, get_check_expr_func_name,
                        call_function)
-from parse_file import *
+from parse_file import parse_type_decs
 from parse_type import PytyType
 from errors import *
 import errors
