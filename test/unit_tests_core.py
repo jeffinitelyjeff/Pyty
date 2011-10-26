@@ -22,6 +22,7 @@ from logger import Logger, announce_file
 import ast_extensions
 import parse_file
 import typecheck
+import infer
 
 """
 This is just the core of the unit testing file. generate_tests.py must be run
@@ -31,7 +32,7 @@ code file in the test_files directory).
 
 announce_file("unit_tests_core.py")
 
-log = typecheck.log = parse_file.log = Logger()
+log = typecheck.log = parse_file.log = infer.log = Logger()
 
 class PytyTests(unittest.TestCase):
 

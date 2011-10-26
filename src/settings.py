@@ -26,3 +26,4 @@ DEBUG_TYPEDECS        = False
 DEBUG_TYPED_AST       = False
 DEBUG_ENV_AST         = False
 DEBUG_TYPECHECK       = True
+DEBUG_INFER           = True

@@ -2,188 +2,20 @@ import ast
 import logging
 
 from util import cname
-from errors import TypeUnspecifiedError, \
-                   ASTTraversalError
+from errors import TypeUnspecifiedError, ASTTraversalError
 from parse_type import *
 from settings import *
 from logger import Logger
 from ast_extensions import *
+from infer import infer_expr
 
 log = None
 
 def t_debug(s, cond=True):
     log.debug(s, DEBUG_TYPECHECK and cond)
 
-# HELPER FUNCTIONS ----------------------------------------------------------
-# ---------------------------------------------------------------------------
-
-def env_get(env, var_id):
-    """Look up variable id C{var_id} in type environment C{env}.
-
-    @type env: {str: PType}
-    @type var_id: C{str}
-    @rtype: C{PType}
-    @raise L{TypeUnspecifiedError}: If C{env} does not have information about
-    C{var_id}
-    """
-
-    # make sure the variable is in the environment
-    if var_id not in env:
-        t_debug("Type of %s not found in %s" % (var_id, env))
-        raise TypeUnspecifiedError(var=var_id,env=env)
-
-    # return the type stored in the environment
-    return env[var_id]
-
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
-
-# ------------------------------------------------------------------------------
-# BASIC TYPE INFERENCE HELPERS -------------------------------------------------
-# ------------------------------------------------------------------------------
-
-# In most cases, these functions are just wrappers for accessing the
-# environment, but there are more complicated cases like assigning to
-# subscription expressions and assigning to lists/tuples.
-
-def infer_expr(e, env):
-    """
-    Use limited type inference to determine the type of AST expression `e` under
-    type environment `env`.
-    """
-
-    assert isinstance(e, ast.expr), \
-           "Should be inferring type of an expr node, not a " + cname(e)
-
-    n = get_infer_expr_func_name(e.__class__.__name__)
-
-    # If we get a KeyError, then we're trying to infer the type of an AST node
-    # that is not in the very limited subset of the language that we're trying
-    # to perform type inference on.
-    return call_function(n, e, env)
-
-def get_infer_expr_func_name(expr_type):
-    return "infer_%s_expr" % expr_type
-
-def infer_Num_expr(num, env):
-    """
-    Determine the type of AST `Num` expression under type environment `env`.
-    """
-
-    assert num.__class__ == ast.Num
-
-    n = num.n
-
-    if type(n) == int:
-        return int_t
-    elif type(n) == float:
-        return float_t
-    else:
-        assert False, "Only handling int and float numbers, not " + cname(n)
-
-def infer_Name_expr(name, env):
-    """
-    Determine the type of AST `Name` expression under type environment `env`.
-    """
-
-    assert name.__class__ == ast.Name
-
-    # The Python AST treats boolean literals like any other identifier.
-    if name.id == 'True' or name.id == 'False':
-        return bool_t
-    else:
-        return env_get(env, name.id)
-
-def infer_List_expr(lst, env):
-    """
-    Determine the type of AST `List` expression under type environment `env`.
-
-    This assumes that the list properly typechecks (ie, that each of its
-    elements is the same type).
-    """
-
-    assert lst.__class__ == ast.List
-
-    els = lst.elts
-
-    return PytyType.list_of(infer_expr(els[0], env))
-
-def infer_Tuple_expr(tup, env):
-    """
-    Determine the type of AST `Tuple` expression under type environment `env`.
-    """
-
-    assert tup.__class__ == ast.Tuple
-
-    els = tup.elts
-
-    return PytyType.tuple_of([infer_expr(el, env) for el in els])
-
-def infer_Subscript_expr(subs, env):
-    """
-    Determine the type of AST `Subscript` expression under type environment
-    `env`.
-    """
-
-    assert subs.__class__ == ast.Subscript
-    assert subs.slice.__class__ in [ast.Index, ast.Slice], \
-        ("Subscript slice should only be ast.Index or ast.Slice, not " +
-         cname(subs.slice))
-
-    col = subs.value
-    col_t = infer_expr(col, env)
-
-    assert col_t.is_list() or col_t.is_tuple(), \
-        ("The collection being subscripted should be a list or tuple type, "
-         "not " + col_t)
-
-    if subs.slice.__class__ == ast.Index:
-
-        if col_t.is_list():
-
-            # If we access an individual element of a list of type [a], then the
-            # individual element has type a.
-            return col_t.list_t()
-
-        else: # this means col_t.is_tuple()
-
-            # We're assuming that the expression properly typechecks, so we know
-            # that the slice index is a nonnegative int literal.
-            idx = col.slice.value.n
-
-            # Best way to explain this is to look at the inference rule for
-            # tuple indexing.
-            return col_t.tuple_ts()[idx]
-
-            # FIXME: Need to better handle uniform tuples.
-
-    else: # this means subs.slice.__class__ == ast.Slice
-
-        if col_t.is_list():
-
-            # If we access a slice of a list of type [a], then the slice has
-            # type [a].
-            return t
-
-        else: # this means col_t.is_tuple()
-
-            # FIXME: Need to better handle uniform tuples.
-
-            slc = subs.slice
-
-            # We're assuming that the expression properly typechecks, so we know
-            # that the slice parameters are nonnegative int literals.
-            l = slc.lower.n if slc.lower is not None else 0
-            u = slc.upper.n if slc.upper is not None else len(col_t)
-            s = slc.step.n  if slc.step  is not None else 1
-            idxs = range(l, u, s)
-
-            # Best way to explain this is to look at the inference rule for
-            # tuple slicing.
-            return PytyType.tuple_of(
-                [t.tuple_ts()[idxs[i]] for i in range(idxs)])
-
-
 
 # ---------------------------------------------------------------------------
 # GENERAL CHECKING FUNCTIONS ------------------------------------------------
@@ -235,17 +67,20 @@ def check_stmt_list(stmt_list):
     """For each stmt in C{stmt_list}, checks whether stmt is a valid
     statement."""
 
-    t_debug("---- v Typechecking stmt list v ----")
+    # This is more succinct, but the commented code is better for debugging
+    return all(check_stmt(s) for s in stmt_list)
 
-    for s in stmt_list:
-        if not check_stmt(s):
-            t_debug("return: False")
-            t_debug("---- ^ Typechecking stmt list ^ ----")
-            return False
+    # t_debug("---- v Typechecking stmt list v ----")
 
-    t_debug("return: True")
-    t_debug("---- ^ Typechecking stmt list ^ ----")
-    return True
+    # for s in stmt_list:
+    #     if not check_stmt(s):
+    #         t_debug("return: False")
+    #         t_debug("---- ^ Typechecking stmt list ^ ----")
+    #         return False
+
+    # t_debug("return: True")
+    # t_debug("---- ^ Typechecking stmt list ^ ----")
+    # return True
 
 def check_expr(expr, t, env):
     """Checks whether the AST expression node given by C{node} typechecks as
@@ -316,28 +151,39 @@ def check_FunctionDef_stmt(stmt):
     # how should this typecheck?
 
 def check_TypeDec_stmt(stmt):
-    """Any TypeDec should typecheck correctly as long as it doesn't try to
-    reassign a type."""
+    """
+    Check whether type declaration node `stmt` typechecks under its embedded
+    environment.
+
+    `TypeDec`
+      - `t`: the type declared for `targets`.
+      - `targets`: the identifiers declared to have type `t`.
+      - `old_env`: the environment prior to this type declaration.
+      - `env`: the environment with this type declaration.
+    """
 
     assert stmt.__class__ == TypeDec
 
     for target in stmt.targets:
         if target in stmt.old_env:
-            # XXX ultimately, this should throw some kind of ERROR.
+            # FIXME ultimately, this should throw some kind of ERROR
             t_debug("Found a TypeDec which tried to reassign a type.")
             return False
 
     return True
 
 def check_Assign_stmt(stmt):
-    """Checks whether the AST node given by C{stmt} typechecks as an
-    assignment statement. This requires that the expression on the (far) right
-    of the equal signs must typecheck as each of the assign targets. The
-    expression can typecheck as multiple different types because of
-    subtyping.
-    NOTE: Currently, this only checks assignments of the form:
-        a = b = 5
-    and does not handle assigning to lists or tuples."""
+    """
+    Check whether assignment node `stmt` typechecks under its embedded
+    environment (and the environments embedded within each child statement).
+
+    NOTE: This currently only handles assignments with identifiers as the
+    left-hand side, not lists, tuples, etc.
+
+    `ast.Assign`
+      - `value`: the value being assigned.
+      - `targets`: Python list of the expressions being assigned to.
+    """
 
     assert stmt.__class__ == ast.Assign
 
@@ -366,9 +212,18 @@ def check_Assign_stmt(stmt):
     return True
 
 def check_If_stmt(stmt):
-    """Checks whether the AST node given by C{stmt} typechecks as an if
-    statement. This requires that the test typecheck as a bolean and that the
-    body and orelse branches both typecheck as lists of statements."""
+    """
+    Check whether if statement node `stmt` typechecks under its embedded
+    environment.
+
+    We currently assume that the test must be a boolean, which is not considered
+    very Pythonic by some.
+
+    `ast.If`
+      - `test`: the expression being tested.
+      - `body`: Python list of statements to run if `test` is true.
+      - `orelse`: Python list of statements to run if `test` is false.
+    """
 
     assert stmt.__class__ == ast.If
 
@@ -380,9 +235,15 @@ def check_If_stmt(stmt):
            check_stmt_list(body) and check_stmt_list(orelse)
 
 def check_While_stmt(stmt):
-    """Checks whether the AST node given by C{stmt} typechecks as a while
-    statement. This requires that the test typecheck as a boolean and that the
-    body and orelse branches both typecheck as lists of statements."""
+    """
+    Check whether while node `stmt` typechecks under its embedded environment
+    (and the environments embedded within each child statement).
+
+    `ast.While`
+      - `test`: the expression being tested each iteration.
+      - `body`: Python list of statements to run on each iteration.
+      - `orelse`: Python list of statements to run if `test` is false.
+    """
 
     assert stmt.__class__ == ast.While
 
