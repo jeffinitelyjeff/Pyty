@@ -244,7 +244,7 @@ def check_AugAssign_stmt(stmt):
     binop_node = ast.BinOp(tar, op, val)
     ts = [int_t, float_t, bool_t, str_t]
 
-    return any(check_BinOp_expr(binop_node, t, env) for t in ts)
+    return any(check_expr(binop_node, t, env) for t in ts)
 
 def check_Delete_stmt(stmt):
     """
@@ -509,11 +509,45 @@ def check_BinOp_expr(binop, t, env):
 
     l = binop.left
     r = binop.right
+    op = binop.op
 
-    # the type needs to be an int or a float, and both expresions need to
-    # typecheck as that type.
-    return (t.is_int() or t.is_float()) and \
-        check_expr(l, t, env) and check_expr(r, t, env)
+    arith_ops = [ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Pow]
+    bit_ops = [ast.LShift, ast.RShift, ast.BitOr, ast.BitAnd, ast.BitXor]
+
+    assert op in arith_ops + bit_ops, "Invalid binary operator"
+
+    if op in arith_ops:
+
+        if t.is_int() or t.is_float():
+
+            # (arith) rule
+            return check_expr(l, t, env) and check_expr(r, t, env)
+
+        else if t.is_list() or t.is_tuple():
+
+            if op.__class__ is ast.Add:
+                # (lcat) or (tcat)
+                # FIXME implement
+            else if op.__class__ is ast.Mult:
+                # (lrep) or (trep)
+                # FIXME implement
+            else:
+                # Can only typecheck as list or tup if doing repetition or
+                # concatenation.
+                return False
+
+        else:
+
+            # An arithmetic binary operation can only typecheck as an int,
+            # float, list, or tuple.
+            return False
+
+    else: # op in bit_ops
+
+        # (bitop) rule
+        return (t.is_int() and
+                check_expr(l, int_t, env) and
+                check_expr(r, int_t, env))
 
 def check_UnaryOp_expr(unop, t, env):
     """
