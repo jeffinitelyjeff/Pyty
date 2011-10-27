@@ -7,7 +7,7 @@ from parse_type import PType, int_t, float_t, bool_t, str_t, gen_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec
-from infer import infer_expr
+from infer import infer_expr, env_get
 
 log = None
 
@@ -442,31 +442,17 @@ def check_Name_expr(name, t, env):
 
     assert name.__class__ == ast.Name
 
-    # FIXME reverted this assumption for time being
-    # assert name.ctx.__class__ == ast.Load, \
-    #        ("We should only be typechecking a Name node when it is being "
-    #         "loaded, not when its context is " + cname(name.ctx))
-
     id = name.id
 
-    # need to treat when the Name expr is a boolean and when it's a variable.
     if id == 'True' or id == 'False':
-        # if the name is actually representing a boolean, then determine if
-        # we're actually typechecking it as a boolean.
+
+        # (bool) type assignment rule
         return t.is_bool()
+
     else:
-        # FIXME should litearlly look in dictionry, not use infer_expr;
-        # infer_expr is too abstract/general.
 
-        # if not checking for a boolean, then we must be looking for a variable,
-        # so we need to see if it matches the type in the environment.
-        spec_type = infer_expr(name, env)
-
-        if not spec_type.is_subtype(t):
-            t_debug(("Variable %s has been declared of type %s, so it does not "+
-                    "typecheck as type %s") % (name.id, str(spec_type), str(t)))
-
-        return infer_expr(name, env).is_subtype(t)
+        # (idn) type assignment rule
+        return env_get(env, id) == t
 
 def check_BinOp_expr(binop, t, env):
     """
