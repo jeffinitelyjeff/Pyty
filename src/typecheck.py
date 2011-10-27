@@ -509,11 +509,11 @@ def check_BinOp_expr(binop, t, env):
     r = binop.right
     op = binop.op
 
-    arith_ops = [ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Pow]
+    arith_ops = [ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod, ast.Pow]
     bit_ops = [ast.LShift, ast.RShift, ast.BitOr, ast.BitAnd, ast.BitXor]
 
-    assert op in arith_ops + bit_ops, \
-        "Invalid binary operator, %s" % cname(bit_ops)
+    assert op.__class__ in arith_ops + bit_ops, \
+        "Invalid binary operator, %s" % cname(op)
 
     if op in arith_ops:
 
