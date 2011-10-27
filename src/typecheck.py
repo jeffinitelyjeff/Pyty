@@ -501,8 +501,6 @@ def check_BinOp_expr(binop, t, env):
       - `left`: left expr
       - `op`: the operator (an `ast.operator`)
       - `right`: right expr
-
-    FIXME see assignment_rules.pdf
     """
 
     assert binop.__class__ == ast.BinOp
@@ -514,7 +512,8 @@ def check_BinOp_expr(binop, t, env):
     arith_ops = [ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Pow]
     bit_ops = [ast.LShift, ast.RShift, ast.BitOr, ast.BitAnd, ast.BitXor]
 
-    assert op in arith_ops + bit_ops, "Invalid binary operator"
+    assert op in arith_ops + bit_ops, \
+        "Invalid binary operator, %s" % cname(bit_ops)
 
     if op in arith_ops:
 
@@ -523,17 +522,59 @@ def check_BinOp_expr(binop, t, env):
             # (arith) rule
             return check_expr(l, t, env) and check_expr(r, t, env)
 
-        else if t.is_list() or t.is_tuple():
+        else if t.is_list():
 
             if op.__class__ is ast.Add:
-                # (lcat) or (tcat)
-                # FIXME implement
+
+                # (lcat)
+                return check_expr(l, t, env) and check_expr(r, t, env)
+
             else if op.__class__ is ast.Mult:
-                # (lrep) or (trep)
-                # FIXME implement
+
+                # (lrep)
+                return ((check_expr(l, t, env) and check_expr(r, int_t, env))
+                        or (check_expr(l, int_t, env) and check_expr(r, t, env)))
+
             else:
-                # Can only typecheck as list or tup if doing repetition or
-                # concatenation.
+                # No rule to assign a list type to a binop unless op is add or
+                # mult.
+                return False
+
+        else if t.is_tuple():
+
+            if op.__class__ is ast.Add:
+
+                # (tcat)
+                # This is pretty inefficient; we check every way which `t` can
+                # be split up into two tuples, but this seems to be the only way
+                # around type inference.
+                ts = t.tuple_ts()
+                return any(check_exp(l, PType.tuple_of(ts[0:i]), env)
+                           and check_expr(r, PType.tuple_of(ts[i:]), env)
+                           for i in range(1, len(ts)))
+
+            else if op.__class__ is ast.Mult:
+
+                # (trep)
+                # Until we're sure where we can use type inference, we have to
+                # restrict ourselves to only repeating tuples by integer
+                # literals.
+                # FIXME: this isn't really correct; we're not actually checking
+                # that the types repeat within `t`, but to do that we'll need a
+                # notion of equivalent PTypes.
+                ts = t.tuple_ts()
+                return ((l.__class__ is ast.Num and
+                         isinstance(l.n, int) and
+                         len(ts) % l.n == 0 and
+                         check_expr(r, ts[:len(ts) / l.n], env))
+                     or (r.__class__ is ast.Num and
+                         isinstance(r.n, int) and
+                         len(ts) % r.n == 0 and
+                         check_expr(l, ts[:len(ts) / r.n], env)))
+
+            else:
+                # No rule to assign a tuple type to a binop unless op is add or
+                # mult.
                 return False
 
         else:
@@ -670,6 +711,9 @@ def check_Subscript_expr(subs, t, env):
     typechecking algorithm. `ast.Store` contexts only show up on the left-hand
     side of assignment statements, so they will be typechecked by the assignment
     statement typechecking rule, not by the generic subscript typechecking rule.
+
+    Until we're sure where we can use type inference, we can only subscript
+    tuples by numeric (integer) literals.
     """
 
     assert subs.__class__ == ast.Subscript
