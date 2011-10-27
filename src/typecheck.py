@@ -522,14 +522,14 @@ def check_BinOp_expr(binop, t, env):
             # (arith) rule
             return check_expr(l, t, env) and check_expr(r, t, env)
 
-        else if t.is_list():
+        elif t.is_list():
 
             if op.__class__ is ast.Add:
 
                 # (lcat)
                 return check_expr(l, t, env) and check_expr(r, t, env)
 
-            else if op.__class__ is ast.Mult:
+            elif op.__class__ is ast.Mult:
 
                 # (lrep)
                 return ((check_expr(l, t, env) and check_expr(r, int_t, env))
@@ -540,7 +540,7 @@ def check_BinOp_expr(binop, t, env):
                 # mult.
                 return False
 
-        else if t.is_tuple():
+        elif t.is_tuple():
 
             if op.__class__ is ast.Add:
 
@@ -553,7 +553,7 @@ def check_BinOp_expr(binop, t, env):
                            and check_expr(r, PType.tuple_of(ts[i:]), env)
                            for i in range(1, len(ts)))
 
-            else if op.__class__ is ast.Mult:
+            elif op.__class__ is ast.Mult:
 
                 # (trep)
                 # Until we're sure where we can use type inference, we have to
