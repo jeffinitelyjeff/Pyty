@@ -10,10 +10,10 @@ expr type: Tuple
 (-1.0, 4.5) : (float, float)
 (True, 4, -3.0, True) : (bool, int, float, bool)
 ((True, False), (True,)) : ((bool, bool), (bool,))
-(True, 4, 3.0) : (bool, float, float)
 ([1,2,3,4,5], [1.0,2.0,3.0], [True, False]) : ([int], [float], [bool])
 
 ----fail----
+(True, 4, 3.0) : (bool, float, float) # SUBTYPING
 (1,) : (int)
 (4.0, 3) : (int, int)
 (True,) : (int,)

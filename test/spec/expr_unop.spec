@@ -7,11 +7,11 @@ expr type: UnaryOp
 ~5 : int
 ~439 : int
 -(~43) : int
--(~43) : float
 +4.94 : float
 not True : bool
 not False : bool
 ----fail----
+-(~43) : float # subtyping
 -True : int
 ~3.34 : float
 -(3.5) : int

@@ -1,28 +1,32 @@
 spec mode: mod
 
-----pass----
-# TEST NO 1
+----fail----
+# SUBTYPING
 #: x : float
 x = 3
 ---
+# SUBTYPING
 #: x : int
 x = 3
 #: y : float
 y = x
 ---
+# SUBTYPING
 #: x : float
 x = 4.2 + 4
 ---
+# SUBTYPING
 #: x : float
 x = 4 + (3 - 11 / 2) % 3.0
 ---
-# TEST NO 5
+# SUBTYPING
 #: x : float
 x = 4 + (3 - 11 / 2) % 3
 ---
+# SUBTYPING
 #: x : float
 x = 4 + (3.24 - 1432.22 % 3.249)
-----fail----
+---
 #: x : int
 x = 3.0
 ---
@@ -36,7 +40,6 @@ x = 5
 #: y : int
 y = x
 ---
-# TEST NO 10
 #: x : int
 x = 4 - (3 + 11 % 2) / 2.0
 ---
