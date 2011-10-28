@@ -436,8 +436,6 @@ def check_Name_expr(name, t, env):
     typechecks correctly, which isn't always the case; to fix this, we also
     verify that something checks as the type we infer, which means we'll end up
     checking name loads.
-
-    FIXME see assignment_rules.pdf
     """
 
     assert name.__class__ == ast.Name
@@ -490,7 +488,6 @@ def check_UnaryOp_expr(unop, t, env):
       - `op`: the operator (an `ast.unaryop`)
       - `operand`: operand expr
 
-    FIXME see assignment_rules.pdf
     """
 
     assert unop.__class__ == ast.UnaryOp
@@ -500,20 +497,30 @@ def check_UnaryOp_expr(unop, t, env):
 
     assert rator.__class__ in [ast.Invert, ast.Not, ast.UAdd, ast.USub]
 
-    if rator.__class__ == ast.Invert:
+    if rator.__class__ is ast.Invert and t.is_int():
 
-        # FIXME need to write out inf rule to make sure this is correct
-        return int_t.is_subtype(t) and check_expr(rand, int_t, env)
+        # (inv) assignment rule.
+        return check_expr(rand, int_t, env)
 
-    elif rator.__class__ == ast.Not:
+    elif rator.__class__ is ast.Not and t.is_bool():
 
-        return t.is_bool() and check_expr(rand, bool_t, env)
+        # (not) assignment rule.
+        return check_expr(rand, bool_t, env)
 
-    else: # equiv to rator.__class__ == ast.UAdd or ast.USub
+    elif rator.__class__ in [ast.UAdd, ast.USub] and t.is_int():
 
-        # FIXME need to write out inference rule for this to be clear it's
-        # correct
-        return t.is_subtype(float_t) and check_expr(rand, t, env)
+        # (uadd) assignment rule v1.
+        return check_expr(rand, int_t, env)
+
+    elif rator.__class__ in [ast.UAdd, ast.USub] and t.is_float():
+
+        # (uadd) assignment rule v2.
+        return check_expr(rand, float_t, env)
+
+    else:
+
+        # No type assignment rules found.
+        return False
 
 def check_Compare_expr(compare, t, env):
     """
