@@ -703,15 +703,15 @@ def check_Subscript_Slice_expr(subs, t, env):
 
     if col_t.is_list():
 
-        # The slice parameters must typecheck as ints, and the original
-        # collection must typecheck as the expected type (slice of a list is
-        # also a list).
+        # (lslc) assignment rule.
         return ( (l is None or check_expr(l, int_t, env)) and
                  (u is None or check_expr(u, int_t, env)) and
                  (s is None or check_expr(s, int_t, env)) and
                  check_expr(col, t, env) )
 
     else: # col_t.is_tuple()
+
+        # (tslc) assignment rule.
 
         # Rule out some easy failure cases.
         if not t.is_tuple():
@@ -726,9 +726,5 @@ def check_Subscript_Slice_expr(subs, t, env):
             upp = u if u is not None else len(col_t)
             stp = s if s is not None else 1
 
-            # Get the indices the slice will hit.
-            idxs = range(low, upp, step)
-
-            # Each hit type must be a subtype of the corresponding expected type.
-            return all([
-                col_t.tuple_ts()[i].is_subtype(t.tuple_ts()[i]) for i in idxs])
+            return all(col_t.tuple_ts()[i] == t.tuple_ts()[i]
+                       for i in range(low, upp, step))
