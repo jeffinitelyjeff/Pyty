@@ -440,7 +440,7 @@ def check_Num_expr(num, t, env):
     elif t.is_float():
 
         # (flt) assignment rule.
-        return isinstance(n, int) or isinstance(n, float)
+        return isinstance(n, float) # or isinstance(n, int)
 
     else:
 
