@@ -7,7 +7,7 @@ from parse_type import PType, int_t, float_t, bool_t, str_t, gen_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec
-from infer import infer_expr
+from infer import infer_expr, env_get
 
 log = None
 
@@ -400,23 +400,23 @@ def check_Continue_stmt(stmt):
 def get_check_expr_func_name(expr_type):
     return "check_%s_expr" % expr_type
 
-def check_Call_expr(call, t, env):
-    """Checks whhether the AST expression node given by C{call} typechecks as a
-    function call expression of type C{t}."""
+# def check_Call_expr(call, t, env):
+#     """Checks whhether the AST expression node given by C{call} typechecks as a
+#     function call expression of type C{t}."""
 
-    assert call.__class__ == ast.Call
+#     assert call.__class__ == ast.Call
 
-    # FIXME: this probably doesn't handle lambdas; do we want to handle that
-    # here?
+#     # FIXME: this probably doesn't handle lambdas; do we want to handle that
+#     # here?
 
-    fun = call.func
-    fun_t = infer_expr(fun, env)
+#     fun = call.func
+#     fun_t = infer_expr(fun, env)
 
-    # FIXME: this doesn't actually handle proper function subtyping; remeber,
-    # there's the more complicated subtyping relation for functions.
-    return fun_t.function_ts()[1].is_subtype(t)
-        # FIXME: now check each argument, but this is slightly more complicated
-        # because the PType thinks of the function as a tuple...
+#     # FIXME: this doesn't actually handle proper function subtyping; remeber,
+#     # there's the more complicated subtyping relation for functions.
+#     return fun_t.function_ts()[1].is_subtype(t)
+#         # FIXME: now check each argument, but this is slightly more complicated
+#         # because the PType thinks of the function as a tuple...
 
 
 def check_Num_expr(num, t, env):
@@ -426,8 +426,6 @@ def check_Num_expr(num, t, env):
 
     `ast.Num`
       - `n`: the numeric literal (as a Python object)
-
-    FIXME see assignment_rules.pdf
     """
 
     assert num.__class__ == ast.Num
@@ -435,10 +433,18 @@ def check_Num_expr(num, t, env):
     n = num.n
 
     if t.is_int():
-        return type(n) == int
-    if t.is_float():
-        return type(n) in [int, float]
+
+        # (int) assignment rule.
+        return isinstance(n, int)
+
+    elif t.is_float():
+
+        # (flt) assignment rule.
+        return isinstance(n, int) or isinstance(n, float)
+
     else:
+
+        # No type assignment rule found.
         return False
 
 def check_Name_expr(name, t, env):
@@ -460,37 +466,21 @@ def check_Name_expr(name, t, env):
     typechecks correctly, which isn't always the case; to fix this, we also
     verify that something checks as the type we infer, which means we'll end up
     checking name loads.
-
-    FIXME see assignment_rules.pdf
     """
 
     assert name.__class__ == ast.Name
 
-    # FIXME reverted this assumption for time being
-    # assert name.ctx.__class__ == ast.Load, \
-    #        ("We should only be typechecking a Name node when it is being "
-    #         "loaded, not when its context is " + cname(name.ctx))
-
     id = name.id
 
-    # need to treat when the Name expr is a boolean and when it's a variable.
     if id == 'True' or id == 'False':
-        # if the name is actually representing a boolean, then determine if
-        # we're actually typechecking it as a boolean.
+
+        # (bool) type assignment rule
         return t.is_bool()
+
     else:
-        # FIXME should litearlly look in dictionry, not use infer_expr;
-        # infer_expr is too abstract/general.
 
-        # if not checking for a boolean, then we must be looking for a variable,
-        # so we need to see if it matches the type in the environment.
-        spec_type = infer_expr(name, env)
-
-        if not spec_type.is_subtype(t):
-            t_debug(("Variable %s has been declared of type %s, so it does not "+
-                    "typecheck as type %s") % (name.id, str(spec_type), str(t)))
-
-        return infer_expr(name, env).is_subtype(t)
+        # (idn) type assignment rule
+        return env_get(env, id) == t
 
 def check_BinOp_expr(binop, t, env):
     """
@@ -603,7 +593,6 @@ def check_UnaryOp_expr(unop, t, env):
       - `op`: the operator (an `ast.unaryop`)
       - `operand`: operand expr
 
-    FIXME see assignment_rules.pdf
     """
 
     assert unop.__class__ == ast.UnaryOp
@@ -613,20 +602,30 @@ def check_UnaryOp_expr(unop, t, env):
 
     assert rator.__class__ in [ast.Invert, ast.Not, ast.UAdd, ast.USub]
 
-    if rator.__class__ == ast.Invert:
+    if rator.__class__ is ast.Invert and t.is_int():
 
-        # FIXME need to write out inf rule to make sure this is correct
-        return int_t.is_subtype(t) and check_expr(rand, int_t, env)
+        # (inv) assignment rule.
+        return check_expr(rand, int_t, env)
 
-    elif rator.__class__ == ast.Not:
+    elif rator.__class__ is ast.Not and t.is_bool():
 
-        return t.is_bool() and check_expr(rand, bool_t, env)
+        # (not) assignment rule.
+        return check_expr(rand, bool_t, env)
 
-    else: # equiv to rator.__class__ == ast.UAdd or ast.USub
+    elif rator.__class__ in [ast.UAdd, ast.USub] and t.is_int():
 
-        # FIXME need to write out inference rule for this to be clear it's
-        # correct
-        return t.is_subtype(float_t) and check_expr(rand, t, env)
+        # (uadd) assignment rule v1.
+        return check_expr(rand, int_t, env)
+
+    elif rator.__class__ in [ast.UAdd, ast.USub] and t.is_float():
+
+        # (uadd) assignment rule v2.
+        return check_expr(rand, float_t, env)
+
+    else:
+
+        # No type assignment rules found.
+        return False
 
 def check_Compare_expr(compare, t, env):
     """
@@ -758,25 +757,19 @@ def check_Subscript_Index_expr(subs, t, env):
 
     if col_t.is_list():
 
-        # The index must typecheck as an int, and the collection must typecheck
-        # as a list of the expected type.
-        return (check_expr(idx, int_t, env) and
-                check_expr(col, PType.list_of(t), env))
+        # (lidx) assignment rule.
+        return (check_expr(col, PType.list_of(t), env) and
+                check_expr(idx, int_t, env))
 
     else: # col_t.is_tuple()
 
         col_ts = col_t.tuple_ts()
 
-        # FIXME: need to ensure type inference algorithm can actually get full
-        # list of tuple types.
-
-        # The index must be be a nonnegative int smaller than the length of the
-        # tuple, and the type at the specified position must be a subtype of the
-        # expected type.
+        # (tidx) assignment rule.
         return (idx.__class__ is ast.Num and
-                type(idx.n) is int and
+                isinstance(idx.n, int) and
                 0 <= idx.n < len(col_ts) and
-                col_ts[idx.n].is_subtype(t))
+                col_ts[idx.n] == t)
 
 def check_Subscript_Slice_expr(subs, t, env):
     """
@@ -812,15 +805,15 @@ def check_Subscript_Slice_expr(subs, t, env):
 
     if col_t.is_list():
 
-        # The slice parameters must typecheck as ints, and the original
-        # collection must typecheck as the expected type (slice of a list is
-        # also a list).
+        # (lslc) assignment rule.
         return ( (l is None or check_expr(l, int_t, env)) and
                  (u is None or check_expr(u, int_t, env)) and
                  (s is None or check_expr(s, int_t, env)) and
                  check_expr(col, t, env) )
 
     else: # col_t.is_tuple()
+
+        # (tslc) assignment rule.
 
         # Rule out some easy failure cases.
         if not t.is_tuple():
@@ -835,9 +828,5 @@ def check_Subscript_Slice_expr(subs, t, env):
             upp = u if u is not None else len(col_t)
             stp = s if s is not None else 1
 
-            # Get the indices the slice will hit.
-            idxs = range(low, upp, step)
-
-            # Each hit type must be a subtype of the corresponding expected type.
-            return all([
-                col_t.tuple_ts()[i].is_subtype(t.tuple_ts()[i]) for i in idxs])
+            return all(col_t.tuple_ts()[i] == t.tuple_ts()[i]
+                       for i in range(low, upp, step))

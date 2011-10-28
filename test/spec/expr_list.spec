@@ -5,11 +5,11 @@ expr type: List
 [1,2,3] : [int]
 [1] : [int]
 [3.0, 4.0] : [float]
-[5.0, 3.0, 4] : [float]
 [True, False, True] : [bool]
 [[True, False], [False, True]] : [[bool]]
 
 ----fail----
+[5.0, 3.0, 4] : [float] # SUBTYPING
 [1.0, 2] : [int]
 [1.0, 2.0, True] : [int]
 [1.0, 2.0, True] : [float]
