@@ -402,8 +402,6 @@ def check_Num_expr(num, t, env):
 
     `ast.Num`
       - `n`: the numeric literal (as a Python object)
-
-    FIXME see assignment_rules.pdf
     """
 
     assert num.__class__ == ast.Num
@@ -411,10 +409,18 @@ def check_Num_expr(num, t, env):
     n = num.n
 
     if t.is_int():
-        return type(n) == int
-    if t.is_float():
-        return type(n) in [int, float]
+
+        # (int) assignment rule.
+        return isinstance(n, int)
+
+    elif t.is_float():
+
+        # (flt) assignment rule.
+        return isinstance(n, int) or isinstance(n, float)
+
     else:
+
+        # No type assignment rule found.
         return False
 
 def check_Name_expr(name, t, env):
