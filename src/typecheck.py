@@ -376,23 +376,23 @@ def check_Continue_stmt(stmt):
 def get_check_expr_func_name(expr_type):
     return "check_%s_expr" % expr_type
 
-def check_Call_expr(call, t, env):
-    """Checks whhether the AST expression node given by C{call} typechecks as a
-    function call expression of type C{t}."""
+# def check_Call_expr(call, t, env):
+#     """Checks whhether the AST expression node given by C{call} typechecks as a
+#     function call expression of type C{t}."""
 
-    assert call.__class__ == ast.Call
+#     assert call.__class__ == ast.Call
 
-    # FIXME: this probably doesn't handle lambdas; do we want to handle that
-    # here?
+#     # FIXME: this probably doesn't handle lambdas; do we want to handle that
+#     # here?
 
-    fun = call.func
-    fun_t = infer_expr(fun, env)
+#     fun = call.func
+#     fun_t = infer_expr(fun, env)
 
-    # FIXME: this doesn't actually handle proper function subtyping; remeber,
-    # there's the more complicated subtyping relation for functions.
-    return fun_t.function_ts()[1].is_subtype(t)
-        # FIXME: now check each argument, but this is slightly more complicated
-        # because the PType thinks of the function as a tuple...
+#     # FIXME: this doesn't actually handle proper function subtyping; remeber,
+#     # there's the more complicated subtyping relation for functions.
+#     return fun_t.function_ts()[1].is_subtype(t)
+#         # FIXME: now check each argument, but this is slightly more complicated
+#         # because the PType thinks of the function as a tuple...
 
 
 def check_Num_expr(num, t, env):
