@@ -48,21 +48,24 @@ a, b = 1, 2.1
 #: b : int
 [a, b] = [1, 2]
 ---
+
+----fail----
+
+---
+# SUBTYPING
 #: a : float
 #: b : float
 [a, b] = [1, 2]
 ---
+# SUBTYPING
 #: a : float
 #: b : float
 a, b = 1, 2.1
 ---
+# SUBTYPING
 #: a : float
 #: b : float
 a, b = 1, 2
----
-
-----fail----
-
 ---
 #: b : bool
 b = 4
