@@ -47,7 +47,10 @@ x = 4 - (3 + 11 % 2) / 2.0
 y = 4 + 3.0 + x
 ----TypeUnspecifiedError----
 #: y : float
-y = 4 + 3.0 + x
+y = 4.0 + 3.0 + x
+---
+#: y : float
+y = 4.0 * x + 3
 ---
 y = 4 + 3.0
 ---

@@ -145,10 +145,11 @@ class PytyTests(unittest.TestCase):
                           % (expected, result, text.strip('\n')))
             except err:
                 pass
+            except AssertionError as e:
+                self.fail(e)
             except Exception as e:
-                self.fail(("Should have raised error %s, but instead raised " +
-                          "error %s:\n%s") % (expected, e.__class__.__name__,
-                                              text.strip('\n')))
+                self.fail("Should have raised %s, but instead raised %s (%s):\n%s" %
+                          (expected, e.__class__.__name__, e, text.strip('\n')))
 
     ##### Generated unit tests will go below here
     ##### Generated unit tests will go above here

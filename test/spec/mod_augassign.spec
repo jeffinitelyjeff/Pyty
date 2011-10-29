@@ -12,14 +12,6 @@ a += 5
 a += 5
 ---
 #: a : float
-a = 3.0
-a += 5
----
-#: a : float
-a = 3
-a += 5.0
----
-#: a : float
 a = 5.0
 a -= 3.8
 ---
@@ -40,12 +32,9 @@ a = 98
 a /= 304
 ---
 #: a : float
-a = 83
+a = 83.3
 #: b : float
-a /= b
----
-#: a : int
-#: b : float
+b = 5.8
 a /= b
 ---
 #: a : int
@@ -76,10 +65,6 @@ a ^= 4231
 a = 432
 a //= 432
 ---
-#: a : float
-a = 432
-a //= 342.3
----
 
 ----fail----
 
@@ -96,5 +81,23 @@ a >>= False
 #: b : int
 a <<= b
 ---
-
-
+# SUBTYPING
+#: a : float
+a = 3.0
+a += 5
+---
+# SUBTYPING
+#: a : float
+a = 3
+a += 5.0
+---
+# SUBTYPING
+#: a : int
+#: b : float
+a /= b
+---
+# SUBTYPING
+#: a : float
+a = 432
+a //= 342.3
+---
