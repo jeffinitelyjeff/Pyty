@@ -9,10 +9,12 @@ expr type: Num
 -0 : int
 -10.31 : float
 
-# these should raise assertion errors because they're not num expressions
-----AssertionError----
+----fail----
 1 : float # SUBTYPING
 -5 : float # SUBTYPING
+
+# these should raise assertion errors because they're not num expressions
+----AssertionError----
 True : int
 4*3 : int
 -4*2.3 : float
