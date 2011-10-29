@@ -46,7 +46,13 @@ def infer_expr(e, env):
     # If we get a KeyError, then we're trying to infer the type of an AST node
     # that is not in the very limited subset of the language that we're trying
     # to perform type inference on.
-    return call_function(n, e, env)
+
+    t = call_function(n, e, env)
+
+    if check_expr(e, t, env):
+        return t
+    else:
+        return None
 
 def get_infer_expr_func_name(expr_type):
     return "infer_%s_expr" % expr_type
@@ -168,3 +174,7 @@ def infer_Subscript_expr(subs, env):
             # tuple slicing.
             return PType.tuple_of(
                 [t.tuple_ts()[idxs[i]] for i in range(idxs)])
+
+
+# UGH, this is ugly
+from typecheck import check_expr

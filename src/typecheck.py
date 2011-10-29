@@ -7,7 +7,6 @@ from parse_type import PType, int_t, float_t, bool_t, str_t, gen_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec
-from infer import infer_expr, env_get
 
 log = None
 
@@ -198,25 +197,25 @@ def check_Assign_stmt(stmt):
 
     assert stmt.__class__ == ast.Assign
 
-    e = stmt.value
+    v = stmt.value
 
-    # return False if the expression doesn't match with one of the targets
-    for v in stmt.targets:
+    for tar in stmt.targets:
 
-        assert v.ctx.__class__ == ast.Store, \
-               ("Assignment target variables should only appear in the Store "
-                "context, not " + cname(v.ctx))
+        assert tar.ctx.__class__ is ast.Store, \
+            "Should be store ctx, not " + cname(tar.ctx)
 
-        # FIXME
-        # `infer_expr` assumes that the expression typechecks correctly. For
-        # now, we just verify that it also typechecks correctly after inferring
-        # the type; there is probably a more elegant way to do this.
-        t = infer_expr(v, stmt.env)
-        if not check_expr(v, t, stmt.env):
+        if tar.__class__ is ast.Subscript and infer_expr(tar.value).is_tuple():
+            # Can't assign to a subscript of a tuple.
             return False
 
-        # How to allow assigning to a tuple, but not to a subscripted tuple?
-        if not check_expr(e, t, stmt.env):
+        t = infer_expr(tar, stmt.env)
+
+        if t is None:
+            # The target doesn't typecheck properly.
+            return False
+
+        if not check_expr(v, t, stmt.env):
+            # The value doesn't typecheck as the type of the target.
             return False
 
     # return True if we reached here, meaning that it matched with all targets
@@ -830,3 +829,5 @@ def check_Subscript_Slice_expr(subs, t, env):
 
             return all(col_t.tuple_ts()[i] == t.tuple_ts()[i]
                        for i in range(low, upp, step))
+
+from infer import infer_expr, env_get
