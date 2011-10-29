@@ -198,23 +198,25 @@ def check_Assign_stmt(stmt):
     assert stmt.__class__ == ast.Assign
 
     v = stmt.value
+    tars = stmt.targets
+    env = stmt.env
 
-    for tar in stmt.targets:
+    for tar in tars:
 
         assert tar.ctx.__class__ is ast.Store, \
             "Should be store ctx, not " + cname(tar.ctx)
 
-        if tar.__class__ is ast.Subscript and infer_expr(tar.value).is_tuple():
+        if tar.__class__ is ast.Subscript and infer_expr(tar.value, env).is_tuple():
             # Can't assign to a subscript of a tuple.
             return False
 
-        t = infer_expr(tar, stmt.env)
+        t = infer_expr(tar, env)
 
         if t is None:
             # The target doesn't typecheck properly.
             return False
 
-        if not check_expr(v, t, stmt.env):
+        if not check_expr(v, t, env):
             # The value doesn't typecheck as the type of the target.
             return False
 
@@ -830,4 +832,6 @@ def check_Subscript_Slice_expr(subs, t, env):
             return all(col_t.tuple_ts()[i] == t.tuple_ts()[i]
                        for i in range(low, upp, step))
 
+
+# UGH, this is ugly
 from infer import infer_expr, env_get
