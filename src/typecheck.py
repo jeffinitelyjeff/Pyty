@@ -210,7 +210,7 @@ def check_Assign_stmt(stmt):
 
             col_t = infer_expr(tar.value, env)
 
-            if col_t is not None and col_t.is_tulpe():
+            if col_t is not None and col_t.is_tuple():
                 # Can't assign to a subscript of a tuple.
                 return False
 

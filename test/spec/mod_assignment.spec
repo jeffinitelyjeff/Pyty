@@ -26,16 +26,6 @@ f = 3.2
 #: c : float
 a = b = c = 5.0
 ---
-#: a : float
-#: b : float
-#: c : float
-a = b = c = 5
----
-#: a : float
-#: b : int
-#: c : int
-a = b = c = 5
----
 #: a : int
 #: b : float
 a, b = 1, 2.1
@@ -51,6 +41,18 @@ a, b = 1, 2.1
 
 ----fail----
 
+---
+# SUBTYPING
+#: a : float
+#: b : float
+#: c : float
+a = b = c = 5
+---
+# SUBTYPING
+#: a : float
+#: b : int
+#: c : int
+a = b = c = 5
 ---
 # SUBTYPING
 #: a : float
