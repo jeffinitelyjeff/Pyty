@@ -135,7 +135,7 @@ def infer_Subscript_expr(subs, env):
 
             # We're assuming that the expression properly typechecks, so we know
             # that the slice index is a nonnegative int literal.
-            idx = col.slice.value.n
+            idx = subs.slice.value.n
 
             # Best way to explain this is to look at the inference rule for
             # tuple indexing.
