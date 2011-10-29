@@ -505,7 +505,7 @@ def check_BinOp_expr(binop, t, env):
     assert op.__class__ in arith_ops + bit_ops, \
         "Invalid binary operator, %s" % cname(op)
 
-    if op in arith_ops:
+    if op.__class__ in arith_ops:
 
         if t.is_int() or t.is_float():
 
