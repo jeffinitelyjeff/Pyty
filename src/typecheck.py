@@ -206,9 +206,13 @@ def check_Assign_stmt(stmt):
         assert tar.ctx.__class__ is ast.Store, \
             "Should be store ctx, not " + cname(tar.ctx)
 
-        if tar.__class__ is ast.Subscript and infer_expr(tar.value, env).is_tuple():
-            # Can't assign to a subscript of a tuple.
-            return False
+        if tar.__class__ is ast.Subscript:
+
+            col_t = infer_expr(tar.value, env)
+
+            if col_t is not None and col_t.is_tulpe():
+                # Can't assign to a subscript of a tuple.
+                return False
 
         t = infer_expr(tar, env)
 
@@ -752,9 +756,12 @@ def check_Subscript_Index_expr(subs, t, env):
     col = subs.value
     col_t = infer_expr(col, env)
 
+    if col_t is None:
+        # The collection itself doesn't typecheck properly.
+        return False
+
     assert col_t.is_list() or col_t.is_tuple(), \
-       "Subscripted collection type should be list or tuple, not %s" % col_t + \
-       "\n" + ast.dump(subs) + str(infer_expr(ast.parse("(True, 4)").body[0].value, {}))
+        "Subscripted col should be list or tuple, not " + col_t
 
     if col_t.is_list():
 
@@ -796,6 +803,11 @@ def check_Subscript_Slice_expr(subs, t, env):
     # have to do a limited form of type inference to determine the actual type.
     col = subs.value
     col_t = infer_expr(col, env)
+
+    if col_t is None:
+
+        # The collection itself doesn't typecheck properly.
+        return False
 
     assert col_t.is_list() or col_t.is_tuple(), \
         "Subscripted collection must be list or tuple type, not " + col_t
