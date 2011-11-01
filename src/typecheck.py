@@ -323,9 +323,11 @@ def check_If_While_stmt(stmt):
     test = stmt.test
     body = stmt.body
     orelse = stmt.orelse
+    env = stmt.env
 
-    return check_expr(test, bool_t, stmt.env) and \
-           check_stmt_list(body) and check_stmt_list(orelse)
+    return (check_expr(test, bool_t, env) and
+            check_stmt_list(body) and
+            check_stmt_list(orelse))
 
 def check_Print_stmt(stmt):
     """
