@@ -601,21 +601,25 @@ def check_Compare_expr(compare, t, env):
 
     A chained comparison expression is structured like so:
     `left` `ops[0]` `comparators[0]` `ops[1]` `comparators[1]` ...
-
-    NOTE This doesn't handle chained comparison.
-
-    FIXME see assignment_rules.pdf
-    FIXME add is/isnot/in/notin
     """
 
     assert compare.__class__ == ast.Compare
 
-    l = compare.left
-    r = compare.comparators[0]
+    num_ops = [ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE]
 
-    # will typecheck if t is a boolean and both sides typecheck as floats.
-    return t.is_bool() and check_expr(l, float_t, env) \
-           and check_expr(r, float_t, env)
+    ops = compare.ops
+    es = [compare.left] + compare.comparators
+
+    if all(op.__class__ in num_ops for op in ops) and t.is_bool():
+
+        # (cmp) assignment rule.
+        return (all(check_expr(e, int_t, env) for e in es) or
+                all(check_expr(e, float_t, env) for e in es))
+
+    else:
+
+        # No type assignment rules found.
+        return False
 
 def check_List_expr(list, t, env):
     """

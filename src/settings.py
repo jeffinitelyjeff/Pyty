@@ -23,6 +23,6 @@ DEBUG_SUBJECT_FILE = "mod_if6.py"
 DEBUG_TYPEDEC_PARSING = False
 DEBUG_UNTYPED_AST     = False
 DEBUG_TYPEDECS        = False
-DEBUG_TYPED_AST       = False
+DEBUG_TYPED_AST       = True
 DEBUG_TYPECHECK       = True
 DEBUG_INFER           = True
