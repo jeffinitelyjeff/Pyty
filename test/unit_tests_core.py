@@ -8,7 +8,7 @@ import ast
 # Include src in the Python search path.
 sys.path.insert(0, '../src')
 
-from ast_extensions import TypeDecASTModule, EnvASTModule
+from ast_extensions import TypeDecASTModule
 from typecheck import (check_expr, check_mod, get_check_expr_func_name,
                        call_function)
 from parse_file import parse_type_decs
@@ -97,12 +97,7 @@ class PytyTests(unittest.TestCase):
         log.debug("--- v TypedAST v ---\n" + str(typed_ast) +
                   "\n--- ^ TypedAST ^ ---", DEBUG_TYPED_AST)
 
-        env_ast = EnvASTModule(typed_ast)
-
-        log.debug("--- v EnvAST v ---\n" + str(env_ast) +
-                  "\n--- ^ EnvAST ^ ---", DEBUG_ENV_AST)
-
-        return check_mod(env_ast.tree)
+        return check_mod(typed_ast.tree)
 
     def _check_mod(self, filename):
         """Typechecks the contents of file C{filename} as a
