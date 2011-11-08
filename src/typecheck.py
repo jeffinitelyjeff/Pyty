@@ -154,29 +154,6 @@ def check_FunctionDef_stmt(stmt):
 
     # how should this typecheck?
 
-# This shouldn't be needed anymore.
-# def check_TypeDec_stmt(stmt):
-#     """
-#     Check whether type declaration node `stmt` typechecks under its embedded
-#     environment.
-
-#     `TypeDec`
-#       - `t`: the type declared for `targets`.
-#       - `targets`: the identifiers declared to have type `t`.
-#       - `old_env`: the environment prior to this type declaration.
-#       - `env`: the environment with this type declaration.
-#     """
-
-#     assert stmt.__class__ == TypeDec
-
-#     for target in stmt.targets:
-#         if target in stmt.old_env:
-#             # FIXME ultimately, this should throw some kind of ERROR
-#             t_debug("Found a TypeDec which tried to reassign a type.")
-#             return False
-
-#     return True
-
 def check_Assign_stmt(stmt, env):
     """
     Check whether assignment node `stmt` typechecks under type environment
