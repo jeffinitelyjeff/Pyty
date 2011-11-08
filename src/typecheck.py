@@ -503,7 +503,7 @@ def check_BinOp_expr(binop, t, env):
                 # be split up into two tuples, but this seems to be the only way
                 # around type inference.
                 ts = t.tuple_ts()
-                return any(check_exp(l, PType.tuple_of(ts[0:i]), env)
+                return any(check_expr(l, PType.tuple_of(ts[0:i]), env)
                            and check_expr(r, PType.tuple_of(ts[i:]), env)
                            for i in range(1, len(ts)))
 
@@ -520,11 +520,11 @@ def check_BinOp_expr(binop, t, env):
                 return ((l.__class__ is ast.Num and
                          isinstance(l.n, int) and
                          len(ts) % l.n == 0 and
-                         check_expr(r, ts[:len(ts) / l.n], env))
+                         check_expr(r, PType.tuple_of(ts[:len(ts) / l.n]), env))
                      or (r.__class__ is ast.Num and
                          isinstance(r.n, int) and
                          len(ts) % r.n == 0 and
-                         check_expr(l, ts[:len(ts) / r.n], env)))
+                         check_expr(l, PType.tuple_of(ts[:len(ts) / r.n]), env)))
 
             else:
                 # No rule to assign a tuple type to a binop unless op is add or
@@ -659,7 +659,8 @@ def check_Tuple_expr(tup, t, env):
 
     if t.is_tuple():
         e_ts = t.tuple_ts()
-        return all(check_expr(es[i], e_ts[i], env) for i in range(len(e_ts)))
+        return all(i < len(es) and check_expr(es[i], e_ts[i], env)
+                   for i in range(len(e_ts)))
     else:
         return False # desired type is not a tuple
 
