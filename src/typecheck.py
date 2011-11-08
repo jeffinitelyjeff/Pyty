@@ -221,28 +221,6 @@ def check_AugAssign_stmt(stmt, env):
     else:
         return check_expr(binop, t, env)
 
-def check_Delete_stmt(stmt, env):
-    """
-    Check whether delete node `stmt` typechecks under type environment `env`.
-
-    NOTE: The python language reference is a bit unclear about what can actually
-    be deleted. This assumes that only identifiers, lists, and subscripts can be
-    deleted.
-
-    `ast.Delete`
-      - `targets` : a Python list of expressions to be deleted.
-    """
-
-    assert stmt.__class__ == ast.Delete
-
-    tars = stmt.targets
-
-    assert all(tar.ctx.__class__ == ast.Del for tar in tars), \
-        "Each target should have a delete context"
-
-    return all(tar.__class__ in [ast.Name, ast.List, ast.Subscript]
-               for tar in tars)
-
 def check_If_stmt(stmt, env):
     """
     Check whether if statement node `stmt` typechecks under type environment
