@@ -158,9 +158,6 @@ def check_Assign_stmt(stmt, env):
     Check whether assignment node `stmt` typechecks under type environment
     `env`.
 
-    NOTE: This currently only handles assignments with identifiers as the
-    left-hand side, not lists, tuples, etc.
-
     `ast.Assign`
       - `value`: the value being assigned.
       - `targets`: Python list of the expressions being assigned to.
@@ -210,14 +207,19 @@ def check_AugAssign_stmt(stmt, env):
 
     assert stmt.__class__ == ast.AugAssign
 
+    v = stmt.value
     tar = stmt.target
     op = stmt.op
-    val = stmt.value
 
-    binop_node = ast.BinOp(tar, op, val)
-    ts = [int_t, float_t, bool_t, str_t]
+    binop = ast.BinOp(tar, op, v)
 
-    return any(check_expr(binop_node, t, env) for t in ts)
+    t = infer_expr(tar, env)
+
+    if t is None:
+        # The target doesn't typecheck properly.
+        return False
+    else:
+        return check_expr(binop, t, env)
 
 def check_Delete_stmt(stmt, env):
     """
