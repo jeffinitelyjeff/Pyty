@@ -34,29 +34,20 @@ def check_mod(mod):
         t_debug("----- ^ Typechecking module ^ -----")
         return False
 
-    result = check_stmt_list(mod.body)
+    result = check_stmt_list(mod.body, {})
     t_debug("return: " + str(result) + "\n----- ^ Typechecking module ^ -----")
     return result
 
-def check_stmt(stmt):
+def check_stmt(stmt, env):
     """
-    Check whether the statement node `stmt` typechecks under its embedded
-    environment.
+    Check whether the statement node `stmt` typechecks under type environment
+    `env`.
 
-    Each kind of statement has only one type assignment rule, so this is syntax
-    directed and we just test the type assignment rule for the appropriate kind
-    of statement node.
+    We defer to the specific `check_X_stmt` functions to determine which type
+    assignemnt rule to try.
     """
-    """Checks whether the AST node given by C{node} typechecks as a statement.
-    The requirements for typechecking as a statement depend on what kind of
-    statement C{node} is, and so this function calls one of several functions
-    which typecheck C{node} as the specific kind of statement. The function to
-    call is generated from the class name of C{node}."""
 
     t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---")
-
-    assert hasattr(stmt, 'env') or stmt.is_compound(), \
-           "Simple statements need to have environments"
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
@@ -64,7 +55,7 @@ def check_stmt(stmt):
     # the subset of the language we're considering (note: the subset is
     # defined as whatever there are check function definitions for).
     try:
-        result = call_function(n, stmt)
+        result = call_function(n, stmt, env)
         t_debug("return: " + str(result) + "\n--- ^ Typechecking stmt ^ ---")
         return result
     except KeyError:
@@ -73,24 +64,27 @@ def check_stmt(stmt):
                 "\n--- ^ Typechecking stmt ^ ---")
         return False
 
-def check_stmt_list(stmt_list):
-    """For each stmt in C{stmt_list}, checks whether stmt is a valid
-    statement."""
+def check_stmt_list(stmt_list, env):
+    """
+    Check whether each stmt in `stmt_list` typechecks correctly. `env` is the
+    common type environment shared by all stmts in `stmt_list`
+    """
 
-    # This is more succinct, but the commented code is better for debugging
-    return all(check_stmt(s) for s in stmt_list)
+    # Make duplicate of environment to add to as we encounter type declarations.
+    w_env = env.copy()
 
-    # t_debug("---- v Typechecking stmt list v ----")
+    for s in stmt_list:
 
-    # for s in stmt_list:
-    #     if not check_stmt(s):
-    #         t_debug("return: False")
-    #         t_debug("---- ^ Typechecking stmt list ^ ----")
-    #         return False
+        if s.__class__ is TypeDec:
+            # Add each binding to the environment for future statements.
+            for tar in s.targets:
+                w_env[tar.id] = s.t
+        elif not check_stmt(s, w_env):
+            # Break out if a statement doesn't typecheck.
+            return False
 
-    # t_debug("return: True")
-    # t_debug("---- ^ Typechecking stmt list ^ ----")
-    # return True
+    # Reaching here means all statements typechecked.
+    return True
 
 def check_expr(expr, t, env):
     """Checks whether the AST expression node given by C{node} typechecks as
@@ -160,32 +154,33 @@ def check_FunctionDef_stmt(stmt):
 
     # how should this typecheck?
 
-def check_TypeDec_stmt(stmt):
+# This shouldn't be needed anymore.
+# def check_TypeDec_stmt(stmt):
+#     """
+#     Check whether type declaration node `stmt` typechecks under its embedded
+#     environment.
+
+#     `TypeDec`
+#       - `t`: the type declared for `targets`.
+#       - `targets`: the identifiers declared to have type `t`.
+#       - `old_env`: the environment prior to this type declaration.
+#       - `env`: the environment with this type declaration.
+#     """
+
+#     assert stmt.__class__ == TypeDec
+
+#     for target in stmt.targets:
+#         if target in stmt.old_env:
+#             # FIXME ultimately, this should throw some kind of ERROR
+#             t_debug("Found a TypeDec which tried to reassign a type.")
+#             return False
+
+#     return True
+
+def check_Assign_stmt(stmt, env):
     """
-    Check whether type declaration node `stmt` typechecks under its embedded
-    environment.
-
-    `TypeDec`
-      - `t`: the type declared for `targets`.
-      - `targets`: the identifiers declared to have type `t`.
-      - `old_env`: the environment prior to this type declaration.
-      - `env`: the environment with this type declaration.
-    """
-
-    assert stmt.__class__ == TypeDec
-
-    for target in stmt.targets:
-        if target in stmt.old_env:
-            # FIXME ultimately, this should throw some kind of ERROR
-            t_debug("Found a TypeDec which tried to reassign a type.")
-            return False
-
-    return True
-
-def check_Assign_stmt(stmt):
-    """
-    Check whether assignment node `stmt` typechecks under its embedded
-    environment.
+    Check whether assignment node `stmt` typechecks under type environment
+    `env`.
 
     NOTE: This currently only handles assignments with identifiers as the
     left-hand side, not lists, tuples, etc.
@@ -193,7 +188,6 @@ def check_Assign_stmt(stmt):
     `ast.Assign`
       - `value`: the value being assigned.
       - `targets`: Python list of the expressions being assigned to.
-      - `env`: the type environment of this statement.
     """
 
     assert stmt.__class__ == ast.Assign
@@ -211,20 +205,20 @@ def check_Assign_stmt(stmt):
         # `infer_expr` assumes that the expression typechecks correctly. For
         # now, we just verify that it also typechecks correctly after inferring
         # the type; there is probably a more elegant way to do this.
-        t = infer_expr(v, stmt.env)
-        if not check_expr(v, t, stmt.env):
+        t = infer_expr(v, env)
+        if not check_expr(v, t, env):
             return False
 
         # How to allow assigning to a tuple, but not to a subscripted tuple?
-        if not check_expr(e, t, stmt.env):
+        if not check_expr(e, t, env):
             return False
 
     # return True if we reached here, meaning that it matched with all targets
     return True
 
-def check_Delete_stmt(stmt):
+def check_Delete_stmt(stmt, env):
     """
-    Check whether delete node `stmt` typechecks under its embedded environment.
+    Check whether delete node `stmt` typechecks under type environment `env`.
 
     NOTE: The python language reference is a bit unclear about what can actually
     be deleted. This assumes that only identifiers, lists, and subscripts can be
@@ -232,13 +226,11 @@ def check_Delete_stmt(stmt):
 
     `ast.Delete`
       - `targets` : a Python list of expressions to be deleted.
-      - `env`: the type environment of this statement.
     """
 
     assert stmt.__class__ == ast.Delete
 
     tars = stmt.targets
-    env = stmt.env
 
     assert all(tar.ctx.__class__ == ast.Del for tar in tars), \
         "Each target should have a delete context"
@@ -246,11 +238,10 @@ def check_Delete_stmt(stmt):
     return all(tar.__class__ in [ast.Name, ast.List, ast.Subscript]
                for tar in tars)
 
-def check_If_stmt(stmt):
+def check_If_stmt(stmt, env):
     """
-    Check whether if statement node `stmt` typechecks under its embedded
-    environment (and the environments embedded within each child statement,
-    since `stmt` is a compound statement).
+    Check whether if statement node `stmt` typechecks under type environment
+    `env`.
 
     We currently assume that the test must be a boolean, which is not considered
     very Pythonic by some.
@@ -259,33 +250,28 @@ def check_If_stmt(stmt):
       - `test`: the expression being tested.
       - `body`: Python list of statements to run if `test` is true.
       - `orelse`: Python list of statements to run if `test` is false.
-      - `env`: the type environment of this statement.
     """
 
-    return check_If_While_stmt(stmt)
+    return check_If_While_stmt(stmt, env)
 
-def check_While_stmt(stmt):
+def check_While_stmt(stmt, env):
     """
-    Check whether while node `stmt` typechecks under its embedded environment
-    (and the environments embedded within each child statement, since `stmt` is
-    a compound statement).
+    Check whether while node `stmt` typechecks under type environment `env`.
 
     `ast.While`
       - `test`: the expression being tested each iteration.
       - `body`: Python list of statements to run on each iteration.
       - `orelse`: Python list of statements to run if `test` is false.
-      - `env`: the type environment of this statement.
     """
 
     assert stmt.__class__ == ast.While
 
-    return check_If_While_stmt(stmt)
+    return check_If_While_stmt(stmt, env)
 
-def check_If_While_stmt(stmt):
+def check_If_While_stmt(stmt, env):
     """
-    Check whether while or if node `stmt` typechecks under its embedded
-    environment (and the environments embedded within each child statement,
-    since `stmt` is a compouund statement).
+    Check whether while or if node `stmt` typechecks under type environment
+    `env`.
 
     'ast.If` and `ast.While` have identical structure, so this is a helper
     function to house the identical logic.
@@ -295,13 +281,12 @@ def check_If_While_stmt(stmt):
     body = stmt.body
     orelse = stmt.orelse
 
-    return check_expr(test, bool_t, stmt.env) and \
-           check_stmt_list(body) and check_stmt_list(orelse)
+    return check_expr(test, bool_t, env) and \
+           check_stmt_list(body, env) and check_stmt_list(orelse, env)
 
-def check_Print_stmt(stmt):
+def check_Print_stmt(stmt, env):
     """
-    Checks whether AST statement node `stmt` typechecks as a print statement under
-    the environment stored within the node.
+    Check whether print node `stmt` typechecks under type environment `env`.
 
     I guess a print statement always typechecks?
     """
@@ -310,10 +295,9 @@ def check_Print_stmt(stmt):
 
     return True
 
-def check_Pass_stmt(stmt):
+def check_Pass_stmt(stmt, env):
     """
-    Checks whether AST statement node `stmt` typechecks as a print statement
-    under the environment stored within the node.
+    Check whether pass node `stmt` typechecks under type environment `env`.
 
     A pass statement should always typecheck.
     """
@@ -322,10 +306,9 @@ def check_Pass_stmt(stmt):
 
     return True
 
-def check_Break_stmt(stmt):
+def check_Break_stmt(stmt, env):
     """
-    Checks whether AST statement node `stmt` typechecks as a break statement
-    under the environment stored within the node.
+    Check whether break node `stmt` typechecks under type environment `env`.
 
     A break statement should always typecheck.
     """
@@ -334,10 +317,9 @@ def check_Break_stmt(stmt):
 
     return True
 
-def check_Continue_stmt(stmt):
+def check_Continue_stmt(stmt, env):
     """
-    Checks whether AST statement node `stmt` typechecks as a continue statement
-    under the environment stored within the nod.
+    Check whether continue node `stmt` typechecks under type environment `env`.
 
     A continue statement should always typecheck.
     """
