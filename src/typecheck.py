@@ -480,10 +480,9 @@ def check_BinOp_expr(binop, t, env):
                 # This is pretty inefficient; we check every way which `t` can
                 # be split up into two tuples, but this seems to be the only way
                 # around type inference.
-                ts = t.tuple_ts()
-                return any(check_expr(l, PType.tuple_of(ts[0:i]), env)
-                           and check_expr(r, PType.tuple_of(ts[i:]), env)
-                           for i in range(1, len(ts)))
+                return any(check_expr(l, t.tuple_ts_slice(0, i), env)
+                           and check_expr(r, t.tuple_ts_slice(i), env)
+                           for i in range(1, len(t.tuple_ts())))
 
             elif op.__class__ is ast.Mult:
 
