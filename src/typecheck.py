@@ -488,21 +488,30 @@ def check_BinOp_expr(binop, t, env):
             elif op.__class__ is ast.Mult:
 
                 # (trep)
-                # Until we're sure where we can use type inference, we have to
-                # restrict ourselves to only repeating tuples by integer
-                # literals.
-                # FIXME: this isn't really correct; we're not actually checking
-                # that the types repeat within `t`, but to do that we'll need a
-                # notion of equivalent PTypes.
+
+                # We have to restrict ourselves to repeating tuples by integer
+                # values because we need to know the value while type checking
+                # to figure out the expected shape of the type.
+
+                if l.__class__ is ast.Num and isinstance(l.n, int):
+                    e = r
+                    m = l.n
+                elif r.__class__ is ast.Num and isinstance(r.n, int):
+                    e = l
+                    m = r.n
+                else:
+                    # These are the only two froms of expressions which can be
+                    # assigned in (trep).
+                    return False
+
                 ts = t.tuple_ts()
-                return ((l.__class__ is ast.Num and
-                         isinstance(l.n, int) and
-                         len(ts) % l.n == 0 and
-                         check_expr(r, PType.tuple_of(ts[:len(ts) / l.n]), env))
-                     or (r.__class__ is ast.Num and
-                         isinstance(r.n, int) and
-                         len(ts) % r.n == 0 and
-                         check_expr(l, PType.tuple_of(ts[:len(ts) / r.n]), env)))
+                # the length we expect of e, based on m and the length of t
+                e_len = len(ts) / m
+
+                return (len(ts) % m == 0 and
+                        all(check_expr(e,
+                        PType.tuple_of(ts[e_len*i:e_len*(i+1)]), env) for i in
+                        range(0, m)))
 
             else:
                 # No rule to assign a tuple type to a binop unless op is add or

@@ -26,6 +26,8 @@ expr type: BinOp
 2 * (True, True, False) : (bool, bool, bool, bool)
 (1, 2) * 4 : (int, int, int, int, int, int, int, int)
 3 * (1, 2) : (int, int, int, int, int, int)
+(True, 1) * 3 : (bool, int, bool, int, bool, int)
+2 * (1.0, 3, False) : (float, int, bool, float, int, bool)
 ----fail----
 False + True : bool
 False + 0 : bool
@@ -49,4 +51,14 @@ False % 1.0 : float
 2.0 * (True, True, False) : (bool, bool, bool, bool)
 (1, 2) * 4.0 : (int, int, int, int, int, int, int, int)
 3.0 * (1, 2) : (int, int, int, int, int, int)
-
+(True, 1) * 3 : (bool,)
+(True, 1) * 3 : (bool, int)
+(True, 1) * 3 : (bool, int, bool, bool, bool, bool)
+(True, 1) * 3 : (bool, int, int, int, int, int)
+(True, 1) * 3 : (bool, int, bool, int, bool, int, bool, int)
+2 * (1.0, 3, False) : (float, int, bool)
+2 * (1.0, 3, False) : (float,)
+2 * (1.0, 3, False) : (float, int, bool, float, float, float)
+2 * (1.0, 3, False) : (float, int, bool, int, int, int)
+2 * (1.0, 3, False) : (float, int, bool, bool, bool, bool)
+2 * (1.0, 3, False) : (float, int, bool, float, int, bool, float, int, bool)
