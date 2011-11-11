@@ -661,7 +661,7 @@ def check_Subscript_expr(subs, t, env):
 
     `ast.Subscript`
       - `value`: the collection being subscripted
-      - `slice`: kind of subscript (`ast.Index` or `ast.Load`)
+      - `slice`: kind of subscript (`ast.Index` or `ast.Slice`)
       - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
 
     For the purposes of typechecking, we should be able to ignore the context
