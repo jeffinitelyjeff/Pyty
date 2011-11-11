@@ -113,6 +113,14 @@ class PType:
         assert self.is_tuple()
         return [PType(x) for x in self.t.elt_ts()]
 
+    def tuple_ts_slice(self, start=0, end=None, step=1):
+        assert self.is_tuple()
+
+        if end is None:
+            end = len(self.tuple_ts())
+
+        return PType.tuple_of(self.tuple_ts()[start:end:step])
+
     def dict_ts(self):
         assert self.is_dict()
         return [PType(self.t.key_t()), PType(self.t.val_t())]

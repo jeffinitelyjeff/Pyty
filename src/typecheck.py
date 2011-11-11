@@ -493,6 +493,7 @@ def check_BinOp_expr(binop, t, env):
                 # values because we need to know the value while type checking
                 # to figure out the expected shape of the type.
 
+                # Figure out if we're looking at e * m or m * e.
                 if l.__class__ is ast.Num and isinstance(l.n, int):
                     e = r
                     m = l.n
@@ -504,14 +505,15 @@ def check_BinOp_expr(binop, t, env):
                     # assigned in (trep).
                     return False
 
-                ts = t.tuple_ts()
-                # the length we expect of e, based on m and the length of t
-                e_len = len(ts) / m
+                # the length of the tuple we expect e to typecheck as.
+                e_len = len(t.tuple_ts()) / m
+                # the tuple we expect e to typecheck as.
+                e_typ = t.tuple_ts_slice(0, e_len)
 
-                return (len(ts) % m == 0 and
-                        all(check_expr(e,
-                        PType.tuple_of(ts[e_len*i:e_len*(i+1)]), env) for i in
-                        range(0, m)))
+                return (len(t.tuple_ts()) % m == 0 and
+                        check_expr(e, e_typ, env) and
+                        all(e_typ == t.tuple_ts_slice(e_len*i, e_len*(i+1))
+                            for i in range(1, m)))
 
             else:
                 # No rule to assign a tuple type to a binop unless op is add or
