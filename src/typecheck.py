@@ -626,6 +626,8 @@ def check_List_expr(list, t, env):
     es = list.elts
 
     if t.is_list():
+        # Check whether each expression typechecks as the type which t is a list
+        # of.
         e_t = t.list_t()
         return all(check_expr(e, e_t, env) for e in es)
     else:
@@ -647,8 +649,8 @@ def check_Tuple_expr(tup, t, env):
 
     if t.is_tuple():
         e_ts = t.tuple_ts()
-        return all(i < len(es) and check_expr(es[i], e_ts[i], env)
-                   for i in range(len(e_ts)))
+        return (len(es) == len(e_ts) and
+                all(check_expr(es[i], e_ts[i], env) for i in range(len(e_ts))))
     else:
         return False # desired type is not a tuple
 

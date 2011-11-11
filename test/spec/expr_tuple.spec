@@ -19,6 +19,12 @@ expr type: Tuple
 (True,) : (int,)
 ((5,4), 3) : (int, int)
 ([1, 2, 3], [True, False]) : (int, bool)
+(1, 2, 3) : (int)
+(1, 2, 3) : (int, int)
+(1, 2, 3) : (int, int, int, int)
+(1, 2, 3) : (int, int, int, int, int)
+(1, 2, 3, 4, 5) : (int, int, int)
+(1, 2, 3, 4, 5) : (int, int, int, int)
 
 ----TypeIncorrectlySpecifiedError----
 ((True,), 5) : (())
