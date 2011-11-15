@@ -312,6 +312,21 @@ def check_Continue_stmt(stmt, env):
 
     return True
 
+def check_For_stmt(stmt, env):
+    """
+    Check whether for node `stmt` typechecks under type environment `env`.
+
+    `ast.While`
+      - `test`: the expression being tested each iteration.
+      - `body`: Python list of statements to run on each iteration.
+      - `orelse`: Python list of statements to run if `test` is false.
+
+      FIXME
+    """
+
+    # FIXME
+
+
 
 
 
