@@ -268,6 +268,34 @@ def check_If_While_stmt(stmt, env):
             check_stmt_list(body, env) and
             check_stmt_list(orelse, env))
 
+def check_For_stmt(stmt, env):
+    """
+    Check whether for node `stmt` typechecks under type environment `env`.
+
+    `ast.For`
+      - `target`: the loop variable
+      - `iter`: the iterable beeing looped over.
+      - `body`: list of statements to run on each iteration.
+      - `orelse`: list of statements to run at the end of the loop.
+    """
+
+    assert stmt.__class__ == ast.For
+
+    # Look up the type we've declared for the loop variable. We don't just do an
+    # environment lookup because the target could be any left-hand side of an
+    # assignment.
+    t = infer_expr(env, stmt.target)
+
+    if t is None:
+        # The target expression doesn't typecheck properly.
+        return False
+
+    # (lfor) assigment rule.
+    return (check_expr(stmt.iter, PType.list_of(t), env) and
+            check_stmt_list(stmt.body, env) and
+            check_stmt_list(stmt.orelse, env))
+
+
 def check_Print_stmt(stmt, env):
     """
     Check whether print node `stmt` typechecks under type environment `env`.
@@ -311,20 +339,6 @@ def check_Continue_stmt(stmt, env):
     assert stmt.__class__ == ast.Continue
 
     return True
-
-def check_For_stmt(stmt, env):
-    """
-    Check whether for node `stmt` typechecks under type environment `env`.
-
-    `ast.While`
-      - `test`: the expression being tested each iteration.
-      - `body`: Python list of statements to run on each iteration.
-      - `orelse`: Python list of statements to run if `test` is false.
-
-      FIXME
-    """
-
-    # FIXME
 
 
 
