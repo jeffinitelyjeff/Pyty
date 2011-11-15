@@ -595,12 +595,20 @@ def check_Compare_expr(compare, t, env):
 
     assert compare.__class__ == ast.Compare
 
+    # Operators that need to take numbers.
     num_ops = [ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE]
+    # Operators that can take arbitrary expressions.
+    eq_ops = [ast.Eq, ast.NotEq, ast.Is, ast.IsNot]
 
     ops = compare.ops
     es = [compare.left] + compare.comparators
 
-    if all(op.__class__ in num_ops for op in ops) and t.is_bool():
+    if all(op.__class__ in eq_ops for op in ops) and t.is_bool():
+
+        # (eqcmp) assignment rule.
+        return True
+
+    elif all(op.__class__ in num_ops + eq_ops for op in ops) and t.is_bool():
 
         # (cmp) assignment rule.
         return (all(check_expr(e, int_t, env) for e in es) or
