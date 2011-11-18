@@ -16,6 +16,24 @@ def t_debug(s, cond=True):
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
 
+def collect_return_stmts(stmts):
+    """
+    Filters statement list `stmts` to find all `return` statements, including
+    those contained within if/while/for blocks, but not those within function
+    blocks.
+    """
+
+    # initialize empty list of return statements
+    rs = []
+    for s in stmts:
+        if s.__class__ == ast.Return:
+            rs.append(s)
+        elif s.__class__ in [ast.For, ast.If, ast.While]:
+            rs.append(collect_return_stmts(s.body))
+            rs.append(collect_return_stmts(s.orelse))
+
+    return rs
+
 # ---------------------------------------------------------------------------
 # GENERAL CHECKING FUNCTIONS ------------------------------------------------
 # ---------------------------------------------------------------------------
