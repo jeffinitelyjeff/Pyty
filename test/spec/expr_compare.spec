@@ -31,6 +31,8 @@ False is not 2.0 : bool
 5.8 > 6.2 < -5.3 == 0.0 != 3.9 : bool
 5.8 is 6.2 != -5.3 == 0.0 is not 3.9 : bool
 1 > 2 < -3 is not 0 is 4 : bool
+1 > 2 is not 2.0 == 3.1 : bool
+1 < 2 == 2.0 < 2.1 : bool
 ----fail----
 1.0 < 2 : bool # SUBTYPING
 1 < 2.0 : bool # SUBTYPING
@@ -51,3 +53,5 @@ False is not 2.0 : bool
 5 is not False : float
 1 < 3 : int
 1 < 3.0 : float
+1 > 2.0 is not 2 == 3.1 : bool
+1 < 2 < 2.0 < 2.1 : bool

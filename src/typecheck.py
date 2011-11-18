@@ -625,28 +625,44 @@ def check_Compare_expr(compare, t, env):
     assert compare.__class__ == ast.Compare
 
     # Operators that need to take numbers.
-    num_ops = [ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE]
+    num_ops = [ast.Lt, ast.LtE, ast.Gt, ast.GtE]
     # Operators that can take arbitrary expressions.
     eq_ops = [ast.Eq, ast.NotEq, ast.Is, ast.IsNot]
 
+    e0 = compare.left
     ops = compare.ops
-    es = [compare.left] + compare.comparators
+    es = compare.comparators
 
-    if all(op.__class__ in eq_ops for op in ops) and t.is_bool():
+    if len(ops) == 1 and t.is_bool():
+        # We're in a base case.
 
-        # (eqcmp) assignment rule.
-        return True
+        if ops[0].__class__ in eq_ops:
+            # (eqcmp) assignment rule.
+            return True
+        elif ops[0].__class__ in num_ops:
+            # (numcmp) assignment rule.
+            return ((check_expr(e0, int_t, env) and
+                     check_expr(es[0], int_t, env)) or
+                    (check_expr(e0, float_t, env) and
+                     check_expr(es[0], float_t, env)))
+        else:
+            # no assignment rule found.
+            return False
 
-    elif all(op.__class__ in num_ops + eq_ops for op in ops) and t.is_bool():
+    elif t.is_bool():
 
         # (cmp) assignment rule.
-        return (all(check_expr(e, int_t, env) for e in es) or
-                all(check_expr(e, float_t, env) for e in es))
+
+        head = ast.Compare(e0, [ops[0]], [es[0]])
+        tail = ast.Compare(es[0], ops[1:], es[1:])
+
+        return check_expr(head, bool_t, env) and check_expr(tail, bool_t, env)
 
     else:
 
-        # No type assignment rules found.
+        # no assignment rule fonud.
         return False
+
 
 def check_List_expr(list, t, env):
     """
