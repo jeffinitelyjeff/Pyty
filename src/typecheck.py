@@ -284,7 +284,7 @@ def check_For_stmt(stmt, env):
     # Look up the type we've declared for the loop variable. We don't just do an
     # environment lookup because the target could be any left-hand side of an
     # assignment.
-    t = infer_expr(env, stmt.target)
+    t = infer_expr(stmt.target, env)
 
     if t is None:
         # The target expression doesn't typecheck properly.
