@@ -836,5 +836,27 @@ def check_Subscript_Slice_expr(subs, t, env):
                        for i in range(low, upp, step))
 
 
+def check_IfExp_expr(ifx, t, env):
+    """
+    Check if AST IfExp expr node `ifx` typechecks as type `t` under type
+    environment `env`.
+
+    `ast.IfExp`
+      - `test`: the conditional to branch on.
+      - `body`: the value of the expression if `test` is true.
+      - `orelse`: the value of the expression if `test` is false.
+    """
+
+    assert ifx.__class__ == ast.IfExp
+
+    test = ifx.test
+    e1 = ifx.body
+    e2 = ifx.orelse
+
+    # (ifx) assignment rule.
+    return (check_expr(test, bool_t, env) and
+            check_expr(e1, t, env) and
+            check_expr(e2, t, env))
+
 # UGH, this is ugly
 from infer import infer_expr, env_get
