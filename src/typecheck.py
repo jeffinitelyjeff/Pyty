@@ -16,24 +16,6 @@ def t_debug(s, cond=True):
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
 
-def collect_return_stmts(stmts):
-    """
-    Filters statement list `stmts` to find all `return` statements, including
-    those contained within if/while/for blocks, but not those within function
-    blocks.
-    """
-
-    # initialize empty list of return statements
-    rs = []
-    for s in stmts:
-        if s.__class__ == ast.Return:
-            rs.append(s)
-        elif s.__class__ in [ast.For, ast.If, ast.While]:
-            rs.append(collect_return_stmts(s.body))
-            rs.append(collect_return_stmts(s.orelse))
-
-    return rs
-
 # ---------------------------------------------------------------------------
 # GENERAL CHECKING FUNCTIONS ------------------------------------------------
 # ---------------------------------------------------------------------------
@@ -166,10 +148,52 @@ def get_stmt_func_name(stmt_type):
     return "check_%s_stmt" % stmt_type
 
 def check_FunctionDef_stmt(stmt):
+    """
+    Check whether function definition node `stmt` typechecks under type
+    envirnoment `env`.
+
+    `ast.FunctionDef`
+      - `name`: string of function identifier.
+      - `args`: an `arguments` ast node, storing arguments, varargs, kwargs, and
+    defaults.
+      - `body`: list of statements to run to execute the function.
+      - `decorator_list`: list of decorators associated with function.
+    """
 
     assert stmt.__class__ == ast.FunctionDef
 
-    # how should this typecheck?
+    name = stmt.name
+    args = stmt.args
+    body = stmt.body
+
+    # (fndef) assignment rule.
+
+    # The user has to have declared the type of of the function prior to the
+    # function definition, so choosing the sigma and tau reduces to environment
+    # lookup.
+    t = env_get(env, name)
+    sigma = t.in_t()
+    tau = t.out_t()
+
+    # The environment with the `return` identifier set to the desired output
+    # type.
+    body_env = env.clone()
+    body_env["return"] = tau
+
+    # A function with a single argument has type a -> b, but a function with
+    # multiple arguments has type (a, b) -> c, so we need to wrap the arguments
+    # in a tuple if there is more than one argument.
+    tup = ast.Tuple(args, ast.Load)
+
+    # First, we ensure that all the arguments are ast.Name (the AST
+    # specification allows arbitrary expressions). Then, we make sure that the
+    # arguments have the correct type. Finally, we make sure that the body
+    # typechecks correctly (which ensures that all return statements have the
+    # correct type).
+    return (all(arg.__class__ is not ast.Name for arg in args) and
+            ((len(args) == 1 and check_expr(args[0], sigma, env)) or
+             (len(args) > 1 and check_expr(tup, sigma, env))) and
+            check_stmt_list(body, body_env))
 
 def check_Assign_stmt(stmt, env):
     """
