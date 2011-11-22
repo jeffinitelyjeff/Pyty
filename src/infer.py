@@ -15,13 +15,13 @@ def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
 
 def env_get(env, var_id):
-    """Look up variable id C{var_id} in type environment C{env}.
+    """
+    Look up the PType stored for identifier `var_id` in type environment
+    `env`. Returns a PType. Raises `TypeUnspecifiedError` if `env` does not
+    contain `var_id`.
 
-    @type env: {str: PType}
-    @type var_id: C{str}
-    @rtype: C{PType}
-    @raise L{TypeUnspecifiedError}: If C{env} does not have information about
-    C{var_id}
+    - `env`: dictionary mapping strings to PTypes.
+    - `var_id`: string representing identifier.
     """
 
     # make sure the variable is in the environment

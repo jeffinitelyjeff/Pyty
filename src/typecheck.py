@@ -3,7 +3,7 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError, ASTTraversalError
-from parse_type import PType, int_t, float_t, bool_t, str_t, gen_t
+from parse_type import PType, int_t, float_t, bool_t, str_t, unit_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec
@@ -382,8 +382,29 @@ def check_Continue_stmt(stmt, env):
 
     return True
 
+def check_Return_stmt(stmt, env):
+    """
+    Check whether return node `stmt` typechecks under type environment `env`.
 
+    The type that the current function must return is stored as a special
+    `return` entry in the type environment.
 
+    `ast.Return`
+      - `value`: the expression being returned.
+    """
+
+    e = stmt.value
+    ret_t = env_get(env, "return")
+
+    if e is None:
+
+        # (urtn) assignment rule.
+        return ret_t is unit_t
+
+    else:
+
+        # (rtn) assignment rule.
+        return check_expr(e, ret_t, env)
 
 
 # ---------------------------------------------------------------------------
