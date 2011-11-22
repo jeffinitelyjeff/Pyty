@@ -170,6 +170,11 @@ def check_FunctionDef_stmt(stmt, env):
 
     # (fndef) assignment rule.
 
+    # First, we ensure that all the arguments are `ast.Name` nodes, since the
+    # AST specification allows arbitrary expressions).
+    if any(arg.__class__ is not ast.Name for arg in args):
+        return False
+
     # The user has to have declared the type of of the function prior to the
     # function definition, so choosing the sigma and tau reduces to environment
     # lookup.
@@ -177,25 +182,21 @@ def check_FunctionDef_stmt(stmt, env):
     sigma = t.domain_t()
     tau = t.range_t()
 
-    # The environment with the `return` identifier set to the desired output
-    # type.
+    # The environment to use while typechecking the function body.
     body_env = env.copy()
+
+    # Mandate the specified return type.
     body_env["return"] = tau
 
-    # A function with a single argument has type a -> b, but a function with
-    # multiple arguments has type (a, b) -> c, so we need to wrap the arguments
-    # in a tuple if there is more than one argument.
-    tup = ast.Tuple(args, ast.Load)
+    # Add the types of the parameters.
+    if len(args) == 1:
+        body_env[args[0].id] = sigma
+    else:
+        for (arg, arg_t) in zip(args, sigma):
+            body_env[arg.id] = arg_t
 
-    # First, we ensure that all the arguments are ast.Name (the AST
-    # specification allows arbitrary expressions). Then, we make sure that the
-    # arguments have the correct type. Finally, we make sure that the body
-    # typechecks correctly (which ensures that all return statements have the
-    # correct type).
-    return (all(arg.__class__ is not ast.Name for arg in args) and
-            ((len(args) == 1 and check_expr(args[0], sigma, env)) or
-             (len(args) > 1 and check_expr(tup, sigma, env))) and
-            check_stmt_list(body, body_env))
+    return check_stmt_list(body, body_env)
+
 
 def check_Assign_stmt(stmt, env):
     """
