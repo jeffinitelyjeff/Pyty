@@ -27,4 +27,4 @@ expr type: Tuple
 (1, 2, 3, 4, 5) : (int, int, int, int)
 
 ----TypeIncorrectlySpecifiedError----
-((True,), 5) : (())
+((True,), 5) : ((,))
