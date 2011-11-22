@@ -3,7 +3,7 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError
-from parse_type import PType, int_t, float_t, bool_t, str_t, gen_t
+from parse_type import PType, int_t, float_t, bool_t, str_t
 from settings import DEBUG_INFER
 
 log = None

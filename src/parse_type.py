@@ -35,12 +35,6 @@ class PType:
 
         return PType(Lst([t.t]))
 
-        # # t is a PType object, but in order to pass it as a child of a Lst
-        # # node, we need to get the actual type AST, not the PType wrapper.
-        # p = PType()
-        # p.t = Lst(t.t)
-        # return p
-
     @staticmethod
     def any_list():
         """Creates a PType object which represents a list of any type.
@@ -56,11 +50,7 @@ class PType:
         @type ts: [L{PType}]
         """
 
-        # ts are PType objects, but in order to pass them as members of a Tup
-        # List, we need to get the actual type ASTs of each.
-        p = PType()
-        p.t = Tup([t.t for t in ts])
-        return p
+        return PType(Tup([t.t for t in ts]))
 
     @staticmethod
     def dict_of(t0, t1):
@@ -71,12 +61,7 @@ class PType:
         @type t1: L{PType}
         """
 
-        # t0 and t1 are PType objects, but in order to pass them as children
-        # of a Dct node, we need to get the actual type ASTs of each.
-        p = PType()
-        p.t = Dct([t0.t, t1.t])
-        return p
-
+        return PType(Dct([t0.t, t1.t]))
 
     def is_bool(self):
         return self.t == "bool"
@@ -90,8 +75,8 @@ class PType:
     def is_str(self):
         return self.t == "str"
 
-    def is_gen(self):
-        return self.t == "_"
+    def is_unit(self):
+        return self.t == "unit"
 
     def is_list(self):
         return self.t.__class__ == Lst
@@ -128,6 +113,14 @@ class PType:
     def function_ts(self):
         assert self.is_function()
         return [PType(self.t.in_t()), PType(self.t.out_t())]
+
+    def domain_t(self):
+        assert self.is_function()
+        return PType(self.t.in_t())
+
+    def range_t(self):
+        assert self.is_function()
+        return PType(self.t.out_t())
 
     def is_subtype(self, other_t):
         return other_t.is_gen() or \
@@ -194,7 +187,6 @@ class TypeSpecParser:
     float_tok = Token(r'float')
     bool_tok = Token(r'bool')
     str_tok = Token(r'str')
-    gen_tok = Token(r'_')
 
     list_start = Token(r'\[')
     list_end = Token(r'\]')
@@ -212,7 +204,9 @@ class TypeSpecParser:
     tight_typ = Delayed()
     typ = Delayed()
 
-    base_typ = int_tok | float_tok | bool_tok | str_tok | gen_tok
+    unit = tuple_start & tuple_end > make_unit
+
+    base_typ = int_tok | float_tok | bool_tok | str_tok | unit
 
     lst = ~list_start & typ & ~list_end > Lst
 
@@ -221,8 +215,7 @@ class TypeSpecParser:
 
     dct = ~dict_start & typ & ~dict_div & typ & ~dict_end > Dct
 
-    unit = tuple_start & tuple_end > make_unit
-    fun = (unit | tight_typ) & ~fn_div & typ > Fun
+    fun = (unit | tight_typ) & ~fn_div & (unit | typ) > Fun
 
     parens = ~tuple_start & typ & ~tuple_end
     tight_typ += base_typ | lst | tup | dct | parens
@@ -250,4 +243,4 @@ int_t = PType('int')
 float_t = PType('float')
 bool_t = PType('bool')
 str_t = PType('str')
-gen_t = PType('_')
+unit_t = PType('()')

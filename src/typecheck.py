@@ -147,15 +147,17 @@ def check_expr(expr, t, env):
 def get_stmt_func_name(stmt_type):
     return "check_%s_stmt" % stmt_type
 
-def check_FunctionDef_stmt(stmt):
+def check_FunctionDef_stmt(stmt, env):
     """
     Check whether function definition node `stmt` typechecks under type
     envirnoment `env`.
 
-    `ast.FunctionDef`
+    `stmt` : `ast.FunctionDef`
       - `name`: string of function identifier.
-      - `args`: an `arguments` ast node, storing arguments, varargs, kwargs, and
-    defaults.
+      - `args`: `ast.arguments`
+        + `args`: list of name nodes of normal arguments.
+        + `vararg`: string identifier for vararg.
+        + `kwarg`: string identifier for kwarg.
       - `body`: list of statements to run to execute the function.
       - `decorator_list`: list of decorators associated with function.
     """
@@ -163,7 +165,7 @@ def check_FunctionDef_stmt(stmt):
     assert stmt.__class__ == ast.FunctionDef
 
     name = stmt.name
-    args = stmt.args
+    args = stmt.args.args
     body = stmt.body
 
     # (fndef) assignment rule.
@@ -172,12 +174,12 @@ def check_FunctionDef_stmt(stmt):
     # function definition, so choosing the sigma and tau reduces to environment
     # lookup.
     t = env_get(env, name)
-    sigma = t.in_t()
-    tau = t.out_t()
+    sigma = t.domain_t()
+    tau = t.range_t()
 
     # The environment with the `return` identifier set to the desired output
     # type.
-    body_env = env.clone()
+    body_env = env.copy()
     body_env["return"] = tau
 
     # A function with a single argument has type a -> b, but a function with
