@@ -182,6 +182,13 @@ def check_FunctionDef_stmt(stmt, env):
     sigma = t.domain_t()
     tau = t.range_t()
 
+    # Next, ensure that the input type is the correct form given the number of
+    # parameters.
+    if not ((len(args) == 0 and sigma == unit_t) or
+            len(args) == 1 or
+            (sigma.is_tuple() and len(args) == len(sigma.tuple_ts()))):
+        return False
+
     # The environment to use while typechecking the function body.
     body_env = env.copy()
 
