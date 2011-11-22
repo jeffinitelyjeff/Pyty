@@ -12,10 +12,12 @@ class PType:
     """
 
     def __init__(self, typ = None):
-        if typ is None:
-            self.t = TypeSpecParser.parse("_")
-        elif type(typ) is str:
-            self.t = TypeSpecParser.parse(typ)
+        assert typ is not None
+        if type(typ) is str:
+            if typ == "unit":
+                self.t = TypeSpecParser.parse("()")
+            else:
+                self.t = TypeSpecParser.parse(typ)
         else:
             self.t = typ
 
