@@ -36,6 +36,3 @@ expr type: Subscript
 [(True, False), (False, False), (True, True)][1][0+1] : bool
 [(True, False), (False, False), (True, True)][0+1][0+1] : bool
 (1, 2, 3)[1.0] : int
-
-----TypeIncorrectlySpecifiedError----
-[(True, False), (False, False)][0] : ()
