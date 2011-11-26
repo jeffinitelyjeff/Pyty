@@ -154,7 +154,7 @@ def foo(l0, i, l1):
 
     return l2 + l1
 ---
-#: foo: ([int], (bool, bool)) -> (bool, bool)
+#: foo: ([int], (bool, bool)) -> (int, int)
 def foo(l, t):
     return t
 ---
