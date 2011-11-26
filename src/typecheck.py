@@ -411,7 +411,7 @@ def check_Return_stmt(stmt, env):
     if e is None:
 
         # (urtn) assignment rule.
-        return ret_t is unit_t
+        return ret_t == unit_t
 
     else:
 

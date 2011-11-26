@@ -60,7 +60,7 @@ def foo(bar):
 
     return
 ---
-#: foo: int -> ()
+#: foo: int -> int
 def foo(bar):
     #: x : int
     x = bar + 1
