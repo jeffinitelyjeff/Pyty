@@ -135,8 +135,8 @@ def foo(bar):
 def foo(bar):
     #: x : int
     x = bar + 1
-		#: y : bool
-		y = x > 5
+    #: y : bool
+    y = x > 5
 
     return y
 ---

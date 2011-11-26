@@ -198,8 +198,10 @@ def check_FunctionDef_stmt(stmt, env):
     # Add the types of the parameters.
     if len(args) == 1:
         body_env[args[0].id] = sigma
-    else:
-        for (arg, arg_t) in zip(args, sigma):
+    elif len(args) > 1:
+        t_debug(str(args))
+        t_debug(str(sigma))
+        for (arg, arg_t) in zip(args, sigma.tuple_ts()):
             body_env[arg.id] = arg_t
 
     return check_stmt_list(body, body_env)

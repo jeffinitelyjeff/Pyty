@@ -1,7 +1,7 @@
 import ast
 import logging
 
-from util import are_disjoint, disjoint_sums_of, cname
+from util import disjoint_sum, cname
 from parse_type import PType, TypeSpecParser
 
 def dump_self(self):
@@ -14,110 +14,75 @@ ast.expr.__repr__ = dump_self
 ### Information about AST statements ------------------------------------------
 ### ---------------------------------------------------------------------------
 
-class ASTInfo:
+# Set of strings representing all simple Python statements.
+_simple_stmts = set(("Assign Return Delete AugAssign Raise Assert Import "
+                     "ImportFrom Print Pass Break Continue TypeDec").split())
+
+# Set of strings representing all Python compound statements that have all
+# their children statements in one node, `body`.
+_body_stmts = set("FunctionDef ClassDef With".split())
+
+# Set of strings representing all Python compound statements that have all
+# their children statements in a `body` node and an `orelse` node.
+_body_orelse_stmts = set("If While For TryExcept".split())
+
+# Set of strings representing all Python compound statements that have all
+# their children statements in a `body` node and a `finally` node.
+_body_finally_stmts = set("TryFinally".split())
+
+# Every compound statement is a body, body_orelse, or body_finally statement,
+# and they should all be disjoint.
+_compound_stmts = _body_stmts | _body_orelse_stmts | _body_finally_stmts
+assert disjoint_sum(_compound_stmts,
+                    [_body_stmts, _body_orelse_stmts, _body_finally_stmts])
+
+# Every statement is a simple or compound statement.
+_all_stmts = _simple_stmts | _compound_stmts
+assert disjoint_sum(_all_stmts, [_simple_stmts, _compound_stmts])
+
+def _is_simple_stmt(self):
+    """This method should only be called by an `ast.stmt` node."""
+    return self.__class__.__name__ in _simple_stmts
+ast.stmt.is_simple = _is_simple_stmt
+
+def _is_compound_stmt(self):
+    """This method should only be called by an `ast.stmt` node."""
+    return self.__class__.__name__ in _compound_stmts
+ast.stmt.is_compound = _is_compound_stmt
+
+def _is_body_stmt(self):
+    """This method should only be called by an `ast.stmt` node."""
+    return self.__class__.__name__ in _body_stmts
+ast.stmt.is_body = _is_body_stmt
+
+def _is_body_orelse_stmt(self):
+    """This method should only be called by an `ast.stmt` node."""
+    return self.__class__.__name__ in _body_orelse_stmts
+ast.stmt.is_body_orelse = _is_body_orelse_stmt
+
+def _is_body_finally_stmt(self):
+    """This method should only be called by an `ast.stmt` node."""
+    return self.__class__.__name__ in _body_finally_stmts
+ast.stmt.is_body_finally = _is_body_finally_stmt
+
+def _get_stmt_lists(self):
     """
-    Class to encapsulate and provide info about the AST.
-
-    @type simple_stmts: C{set} of C{str}
-    @cvar simple_stmts: Statement types that do not contain other statements as
-        children.
-    @type compound_stmts: C{set} of C{str}
-    @cvar compound_stmts: Statement types that do contain other statements as
-        children.
-    @type all_stmts: C{set} of C{str}
-    @cvar all_stmts All statement types.
-    @type body_stmts: C{set} of C{str}
-    @cvar body_stmts: Compound statement types that contain statement children
-        in one list labeled 'body'.
-    @type body_orelse_stmts: C{set} of C{str}
-    @cvar body_orelse_stmts: Compound statement types that contain statement
-        children in one list labeled 'body' and another list labeled 'orelse'.
-    @type body_finally_stmts: C{set} of C{str}
-    @cvar body_finally_stmts: Compound statement types that contain statement
-        children in one list labeled 'body' and another list labeled 'finally'.
+    Returns a tuple of the statement lists contained in this `ast.stmt`
+    node. This method should only be called by an `ast.stmt` node.
     """
 
-    simple_stmts = set(("Assign Return Delete AugAssign Raise Assert " + \
-                        "Import ImportFrom Print Pass Break Continue " + \
-                        "TypeDec").split())
-    compound_stmts = set(("If While FunctionDef ClassDef For With " + \
-                          "TryExcept TryFinally").split())
-    all_stmts = simple_stmts.union(compound_stmts)
-
-    # simple and compound statements should not overlap.
-    assert(are_disjoint(simple_stmts, compound_stmts))
-
-    body_stmts = set("FunctionDef ClassDef With".split())
-    body_orelse_stmts = set("If While For TryExcept".split())
-    body_finally_stmts = set("TryFinally".split())
-
-    # make sure the compound statements are a disjoint sum of these statements.
-    assert(disjoint_sums_of([body_stmts, body_orelse_stmts, body_finally_stmts],
-                            compound_stmts))
-
-
-# create functions to add to ast.stmt to check if the statement is simple or
-# compound. this makes the syntax cleaner (this allows us to do stmt.is_simple()
-# instead of ASTInfo.is_simple_stmt(stmt).
-
-def __is_simple_stmt(self):
-    """Returns whether this ast.stmt node is a simple statement. THIS IS ONLY
-    SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT SHOULD NOT BE CALLED AS THE
-    MODULE-LEVEL FUNCTION IN THE AST_EXTENSIONS MODULE."""
-    return self.__class__.__name__ in ASTInfo.simple_stmts
-ast.stmt.is_simple = __is_simple_stmt
-
-def __is_compound_stmt(self):
-    """Returns whether this ast.stmt node is a compound statement. THIS IS ONLY
-    SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT SHOULD NOT BE CALLED AS THE
-    MODULE-LEVEL FUNCTION IN THE AST_EXTENSIONS MODULE."""
-    return self.__class__.__name__ in ASTInfo.compound_stmts
-ast.stmt.is_compound = __is_compound_stmt
-
-# create functions to add to ast.stmt to check what kind of children statement
-# lists it has. like above, this makes the syntax of calling the method cleaner
-# than having it be a global method of ASTInfo.
-
-def __is_body_stmt(self):
-    """Returns whether this ast.stmt node has children statements solely in a
-    body field. THIS IS ONLY SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT
-    SHOULD NOT BE CALLED AS THE MODULE-LEVEL FUNCTION IN THE AST_EXTENSIONS
-    MODULE."""
-    return self.__class__.__name__ in ASTInfo.body_stmts
-ast.stmt.is_body = __is_body_stmt
-
-def __is_body_orelse_stmt(self):
-    """Returns whether this ast.stmt node has children statements in a body
-    field and an orelse field. THIS IS ONLY SUPPOSED TO BE CALLED BY AN AST.STMT
-    NODE; IT SHOULD NOT BE CALLED AS THE MODULE-LEVEL FUNCTION IN THE
-    AST_EXTENSIONS MODULE."""
-    return self.__class__.__name__ in ASTInfo.body_orelse_stmts
-ast.stmt.is_body_orelse = __is_body_orelse_stmt
-
-def __is_body_finally_stmt(self):
-    """Returns whether this ast.stmt node has children statements in a body
-    field and a finally field. THIS IS ONLY SUPPOSED TO BE CALLED BY AN AST.STMT
-    NODE; IT SHOULD NOT BE CALLED AS THE MODULE-LEVEL FUNCTION IN THE
-    AST_EXTENSIONS MODULE."""
-    return self.__class__.__name__ in ASTInfo.body_finally_stmts
-ast.stmt.is_body_finally = __is_body_finally_stmt
-
-def __get_stmt_lists(self):
-    """Returns a tuple of the children statement lists of this ast.stmt
-    node. THIS IS ONLY SUPPOSED TO BE CALLED BY AN AST.STMT NODE; IT SHOULD NOT
-    BE CALLED AS THE MODULE-LEVEL FNUCTION IN THE AST_EXTENSIONS MODLUE."""
-
-    if self.is_body_orelse():
-        return (self.body, self.orelse)
+    if self.is_simple():
+        return ()
     elif self.is_body():
-        return (self.body)
+        return (self.body,)
+    elif self.is_body_orelse():
+        return (self.body, self.orelse)
     elif self.is_body_finally():
         return (self.body, self.finalbody)
     else:
-        # This should only be called on compound statements, which the three
-        # previous cases form a disjoint sum of.
+        # Every statement has to be simple or complex.
         assert(False)
-ast.stmt.stmt_lists = __get_stmt_lists
+ast.stmt.stmt_lists = _get_stmt_lists
 
 
 ### ----------------------------------------------------------------------------
