@@ -27,6 +27,9 @@ class PType:
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @staticmethod
     def list_of(t):
         """Creates a PType object which represents a list of elements which

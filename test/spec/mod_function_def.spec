@@ -147,7 +147,7 @@ def foo(bar):
 
     return x
 ---
-#: foo: ([int], int, [int]) -> [int]
+#: foo: ([int], float, [int]) -> [int]
 def foo(l0, i, l1):
     #: l2 : [int]
     l2 = i * l0
