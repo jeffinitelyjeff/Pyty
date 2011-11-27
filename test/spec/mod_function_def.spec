@@ -78,6 +78,36 @@ def foo(l0, i, l1):
 def foo(l, t):
     return t
 ---
+#: foo: int -> int
+def foo(i):
+
+    #: bar: bool -> bool
+    def bar(i):
+        return i
+
+    return i
+---
+#: foo: int -> [bool]
+def foo(i):
+
+    if i > 0:
+        return [True, False, True]
+    elif i == 0:
+        return [True, False, False]
+    else:
+        return [False, True, False]
+
+    return [False, False, False]
+---
+#: foo: int -> ()
+def foo(i):
+    if i > 0:
+        return
+    else:
+        print "yo"
+        return
+---
+
 
 ----fail----
 
@@ -158,6 +188,104 @@ def foo(l0, i, l1):
 def foo(l, t):
     return t
 ---
+#: foo: int -> int
+def foo(i):
+
+    #: bar: int -> bool
+    def bar(i):
+        return i
+
+    return i
+---
+#: foo: int -> int
+def foo(i):
+
+    #: bar: bool -> int
+    def bar(i):
+        return i
+
+    return i
+---
+#: foo: bool -> int
+def foo(i):
+
+    #: bar: bool -> bool
+    def bar(i):
+        return i
+
+    return i
+---
+#: foo: int -> bool
+def foo(i):
+
+    #: bar: bool -> bool
+    def bar(i):
+        return i
+
+    return i
+---
+#: foo: int -> [bool]
+def foo(i):
+
+    if i > 0:
+        return (True, False, True)
+    elif i == 0:
+        return [True, False, False]
+    else:
+        return [False, True, False]
+
+    return [False, False, False]
+---
+#: foo: int -> [bool]
+def foo(i):
+
+    if i > 0:
+        return [True, False, True]
+    elif i == 0:
+        return (True, False, False)
+    else:
+        return [False, True, False]
+
+    return [False, False, False]
+---
+#: foo: int -> [bool]
+def foo(i):
+
+    if i > 0:
+        return [True, False, True]
+    elif i == 0:
+        return [True, False, False]
+    else:
+        return (False, True, False)
+
+    return [False, False, False]
+---
+#: foo: int -> [bool]
+def foo(i):
+
+    if i > 0:
+        return [True, False, True]
+    elif i == 0:
+        return [True, False, False]
+    else:
+        return [False, True, False]
+
+    return (False, False, False)
+---
+#: foo: bool -> ()
+def foo(i):
+    if i > 0:
+        return
+    else:
+        print "yo"
+        return
+---
+#: foo: int -> ()
+def foo(i):
+    return i
+---
+
+
 
 ----TypeUnspecifiedError----
 
@@ -169,4 +297,24 @@ def foo():
 #: foo: int -> ()
 def foo(bar):
     return x
+---
+#: foo: int -> int
+def foo(i):
+
+    def bar(i):
+        return i
+
+    return i
+---
+#: foo: int -> [bool]
+def foo(i):
+
+    if x > 0:
+        return [True, False, True]
+    elif x == 0:
+        return [True, False, False]
+    else:
+        return [False, True, False]
+
+    return [False, False, False]
 ---
