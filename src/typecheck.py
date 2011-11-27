@@ -156,8 +156,9 @@ def check_FunctionDef_stmt(stmt, env):
       - `name`: string of function identifier.
       - `args`: `ast.arguments`
         + `args`: list of name nodes of normal arguments.
-        + `vararg`: string identifier for vararg.
-        + `kwarg`: string identifier for kwarg.
+        + `vararg`: string identifier for the vararg parameter.
+        + `kwarg`: string identifier for the kwarg parameter.
+        + `defaults`: list of expressions to use as default parameter values.
       - `body`: list of statements to run to execute the function.
       - `decorator_list`: list of decorators associated with function.
     """
@@ -169,6 +170,9 @@ def check_FunctionDef_stmt(stmt, env):
     body = stmt.body
 
     # (fndef) assignment rule.
+    # The implementation here looks a lot messier than the (fndef) rule; most of
+    # this is complication in determining whether args and sigma look similar
+    # and args : sigma has meaning.
 
     # First, we ensure that all the arguments are `ast.Name` nodes, since the
     # AST specification allows arbitrary expressions).
@@ -951,3 +955,43 @@ def check_IfExp_expr(ifx, t, env):
 
 # UGH, this is ugly
 from infer import infer_expr, env_get
+
+def check_Call_expr(call, t, env):
+    """
+    Check if AST Call expr node `call` typechecks as type `t` under type
+    environment `env`.
+
+    We're currently only handling user-defined function calls (not built-in
+    functions, methods of built-in objects, class objects, methods of class
+    instances, or class instances).
+
+    `ast.Call`
+      - `func`: the function being called.
+      - `args`: list of normal arguments provided.
+      - `keywords`: list of keyboard arguments provided.
+      - `starargs`: star argument (an iterable treated as additional positional
+        arguments).
+      - `kwargs`: double star argument (a mapping treated as additional keyword
+        arguments).
+    """
+
+    assert call.__class__ == ast.Call
+
+    # (call) assignment rule.
+
+    # FIXME: We're using infer_expr here, but it's not clear whether this is
+    # legitimate -- will the inferable subset of the language allow calling
+    # functions returned by other functions?
+    f = infer_expr(call, env)
+    sigma = f.domain_t()
+    tau = f.range_t()
+
+    # In the type system, we treat multiple arguments as a tuple.
+    if len(args) == 1
+        wrap_args = tuple(arg for arg in args)
+    else:
+        wrap_args = args
+
+    return tau == t and check_expr(wrap_args, sigma, t)
+
+
