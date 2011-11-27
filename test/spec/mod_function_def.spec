@@ -107,6 +107,21 @@ def foo(i):
         print "yo"
         return
 ---
+#: foo: int -> ()
+def foo(i):
+    return i
+
+#: bar: int -> ()
+bar = foo
+---
+#: foo: int -> ()
+def foo(i):
+    return i
+
+#: bar: (int -> ()) -> int
+def bar(f):
+    return 0
+---
 
 
 ----fail----
@@ -284,6 +299,22 @@ def foo(i):
 def foo(i):
     return i
 ---
+#: foo: int -> ()
+def foo(i):
+    return i
+
+#: bar: int -> ()
+bar = foo()
+---
+#: foo: int -> ()
+def foo(i):
+    return i
+
+#: bar: (int -> ()) -> int
+def bar(f):
+    return f
+---
+
 
 
 
