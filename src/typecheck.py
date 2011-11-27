@@ -987,7 +987,7 @@ def check_Call_expr(call, t, env):
     tau = f.range_t()
 
     # In the type system, we treat multiple arguments as a tuple.
-    if len(args) == 1
+    if len(args) == 1:
         wrap_args = tuple(arg for arg in args)
     else:
         wrap_args = args
