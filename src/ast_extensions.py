@@ -84,6 +84,32 @@ def _get_stmt_lists(self):
         assert(False)
 ast.stmt.stmt_lists = _get_stmt_lists
 
+def _get_last_linenos(self):
+    """
+    Returns a tuple of the last line numbers of this `ast.stmt` node. For simple
+    statements, this is a one-element tuple with the statement's line number;
+    for compound statements, this is a tuple with the line number of the last
+    statement in each block of the statement. This method should only be called
+    by an `ast.stmt` node.
+    """
+
+    if self.is_simple():
+        return (self.lineno,)
+    else:
+        branches = self.stmt_lists()
+
+        if len(branches[0]) > 0:
+            one = branches[0][-1].lineno
+        else:
+            one = self.lineno
+
+        if len(branches[1]) > 0:
+            two = branches[1][-1].lineno
+        else:
+            two = one
+
+        return (one, two)
+ast.stmt.last_linenos = _get_last_linenos
 
 ### ----------------------------------------------------------------------------
 ### TypeDec class and methods to add typedec to an AST -------------------------
@@ -166,21 +192,6 @@ class TypeDec(ast.stmt):
 
         # XXX Provide some way to specify target name nodes by their id's?
 
-    # this is unnecessary and not much better than the dump method, might as
-    # well leave it out and keep things consistent?
-    ## def __repr__(self):
-    ##     result = "TypeDec : ( "
-
-    ##     for target in self.targets:
-    ##         result += target.id + ","
-    ##     result = result[0:-1]
-
-    ##     result += " -> " + str(self.t) + " ) at line " + str(self.lineno) + \
-    ##               " col " + str(self.col_offset)
-
-    ##     return result
-
-
     @staticmethod
     def is_typedec(node):
         return node.__class__.__name__ == "TypeDec"
@@ -224,40 +235,62 @@ class TypeDec(ast.stmt):
         statement, then this means placing this L{TypeDec} in the proper place
         within the compound statement.
 
-        @precondition: stmt_list[pos].lineno < self.lineno and
-            stmt_list[pos+1].lineno > self.lineno
+        @precondition: stmt.lineno < self.lineno < stmt_list[pos+1].lineno
         """
 
         stmt = stmt_list[pos]
 
-        if stmt.is_simple() or pos == -1:
-            # if the preceeding statement is simple, then just place the typedec
-            # after the statement. also, if pos == -1, then this signals that
-            # there were no stmts before the typedec, so we want to place the
-            # typedec in pos = 0.
+        if self.lineno > stmt.last_linenos()[-1]:
+
+            # If this is definitely past `stmt`, insert it after. This should
+            # always be the case for simple statements.
             stmt_list.insert(pos + 1, self)
-        elif stmt.is_compound():
-            # if the preceeding statement is compound, then figure out what kind
-            # of statement AST structure it has, and place the typedec into the
-            # right list of child statements.
+
+        else:
+
+            # Simple statements should be caught above.
+            assert stmt.is_compound(), (str(stmt.lineno) + "<" +
+                                        str(self.lineno) + "<" +
+                                        str(stmt.last_linenos()[-1]) +
+                                        "\n" + str(stmt_list))
 
             branches = stmt.stmt_lists()
 
-            if stmt.is_body() or len(branches[1]) == 0 \
-                   or branches[1][0].lineno > self.lineno:
-                # place the typedec in the first list of statements if the statement
-                # type only has one branch or the lineno of the first line of the
-                # second branch is past the desired lineno.
+            # Place the node in the first branch if the first branch goes past;
+            # otherwise, insert in the second branch.
+            if self.lineno < stmt.last_linenos()[0]:
                 self._place_in_stmt_list(branches[0])
             else:
-                # place the typedec in the second list of statements otherwise (ie,
-                # if the statement type has more than one branch and the first line
-                # of the second branch is not past the desired lineno).
                 self._place_in_stmt_list(branches[1])
-        else:
-            # statements are a disjoint sum of simple and compound statements, so
-            # this default case should never be reached.
-            assert(False)
+
+        # stmt = stmt_list[pos]
+        #
+        # if stmt.is_simple() or pos == -1:
+        #     # if the preceeding statement is simple, then just place the typedec
+        #     # after the statement. also, if pos == -1, then this signals that
+        #     # there were no stmts before the typedec, so we want to place the
+        #     # typedec in pos = 0.
+        #     stmt_list.insert(pos + 1, self)
+
+        # elif stmt.is_compound():
+
+        #     branches = stmt.stmt_lists()
+
+        #     if stmt.is_body() or len(branches[1]) == 0 \
+        #            or branches[1][0].lineno > self.lineno:
+        #         # place the typedec in the first list of statements if the statement
+        #         # type only has one branch or the lineno of the first line of the
+        #         # second branch is past the desired lineno.
+        #         self._place_in_stmt_list(branches[0])
+        #     else:
+        #         # place the typedec in the second list of statements otherwise (ie,
+        #         # if the statement type has more than one branch and the first line
+        #         # of the second branch is not past the desired lineno).
+        #         self._place_in_stmt_list(branches[1])
+        # else:
+        #     # statements are a disjoint sum of simple and compound statements, so
+        #     # this default case should never be reached.
+        #     assert(False)
 
 class TypeDecASTModule:
     """A wrapper for an C{ast.Module} which has the property that all of its

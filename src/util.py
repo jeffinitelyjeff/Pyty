@@ -6,6 +6,15 @@ Contains useful helper functions that are not directly tied to the purpose of
 other source code files.
 """
 
+def log_center(s):
+    """Pads string `s` with `-`s to center it in debugging."""
+
+    t = 57 - len(s) - 2
+    l = t / 2
+    r = t - l
+
+    return "\n" + l*'-' + ' ' + s + ' ' + r*'-' + "\n"
+
 ### Some short hand
 
 def cname(obj):

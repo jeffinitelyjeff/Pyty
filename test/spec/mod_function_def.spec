@@ -109,15 +109,12 @@ def foo(i):
 ---
 #: foo: int -> ()
 def foo(i):
-    return i
+    return
+
 
 #: bar: int -> ()
 bar = foo
 ---
-#: foo: int -> ()
-def foo(i):
-    return i
-
 #: bar: (int -> ()) -> int
 def bar(f):
     return 0

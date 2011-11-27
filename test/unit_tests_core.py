@@ -17,6 +17,7 @@ from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 from settings import (TEST_CODE_SUBDIR, DEBUG_SUBJECT_FILE, DEBUG_UNTYPED_AST,
                       DEBUG_TYPED_AST, DEBUG_TYPEDECS)
 from logger import Logger, announce_file
+from util import log_center
 
 # these should be redundant, but they're necessary to refer to the specific log
 # objects.
@@ -84,18 +85,18 @@ class PytyTests(unittest.TestCase):
 
         untyped_ast = ast.parse(text)
 
-        log.debug("--- v Untyped AST v ---\n" + str(untyped_ast) +
-                  "\n--- ^ Untyped AST ^ ---", DEBUG_UNTYPED_AST)
+        log.debug((log_center("v Untyped AST v") + str(untyped_ast) +
+                   log_center("^ Untyped AST ^")), DEBUG_UNTYPED_AST)
 
         typedecs = parse_type_decs(filename)
 
-        log.debug("--- v TypeDecs v ---\n" + str(typedecs) +
-                  "\n--- ^ TypeDecs ^ ---", DEBUG_TYPEDECS)
+        log.debug((log_center("v TypeDecs v") + str(typedecs) +
+                   log_center("^ TypeDecs ^")), DEBUG_TYPEDECS)
 
         typed_ast = TypeDecASTModule(untyped_ast, typedecs)
 
-        log.debug("--- v TypedAST v ---\n" + str(typed_ast) +
-                  "\n--- ^ TypedAST ^ ---", DEBUG_TYPED_AST)
+        log.debug((log_center("v TypedAST v") + str(typed_ast) +
+                   log_center("^ TypedAST ^")), DEBUG_TYPED_AST)
 
         return check_mod(typed_ast.tree)
 
