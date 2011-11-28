@@ -84,32 +84,48 @@ def _get_stmt_lists(self):
         assert(False)
 ast.stmt.stmt_lists = _get_stmt_lists
 
-def _get_last_linenos(self):
+def _get_last_lineno(self):
     """
-    Returns a tuple of the last line numbers of this `ast.stmt` node. For simple
-    statements, this is a one-element tuple with the statement's line number;
-    for compound statements, this is a tuple with the line number of the last
-    statement in each block of the statement. This method should only be called
-    by an `ast.stmt` node.
+    Returns the last line number of statements contained in this `ast.stmt`
+    node. If `self` is a simple statement, then this is just the statement's
+    line number.
+
+    This method should only be called by an `ast.stmt` node.
     """
 
-    if self.is_simple():
-        return (self.lineno,)
-    else:
-        branches = self.stmt_lists()
+    branches = self.stmt_lists()
 
-        if len(branches[0]) > 0:
-            one = branches[0][-1].lineno
+    if len(branches) == 0:
+
+        # Simple statement.
+        return self.lineno
+
+    elif len(branches) == 1:
+
+        # Compound statement with only one branch.
+        body = branches[0]
+
+        if len(body) == 0:
+            # Empty body shouldn't happen, or it at least shouldn't parse.
+            assert False, "Stmt with one branch and empty shouldn't parse"
         else:
-            one = self.lineno
+            return body[-1].lineno
 
-        if len(branches[1]) > 0:
-            two = branches[1][-1].lineno
+    else: # len(branches) == 2
+
+        # Compound statement with two branches.
+        body1 = branches[0]
+        body2 = branches[1]
+
+        if len(body2) > 0:
+            return body2[-1].lineno
+        elif len(body1) > 0:
+            return body1[-1].lineno
         else:
-            two = one
-
-        return (one, two)
-ast.stmt.last_linenos = _get_last_linenos
+            # Both empty bodies shouldn't happen, or at least it shouldn't
+            # parse.
+            assert False, "Stmt with two empty branches shouldn't parse"
+ast.stmt.last_lineno = _get_last_lineno
 
 ### ----------------------------------------------------------------------------
 ### TypeDec class and methods to add typedec to an AST -------------------------
@@ -204,67 +220,68 @@ class TypeDec(ast.stmt):
         self._place_in_stmt_list(mod.body)
 
     def _place_in_stmt_list(self, stmt_list):
-        """Places this L{TypeDec} instance in its proper place (according to its
-        C{lineno}) in the list of statement AST nodes provided by C{stmt_list}.
+        """
+        Place this `TypeDec` instance in its proper place in AST statement node
+        list `stmt_list`.
         """
 
-        # this index tracks the stmts that are before the typedec, so starting
-        # at 0 would mean assuming that the fisrt statement is before the typedec.
-        idx = -1
+        # For each index and corresponding statement in `stmt_list`.
+        for (i, stmt) in zip(range(len(stmt_list)), stmt_list):
 
-        # iterate through stmt_list until we hit a lineno that's too far.
-        for stmt in stmt_list:
-            if stmt.lineno > self.lineno:
-                break
+            assert self.lineno != stmt.lineno, \
+                "This typedec shouldn't already exist in the AST"
 
-            # the line of this typedec should definitely not already be in the
-            # AST, at least for now. XXX ONELINETYPEDEC
-            assert(stmt.lineno != self.lineno)
+            # Place `self` if we've gone past the desired lineno or hit the end
+            # of the list. Note: this will always be reached eventually.
+            if self.lineno < stmt.lineno or i == len(stmt_list) - 1:
 
-            idx += 1
+                # If the desired lineno is past the previous statement's last
+                # lineno, then just put `self` before the next statement;
+                # otherwise, put `self` inside the previous statement.
 
-        # pass on the idx of the stmt immediately proceeding the typedec.
-        self._place_near_stmt(stmt_list, idx)
+                if self.lineno > stmt_list[i-1].last_lineno():
+                    stmt_list.insert(i, self)
+                    return
+                else: # self.lineno < stmt_list[i-1].last_lineno()
+                    assert stmt_list[i-1].is_compound()
+                    self._place_in_compound_stmt(stmt_list[i-1])
+                    return
 
-    def _place_near_stmt(self, stmt_list, pos):
+    def _place_in_compound_stmt(self, stmt):
         """
-        Places this `TypeDec` instance in the correct position in `stmt_list`,
-        given that `pos` points to the last stmt in `stmt_list` preceeding
-        `self`.
+        Place this `TypeDec` instance in its proper place within the AST
+        compound statement node `stmt`.
 
-        If `stmt_list[pos]` is a simple statement, we simply place `self` in the
-        `stmt_list` after `stmt_list[pos]`. However, if `stmt_list[pos]` is a
-        compound statement, we need to determine where in the compound statement
-        (or possibly after) to place `self`.
-
-        Precondition: `stmt_list[pos].lineno` < `self.lineno` <
-            `stmt_list[pos+1}.lineno
+        Pre-condition: `stmt.is_compound()`
+        Pre-condition: `stmt.lineno < self.lineno < stmt.last_lineno()`
         """
 
-        stmt = stmt_list[pos]
+        # Assert pre-conditions.
+        assert stmt.is_compound()
+        assert stmt.lineno < self.lineno < stmt.last_lineno(), \
+            str(stmt.lineno) + " < " + str(self.lineno) + " < " + \
+            str(stmt.last_lineno())
 
-        if self.lineno > stmt.last_linenos()[-1]:
 
-            # If this is definitely past `stmt`, insert it after. This should
-            # always be the case for simple statements.
-            stmt_list.insert(pos + 1, self)
+        branches = stmt.stmt_lists()
 
-        else:
+        if len(branches) == 1:
 
-            # Simple statements should be caught above.
-            assert stmt.is_compound(), (str(stmt.lineno) + "<" +
-                                        str(self.lineno) + "<" +
-                                        str(stmt.last_linenos()[-1]) +
-                                        "\n" + str(stmt_list))
+            # Compound statemnet with only one branch.
+            body = branches[0]
 
-            branches = stmt.stmt_lists()
+            self._place_in_stmt_list(body)
 
-            # Place the node in the first branch if the first branch goes past;
-            # otherwise, insert in the second branch.
-            if self.lineno < stmt.last_linenos()[0]:
-                self._place_in_stmt_list(branches[0])
+        else: # len(branches) == 2
+
+            # Compound statement with two branches.
+            body1 = branches[0]
+            body2 = branches[1]
+
+            if self.lineno < body1.last_lineno():
+                self._place_in_stmt_list(body1)
             else:
-                self._place_in_stmt_list(branches[1])
+                self._place_in_stmt_list(body2)
 
 class TypeDecASTModule:
     """A wrapper for an C{ast.Module} which has the property that all of its
