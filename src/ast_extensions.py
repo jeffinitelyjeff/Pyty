@@ -227,15 +227,18 @@ class TypeDec(ast.stmt):
         self._place_near_stmt(stmt_list, idx)
 
     def _place_near_stmt(self, stmt_list, pos):
-        """Places this L{TypeDec} instance in the correct position 'nearly
-        after' the statement at position C{pos} in the list of statements
-        C{stmt_list}. If the specified statement is a simple (one-line)
-        statement, then this just means placing this L{TypeDec} directly after
-        the statement; if the specified statement is a compound (multi-line)
-        statement, then this means placing this L{TypeDec} in the proper place
-        within the compound statement.
+        """
+        Places this `TypeDec` instance in the correct position in `stmt_list`,
+        given that `pos` points to the last stmt in `stmt_list` preceeding
+        `self`.
 
-        @precondition: stmt.lineno < self.lineno < stmt_list[pos+1].lineno
+        If `stmt_list[pos]` is a simple statement, we simply place `self` in the
+        `stmt_list` after `stmt_list[pos]`. However, if `stmt_list[pos]` is a
+        compound statement, we need to determine where in the compound statement
+        (or possibly after) to place `self`.
+
+        Precondition: `stmt_list[pos].lineno` < `self.lineno` <
+            `stmt_list[pos+1}.lineno
         """
 
         stmt = stmt_list[pos]
@@ -262,35 +265,6 @@ class TypeDec(ast.stmt):
                 self._place_in_stmt_list(branches[0])
             else:
                 self._place_in_stmt_list(branches[1])
-
-        # stmt = stmt_list[pos]
-        #
-        # if stmt.is_simple() or pos == -1:
-        #     # if the preceeding statement is simple, then just place the typedec
-        #     # after the statement. also, if pos == -1, then this signals that
-        #     # there were no stmts before the typedec, so we want to place the
-        #     # typedec in pos = 0.
-        #     stmt_list.insert(pos + 1, self)
-
-        # elif stmt.is_compound():
-
-        #     branches = stmt.stmt_lists()
-
-        #     if stmt.is_body() or len(branches[1]) == 0 \
-        #            or branches[1][0].lineno > self.lineno:
-        #         # place the typedec in the first list of statements if the statement
-        #         # type only has one branch or the lineno of the first line of the
-        #         # second branch is past the desired lineno.
-        #         self._place_in_stmt_list(branches[0])
-        #     else:
-        #         # place the typedec in the second list of statements otherwise (ie,
-        #         # if the statement type has more than one branch and the first line
-        #         # of the second branch is not past the desired lineno).
-        #         self._place_in_stmt_list(branches[1])
-        # else:
-        #     # statements are a disjoint sum of simple and compound statements, so
-        #     # this default case should never be reached.
-        #     assert(False)
 
 class TypeDecASTModule:
     """A wrapper for an C{ast.Module} which has the property that all of its
