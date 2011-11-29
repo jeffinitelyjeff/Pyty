@@ -57,10 +57,8 @@ def check_stmt(stmt, env):
         result = call_function(n, stmt, env)
         t_debug("return: " + str(result) + "\n--- ^ Typechecking stmt ^ ---")
         return result
-    except KeyError:
-        t_debug("Found an AST node that is not in the subset of the " +
-                "language we're considering." +
-                "\n--- ^ Typechecking stmt ^ ---")
+    except KeyError as e:
+        t_debug("Found a stmt not in the language subset. (" + str(e) + ")")
         return False
 
 def check_stmt_list(stmt_list, env):
@@ -109,9 +107,8 @@ def check_expr(expr, t, env):
         result = call_function(n, expr, t, env)
         t_debug("return: " + str(result) + "\n-- ^ Typechecking expr ^ --")
         return result
-    except KeyError:
-        t_debug("Found an AST node that is not in the subset of the " +
-                "language we're considering.")
+    except KeyError as e:
+        t_debug("Found an expr not in the language subset. (" + str(e) + ")")
         return False
 
 
@@ -449,25 +446,6 @@ def check_Return_stmt(stmt, env):
 
 def get_check_expr_func_name(expr_type):
     return "check_%s_expr" % expr_type
-
-# def check_Call_expr(call, t, env):
-#     """Checks whhether the AST expression node given by C{call} typechecks as a
-#     function call expression of type C{t}."""
-
-#     assert call.__class__ == ast.Call
-
-#     # FIXME: this probably doesn't handle lambdas; do we want to handle that
-#     # here?
-
-#     fun = call.func
-#     fun_t = infer_expr(fun, env)
-
-#     # FIXME: this doesn't actually handle proper function subtyping; remeber,
-#     # there's the more complicated subtyping relation for functions.
-#     return fun_t.function_ts()[1].is_subtype(t)
-#         # FIXME: now check each argument, but this is slightly more complicated
-#         # because the PType thinks of the function as a tuple...
-
 
 def check_Num_expr(num, t, env):
     """
@@ -977,14 +955,18 @@ def check_Call_expr(call, t, env):
 
     assert call.__class__ == ast.Call
 
+    f = call.func
+    args = call.args
+
     # (call) assignment rule.
 
     # FIXME: We're using infer_expr here, but it's not clear whether this is
     # legitimate -- will the inferable subset of the language allow calling
-    # functions returned by other functions?
-    f = infer_expr(call, env)
-    sigma = f.domain_t()
-    tau = f.range_t()
+    # functions returned by other functions? (this is fine if we're just calling
+    # functions by identifiers.)
+    f_t = infer_expr(f, env)
+    sigma = f_t.domain_t()
+    tau = f_t.range_t()
 
     # In the type system, we treat multiple arguments as a tuple.
     if len(args) == 1:
@@ -992,6 +974,6 @@ def check_Call_expr(call, t, env):
     else:
         wrap_args = args
 
-    return tau == t and check_expr(wrap_args, sigma, t)
+    return tau == t and all(check_expr(arg, sigma, t) for arg in wrap_args)
 
 
