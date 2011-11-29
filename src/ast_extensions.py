@@ -10,9 +10,7 @@ ast.mod.__repr__ = dump_self
 ast.stmt.__repr__ = dump_self
 ast.expr.__repr__ = dump_self
 
-### ---------------------------------------------------------------------------
-### Information about AST statements ------------------------------------------
-### ---------------------------------------------------------------------------
+## Information about AST statements
 
 # Set of strings representing all simple Python statements.
 _simple_stmts = set(("Assign Return Delete AugAssign Raise Assert Import "
@@ -127,15 +125,12 @@ def _get_last_lineno(self):
             assert False, "Stmt with two empty branches shouldn't parse"
 ast.stmt.last_lineno = _get_last_lineno
 
-### ----------------------------------------------------------------------------
-### TypeDec class and methods to add typedec to an AST -------------------------
-### ----------------------------------------------------------------------------
+
+## TypeDec class and methods to insert TypeDecs into an AST
 
 class TypeStore():
-    """Context to use for an ast.Name node when declaraing the identifier's
-    type. I don't think there's anything special about the contexts except
-    whether they're an instance of ast.Store or ast.Load, so I don't think this
-    needs to do anything special.
+    """
+    Context for an `ast.Name` node when in a `TypeDec` node.
     """
 
     def __init__(self):
@@ -146,42 +141,34 @@ class TypeStore():
 
 class TypeDec(ast.stmt):
     """
-    A TypeDec is an AST statement node which represents the assertion that a
-    variable or function is of a certain type. This is effectively a
-    side-effecting expression, where the side-effect is the alteration of the
-    type environment of the program. Storing these type declarations as AST
-    nodes should allow us to treat their processing more uniformly.
-    TypeDec AST nodes will be added to the generic AST in a second-run of
-    parsing. A normal ast.AST will be generated with ast.parse, then a
-    line-by-line parsing of the source code will put these TypeDec nodes in
-    their proper places.
+    An AST statement node which binds an identifier to a specified type.
 
-    @type targets: list of ast.Name
-    @ivar targets: The list of variables which are having their types declared.
-    @type t: PType
-    @ivar t: A PType object representing the type which the C{targets} are
-        being declared as.
-    @type lineno: int
-    @ivar lineno: The line number of the declaration in the source code.
-    @type col_offset: int
-    @ivar col_offset: The column offset of the beginning of the declaration (ie,
-        the '#:' in the source code).
+    Before typechecking a module, a "typed" AST will be created by parsing the
+    file to create proper `TypeDec` nodes and placing them appropriately in the
+    AST.
+
+    #### Instance variables
+    - `targets`: the list of identifiers (as `ast.Name` objects) having their
+        types declared.
+    - `t`: the type (as a PType abject) being assigned.
+    - `lineno`: the (int) line number of the declaration in the source code.
+    - `col_offset`: the (int) column offset of the beginning of the declaration
+        (i.e., the `#:` in the source code).
     """
 
     def __init__(self, targets, t, line, col = None):
-        """Creates a L{TypeDec} node with the supplied parameters.
+        """
+        Create a `TypeDec` node with the supplied parameters.
 
-        @type targets: list of ast.Name
-        @param targets: The list of variables which are having their types
-            declared.
-        @type t: PType
-        @param t: The type which the C{targets} are declared as. If a string is
-            provided, then a PType object will be created based on this
-            string.
-        @type line: int
-        @param line: The line number of the source code for the declaration.
-        @type col: int
-        @param col: The column number of the source code for the declaration.
+        #### Parameters
+        - `targets`: list of identifiers (as `ast.Name` objects) having their
+            types declared.
+        - `t`: the type being assigned, as a PType or string. If a string is
+            provided, it is parsed into the appropriate PType.
+        - `line`: the (int) line number of the declaration in the source code.
+        - `col`: [optional] the (int) column number of the declaration in the
+            source code. If not provided, then the column number will just be
+            set as `None`.
         """
 
         self.targets = targets
@@ -206,15 +193,14 @@ class TypeDec(ast.stmt):
         self._fields = ("targets", "t")
         self._attributes = ("lineno", "col_offset")
 
-        # XXX Provide some way to specify target name nodes by their id's?
-
     @staticmethod
     def is_typedec(node):
         return node.__class__.__name__ == "TypeDec"
 
     def place_in_module(self, mod):
-        """Places this L{TypeDec} instance in its proper place (according to its
-        C{lineno}) in the module represented by the AST node C{mod}.
+        """
+        Place this `TypeDEc` instance in its proper place in AST module node
+        `mod`.
         """
 
         self._place_in_stmt_list(mod.body)
@@ -315,19 +301,34 @@ class TypeDec(ast.stmt):
                 self._place_in_stmt_list(body2)
 
 class TypeDecASTModule:
-    """A wrapper for an C{ast.Module} which has the property that all of its
+    """
+    A wrapper for an `ast.Module` which has the property that all of its
     children nodes have been populated with additional nodes (not specified in
     the standard AST library) to represent Pyty type declarations.
 
-    @type tree: C{ast.Module}
-    @ivar tree: The AST backing this L{TypeDecASTModule}, which has been modified to
-        include the L{TypeDec} nodes.
-    @type typedecs: C{list} of L{TypeDec}
-    @ivar typedecs: The L{TypeDec} type declarations that have been added to
-        this AST.
+    #### Instance variables
+    - `tree`: the `ast.Module` AST wrapped, which has been modified to include
+        `TypeDec` nodes in proper locations.
+    - `typedecs`: list of `TypeDec` nodes which have been added to this AST.
+    - `clone`: whether `tree` was created by directly modifying a provided
+        untyped AST or if a copy was modified.
+    - `original_tree`: (only exists if `clone` is `True`) the untyped AST which
+        was populated wiht `TypeDec`s.
     """
 
     def __init__(self, untyped_tree, typedecs, clone=False):
+        """
+        Create `TypeDecASTModule` from an AST that has no type declarations and
+        a list of type declarations to add. Can insert the `TypeDec` nodes into
+        the provided tree, or into a clone of the provided tree.
+
+        #### Parameters:
+        - `untyped_tree`: the `ast.Module` AST without any type declarations.
+        - `typedecs`: list of `TypeDec` nodes to add to `untyped_tree`.
+        - `clone`: whether to modify `untyped_tree` directly or instead operate
+            on a copy. Defaults to modifying `untyped_tree` directly.
+        """
+
         if clone:
             self.original_tree = untyped_tree
             self.tree = copy.deepcopy(untyped_tree)
@@ -345,8 +346,9 @@ class TypeDecASTModule:
         return "Tree:\n" + str(self.tree) + "\nTypedecs:\n" + str(self.typedecs)
 
     def get_original_tree(self):
-        """Returns the original tree if this L{TypeDecAST} was initialized as a
-        copy (with the clone flag), and returns C{None} otherwise.
+        """
+        Return the original tree if this `TypeDecAST` was initializeda s a copy
+        (with the `clone` field), and returns `None` otherwise.
         """
 
         if clone:
@@ -355,9 +357,8 @@ class TypeDecASTModule:
             return None
 
     def place_typedec(self, typedec):
-        """Places the specified L{TypeDec} in this L{TypeDecAST}. This is
-        essentially a wrapper for the L{TypeDec} method which places the typedec
-        in a specified AST.
+        """
+        Place the specified `TypeDec` in this `TypeDecASTModule`.
         """
 
         typedec.place_in_module(self.tree)
