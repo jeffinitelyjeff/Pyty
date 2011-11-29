@@ -46,7 +46,8 @@ def check_stmt(stmt, env):
     assignemnt rule to try.
     """
 
-    t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---")
+    t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---"
+            "\nStmt: " + str(stmt) + "\nEnv: " + str(env))
 
     n = get_stmt_func_name(stmt.__class__.__name__)
 
@@ -965,15 +966,26 @@ def check_Call_expr(call, t, env):
     # functions returned by other functions? (this is fine if we're just calling
     # functions by identifiers.)
     f_t = infer_expr(f, env)
+
+    # If f doesn't typecheck.
+    if f_t is None:
+        return False
+
     sigma = f_t.domain_t()
     tau = f_t.range_t()
 
-    # In the type system, we treat multiple arguments as a tuple.
-    if len(args) == 1:
-        wrap_args = tuple(arg for arg in args)
+    # In the type system, we treat no arguments as unit type, and multiple
+    # arguments as a tuple.
+    if len(args) == 0:
+
+        return tau == t and sigma == unit_t
+
     else:
-        wrap_args = args
 
-    return tau == t and all(check_expr(arg, sigma, t) for arg in wrap_args)
+        if len(args) == 1:
+            wrap_args = args[0]
+        else:
+            wrap_args = ast.Tuple(elts=[arg for arg in args], load=ast.Load())
 
+        return tau == t and check_expr(wrap_args, sigma, env)
 

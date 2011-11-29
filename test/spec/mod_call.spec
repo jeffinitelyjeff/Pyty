@@ -19,6 +19,18 @@ bar = foo()
 ---
 #: foo: int -> int
 def foo(i):
+    return i + 1
+
+#: bar: (int, int, int -> int) -> int
+def bar(i, j, f):
+
+    return j + f(i)
+
+#: baz: int
+baz = bar(1, 2, foo)
+---
+#: foo: int -> int
+def foo(i):
 
     #: bar: (int, int) -> int
     def bar(i, j):
@@ -26,17 +38,20 @@ def foo(i):
 
     return bar(5, i)
 
-foo(6)
+#: baz : int
+baz = foo(6)
 ---
-#: foo: int -> int
+#: foo: int -> (int -> int)
 def foo(i):
-    return i + 1
 
-#: bar: (int, int, int -> int) -> (int -> int)
-def bar(i, j, f):
-    return j + f(i)
+    #: bar: int -> int
+    def bar(j):
+        return i + j
 
-bar(1, 2, foo)
+    return bar
+
+#: baz : int -> int
+baz = foo(6)
 ---
 
 ----fail----
@@ -69,4 +84,16 @@ def foo():
 
 #: bar: int
 bar = foo
+---
+#: foo: int -> (int -> int)
+def foo(i):
+
+    #: bar: (int, int) -> int
+    def bar(i, j):
+        return i + j
+
+    return bar(5, i)
+
+#: baz : int
+baz = foo(6)
 ---
