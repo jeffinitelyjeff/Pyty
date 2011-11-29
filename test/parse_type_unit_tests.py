@@ -17,8 +17,6 @@ class PTypeTests(unittest.TestCase):
         true( PType("int").is_int() )
         true( PType("float").is_float() )
         true( PType("str").is_str() )
-        true( PType("_").is_gen() )
-        true( PType().is_gen() )
 
     def test_is_list(self):
         true = self.assertTrue

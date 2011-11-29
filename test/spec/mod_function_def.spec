@@ -11,11 +11,11 @@ def foo(bar):
 def foo(bar):
     return 9
 ---
-#: foo: () -> int
+#: foo: unit -> int
 def foo():
     return 4
 ---
-#: foo: () -> float
+#: foo: unit -> float
 def foo():
     return 3.93
 ---
@@ -33,11 +33,11 @@ def foo(bar):
     x = bar
     return False
 ---
-#: foo: () -> bool
+#: foo: unit -> bool
 def foo():
     return True
 ---
-#: foo: () -> float
+#: foo: unit -> float
 def foo():
     return 3.93
 ---
@@ -49,11 +49,11 @@ def foo(bar):
 def foo(bar):
     return bar + 1.0
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(bar):
     return
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(bar):
     #: x : int
     x = bar + 1
@@ -99,7 +99,7 @@ def foo(i):
 
     return [False, False, False]
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(i):
     if i > 0:
         return
@@ -107,15 +107,15 @@ def foo(i):
         print "yo"
         return
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(i):
     return
 
 
-#: bar: int -> ()
+#: bar: int -> unit
 bar = foo
 ---
-#: bar: (int -> ()) -> int
+#: bar: (int -> unit) -> int
 def bar(f):
     return 0
 ---
@@ -136,7 +136,7 @@ def foo(bar):
 def foo(bar, baz):
     return 9
 ---
-#: foo: () -> int
+#: foo: unit -> int
 def foo(bar):
     return 4
 ---
@@ -152,11 +152,11 @@ def foo(bar):
 def foo(bar):
     return bar
 ---
-#: foo: () -> bool
+#: foo: unit -> bool
 def foo():
     return 4
 ---
-#: foo: () -> float
+#: foo: unit -> float
 def foo():
     #: x : int
     return x
@@ -169,11 +169,11 @@ def foo(bar, baz):
 def foo(bar):
     return bar + 1
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(bar):
     return 5
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(bar):
     #: x : int
     x = bar + 1
@@ -182,7 +182,7 @@ def foo(bar):
 
     return y
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(bar):
     #: x : int
     x = bar + 1
@@ -284,7 +284,7 @@ def foo(i):
 
     return (False, False, False)
 ---
-#: foo: bool -> ()
+#: foo: bool -> unit
 def foo(i):
     if i > 0:
         return
@@ -292,22 +292,22 @@ def foo(i):
         print "yo"
         return
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(i):
     return i
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(i):
     return i
 
-#: bar: int -> ()
+#: bar: int -> unit
 bar = foo()
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(i):
     return i
 
-#: bar: (int -> ()) -> int
+#: bar: (int -> unit) -> int
 def bar(f):
     return f
 ---
@@ -318,11 +318,11 @@ def bar(f):
 ----TypeUnspecifiedError----
 
 ---
-#: foo: () -> float
+#: foo: unit -> float
 def foo():
     return 3.93 + bar
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(bar):
     return x
 ---

@@ -11,15 +11,19 @@ class PType:
     wrapped into PTypes once they are accessed.
     """
 
-    def __init__(self, typ = None):
-        assert typ is not None
+    def __init__(self, typ):
+        """
+        Create new `PType` from a specified type.
+
+        Pre-condition: `typ` is a string or PType AST.
+        """
+
         if type(typ) is str:
-            if typ == "unit":
-                self.t = TypeSpecParser.parse("()")
-            else:
-                self.t = TypeSpecParser.parse(typ)
-        else:
+            self.t = TypeSpecParser.parse(typ)
+        elif typ.__class__ in [Lst, Tup, Dct, Fun]:
             self.t = typ
+        else:
+            assert False, "PType must be constructed with string or PType"
 
     def __repr__(self):
         return reverse_parse(self.t)
@@ -69,41 +73,68 @@ class PType:
         return PType(Dct([t0.t, t1.t]))
 
     def is_bool(self):
+        """Return if `self` is the `bool` base PType."""
         return self.t == "bool"
 
     def is_int(self):
+        """Return if `self` is the `int` base PType."""
         return self.t == "int"
 
     def is_float(self):
+        """Return if `self` is the `float` base PType."""
         return self.t == "float"
 
     def is_str(self):
+        """Return if `self` is the `str` base PType."""
         return self.t == "str"
 
     def is_unit(self):
+        """Return if `self` is the `unit` base PType."""
         return self.t == "unit"
 
     def is_list(self):
+        """Return if `self` is a `list` PType."""
         return self.t.__class__ == Lst
 
     def is_tuple(self):
+        """Return if `self` is a `tuple` PType."""
         return self.t.__class__ == Tup
 
     def is_dict(self):
+        """Return if `self` is a `dict` PType."""
         return self.t.__class__ == Dct
 
     def is_function(self):
+        """Return if `self` is a `function` PType."""
         return self.t.__class__ == Fun
 
     def list_t(self):
+        """
+        Get the PType which `self` is a list of.
+
+        Pre-condition: `self.is_list()`
+        """
+
         assert self.is_list()
         return PType(self.t.elt_t())
 
     def tuple_ts(self):
+        """
+        Get the PTypes which `self` is a tuple of.
+
+        Pre-condition: `self.is_tuple()`
+        """
+
         assert self.is_tuple()
         return [PType(x) for x in self.t.elt_ts()]
 
     def tuple_ts_slice(self, start=0, end=None, step=1):
+        """
+        Get a slice of the PTypes which `self` is a tuple of.
+
+        Pre-condition: `self.is_tuple()`
+        """
+
         assert self.is_tuple()
 
         if end is None:
@@ -111,26 +142,64 @@ class PType:
 
         return PType.tuple_of(self.tuple_ts()[start:end:step])
 
-    def dict_ts(self):
-        assert self.is_dict()
-        return [PType(self.t.key_t()), PType(self.t.val_t())]
+    def key_t(self):
+        """
+        Get the PType of keys which `self` maps from.
 
-    def function_ts(self):
-        assert self.is_function()
-        return [PType(self.t.in_t()), PType(self.t.out_t())]
+        Pre-condition: `self.is_dict()`
+        """
+
+        assert self.is_dict()
+        return PType(self.t.key_t())
+
+    def val_t(self):
+        """
+        Get the PType of values which `self` maps to.
+
+        Pre-condition: `self.is_dict()`
+        """
+
+        assert self.is_dict()
+        return PType(self.t.val_t())
+
+    def dict_ts(self):
+        """
+        Get the PTypes which `self` maps.
+
+        Pre-condition: `self.is_dict()`
+        """
+
+        return [self.key_t(), self.val_t()]
 
     def domain_t(self):
+        """
+        Get the PType which `self` maps from.
+
+        Pre-condition: `self.is_function()`
+        """
+
         assert self.is_function()
-        return PType(self.t.in_t())
+        return PType(self.t.domain_t())
 
     def range_t(self):
-        assert self.is_function()
-        return PType(self.t.out_t())
+        """
+        Get the PType which `self` maps to.
 
-    def is_subtype(self, other_t):
-        return other_t.is_gen() or \
-               self == other_t or \
-               (self.is_int() and other_t.is_float())
+        Pre-condition: `self.is_function()`
+        """
+
+        assert self.is_function()
+        return PType(self.t.range_t())
+
+    def function_ts(self):
+        """
+        Get the PTypes which `self` maps.
+
+        Pre-condition: `self.is_function()`
+        """
+
+        assert self.is_function()
+        return [self.domain_t(), self.range_t()]
 
 def reverse_parse(type_ast):
     if type(type_ast) == str:
@@ -149,8 +218,8 @@ def reverse_parse(type_ast):
         recurse1 = reverse_parse(type_ast.val_t())
         return "{" + recurse0 + " : " + recurse1 + "}"
     elif type_ast.__class__ == Fun:
-        recurse0 = reverse_parse(type_ast.in_t())
-        recurse1 = reverse_parse(type_ast.out_t())
+        recurse0 = reverse_parse(type_ast.domain_t())
+        recurse1 = reverse_parse(type_ast.range_t())
         return recurse0 + " -> " + recurse1
     else:
         assert False, "Weird type_ast class name: " + str(type_ast.__class__)
@@ -177,21 +246,18 @@ class Dct(List):
         return self[1]
 
 class Fun(List):
-    def in_t(self):
+    def domain_t(self):
         return self[0]
 
-    def out_t(self):
+    def range_t(self):
         return self[1]
-
-def make_unit(toks):
-    if toks[0] == "(" and toks[1] == ")":
-        return "unit"
 
 class TypeSpecParser:
     int_tok = Token(r'int')
     float_tok = Token(r'float')
     bool_tok = Token(r'bool')
     str_tok = Token(r'str')
+    unit_tok = Token(r'unit')
 
     list_start = Token(r'\[')
     list_end = Token(r'\]')
@@ -209,9 +275,7 @@ class TypeSpecParser:
     tight_typ = Delayed()
     typ = Delayed()
 
-    unit = tuple_start & tuple_end > make_unit
-
-    base_typ = int_tok | float_tok | bool_tok | str_tok | unit
+    base_typ = int_tok | float_tok | bool_tok | str_tok | unit_tok
 
     lst = ~list_start & typ & ~list_end > Lst
 
@@ -220,7 +284,7 @@ class TypeSpecParser:
 
     dct = ~dict_start & typ & ~dict_div & typ & ~dict_end > Dct
 
-    fun = (unit | tight_typ) & ~fn_div & (unit | typ) > Fun
+    fun = tight_typ & ~fn_div & typ > Fun
 
     parens = ~tuple_start & typ & ~tuple_end
     tight_typ += base_typ | lst | tup | dct | parens
@@ -241,11 +305,8 @@ class TypeSpecParser:
         except (RuntimeLexerError, FullFirstMatchException):
             raise TypeIncorrectlySpecifiedError(s)
 
-
-# NOTE this is a little bit hacky; we're passing the parsed type because we know
-# what it should be.
 int_t = PType('int')
 float_t = PType('float')
 bool_t = PType('bool')
 str_t = PType('str')
-unit_t = PType('()')
+unit_t = PType('unit')

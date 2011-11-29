@@ -10,7 +10,7 @@ def foo(i):
 #: bar: int
 bar = foo(5)
 ---
-#: foo: () -> int
+#: foo: unit -> int
 def foo():
     return 29
 
@@ -57,28 +57,28 @@ baz = foo(6)
 ----fail----
 
 ---
-#: foo: int -> ()
+#: foo: int -> unit
 def foo(i):
     return
 
 #: bar: int
 bar = foo(5)
 ---
-#: foo: () -> int
+#: foo: unit -> int
 def foo():
     return 29
 
 #: bar: int
 bar = foo(5)
 ---
-#: foo: () -> int
+#: foo: unit -> int
 def foo():
     return 29
 
 #: bar: int
 bar = foo(5, 2)
 ---
-#: foo: () -> int
+#: foo: unit -> int
 def foo():
     return 29
 
