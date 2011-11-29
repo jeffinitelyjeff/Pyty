@@ -8,6 +8,8 @@ sys.path.insert(0, '../src')
 from parse_type import (PType, TypeSpecParser, better_sexpr_to_tree, Lst, Tup,
                         Dct, Fun)
 
+base_ts = ['int', 'float', 'bool', 'str', 'unit']
+
 class PTypeTests(unittest.TestCase):
 
     def test_is_basetype(self):
@@ -17,6 +19,7 @@ class PTypeTests(unittest.TestCase):
         true( PType("int").is_int() )
         true( PType("float").is_float() )
         true( PType("str").is_str() )
+        true( PType("unit").is_unit() )
 
     def test_is_list(self):
         true = self.assertTrue
@@ -42,8 +45,6 @@ class PTypeTests(unittest.TestCase):
         true( PType("{_:int}").is_dict() )
         true( PType("{int:_}").is_dict() )
         true( PType("{(int,int):float}").is_dict() )
-
-base_ts = ['int', 'float', 'bool', 'str']
 
 class TypeSpecTests(unittest.TestCase):
 
