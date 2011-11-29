@@ -109,7 +109,7 @@ def _get_last_lineno(self):
             # Empty body shouldn't happen, or it at least shouldn't parse.
             assert False, "Stmt with one branch and empty shouldn't parse"
         else:
-            return body[-1].lineno
+            return _get_last_lineno(body[-1])
 
     else: # len(branches) == 2
 
@@ -118,9 +118,9 @@ def _get_last_lineno(self):
         body2 = branches[1]
 
         if len(body2) > 0:
-            return body2[-1].lineno
+            return _get_last_lineno(body2[-1])
         elif len(body1) > 0:
-            return body1[-1].lineno
+            return _get_last_lineno(body1[-1])
         else:
             # Both empty bodies shouldn't happen, or at least it shouldn't
             # parse.
@@ -223,6 +223,13 @@ class TypeDec(ast.stmt):
         """
         Place this `TypeDec` instance in its proper place in AST statement node
         list `stmt_list`.
+
+        NOTE: This all assumes that no blocks have a typedec as a last
+        statement. If so, the typedec will probably be inserted after the block
+        (or in the next part of the block). For determining whether a typedec is
+        at the end of a block or after it, we can compare columns, but there is
+        no way to tell whether a typedec is at the end of a block or at the
+        beginning of an adjacent block (ie, body vs orelse blocks).
         """
 
         # For each index and corresponding statement in `stmt_list`.
@@ -232,20 +239,32 @@ class TypeDec(ast.stmt):
                 "This typedec shouldn't already exist in the AST"
 
             # Place `self` if we've gone past the desired lineno or hit the end
-            # of the list. Note: this will always be reached eventually.
-            if self.lineno < stmt.lineno or i == len(stmt_list) - 1:
+            # of the list. Note: one of these will always be reached eventually.
+
+            if stmt.lineno > self.lineno:
 
                 # If the desired lineno is past the previous statement's last
                 # lineno, then just put `self` before the next statement;
                 # otherwise, put `self` inside the previous statement.
 
-                if self.lineno > stmt_list[i-1].last_lineno():
+                if i == 0 or self.lineno > stmt_list[i-1].last_lineno():
                     stmt_list.insert(i, self)
                     return
                 else: # self.lineno < stmt_list[i-1].last_lineno()
-                    assert stmt_list[i-1].is_compound()
                     self._place_in_compound_stmt(stmt_list[i-1])
                     return
+
+            elif i == len(stmt_list) - 1:
+
+                # The desired lineno is past the last statement, so either it's
+                # in the last statement or after it.
+                if self.lineno > stmt.last_lineno():
+                    stmt_list.insert(i+1, self)
+                    return
+                else: # self.lineno < stmt.last_lineno()
+                    self._place_in_compound_stmt(stmt)
+                    return
+
 
     def _place_in_compound_stmt(self, stmt):
         """
@@ -254,6 +273,13 @@ class TypeDec(ast.stmt):
 
         Pre-condition: `stmt.is_compound()`
         Pre-condition: `stmt.lineno < self.lineno < stmt.last_lineno()`
+
+        NOTE: This all assumes that no blocks have a typedec as a last
+        statement. If so, the typedec will probably be inserted after the block
+        (or in the next part of the block). For determining whether a typedec is
+        at the end of a block or after it, we can compare columns, but there is
+        no way to tell whether a typedec is at the end of a block or at the
+        beginning of an adjacent block (ie, body vs orelse blocks).
         """
 
         # Assert pre-conditions.
@@ -278,7 +304,12 @@ class TypeDec(ast.stmt):
             body1 = branches[0]
             body2 = branches[1]
 
-            if self.lineno < body1.last_lineno():
+            if len(body1) == 0:
+                body1_last = stmt.lineno
+            else:
+                body1_last = body1[-1].lineno
+
+            if self.lineno < body1_last:
                 self._place_in_stmt_list(body1)
             else:
                 self._place_in_stmt_list(body2)
