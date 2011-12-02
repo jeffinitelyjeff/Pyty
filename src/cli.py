@@ -2,7 +2,7 @@ import ast
 
 from logger import Logger
 from typecheck import check_expr, infer_expr
-from parse_type import PType
+from ptype import PType
 
 import typecheck
 
