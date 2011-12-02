@@ -218,11 +218,8 @@ class TypeDec(ast.stmt):
         beginning of an adjacent block (ie, body vs orelse blocks).
         """
 
-        # For each index and corresponding statement in `stmt_list`.
+        # For each index and corresponding statement in `stmt_list`
         for (i, stmt) in zip(range(len(stmt_list)), stmt_list):
-
-            assert self.lineno != stmt.lineno, \
-                "This typedec shouldn't already exist in the AST"
 
             # Place `self` if we've gone past the desired lineno or hit the end
             # of the list. Note: one of these will always be reached eventually.
@@ -240,10 +237,23 @@ class TypeDec(ast.stmt):
                     self._place_in_compound_stmt(stmt_list[i-1])
                     return
 
+            elif stmt.lineno == self.lineno:
+
+                # We've hit a statement with the same line number as the type
+                # declaration. This corresponds to cases like this:
+                #   x = 5 #: x : int
+                # We allow this even for compound statements because this could
+                # be handy:
+                #   for x in y: #: x : int
+
+                stmt_list.insert(i, self)
+                return
+
             elif i == len(stmt_list) - 1:
 
                 # The desired lineno is past the last statement, so either it's
                 # in the last statement or after it.
+
                 if self.lineno > stmt.last_lineno():
                     stmt_list.insert(i+1, self)
                     return

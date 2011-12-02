@@ -53,6 +53,15 @@ def foo(i):
 #: baz : int -> int
 baz = foo(6)
 ---
+def foo(i):        #: foo: int -> (int -> int)
+
+    def bar(j):    #: bar: int -> int
+        return i + j
+
+    return bar
+
+baz = foo(6)       #: baz : int -> int
+---
 
 ----fail----
 

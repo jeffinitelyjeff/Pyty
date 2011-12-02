@@ -15,7 +15,7 @@ def p_debug(s, cond=True):
 
 # the \s are regexes for whitespace. the first group contains a regex for valid
 # Python variable identifiers; the second group catches anything,
-_TYPEDEC_REGEX = r"\s*#:\s*(?P<id>[a-zA-Z]\w*)\s*:\s*(?P<t>.*)\s*"
+_TYPEDEC_REGEX = r".*#:\s*(?P<id>[a-zA-Z]\w*)\s*:\s*(?P<t>.*)\s*"
 
 def parse_type_decs(filename):
     """Scans through the contents of C{filename} to find lines which contain a
