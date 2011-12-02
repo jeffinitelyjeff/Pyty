@@ -145,6 +145,38 @@ def check_expr(expr, t, env):
 def get_stmt_func_name(stmt_type):
     return "check_%s_stmt" % stmt_type
 
+def check_Expr_stmt(stmt, env):
+    """
+    Check whether expr statement node `stmt` typechecks under type environment
+    `env`.
+
+    `stmt` : `ast.Expr`
+      - `value`: expression
+
+    Note: In Python, any kind of expression can be used as a statement, but
+    we're only going to allow typechecking of call expressions. There is no
+    practical reason to use any other kind of expression as a statement.
+    """
+
+    assert stmt.__class__ == ast.Expr
+
+    if stmt.value.__class__ == ast.Call:
+
+        call = stmt.value
+
+        # (exprs) assignment rule.
+
+        # Determine the type that the call expression should typecheck as by
+        # looking at the type of the function being called.
+        tau = infer_expr(call.func, env).range_t()
+
+        return check_expr(call, tau, env)
+
+    else:
+
+        return False
+
+
 def check_FunctionDef_stmt(stmt, env):
     """
     Check whether function definition node `stmt` typechecks under type

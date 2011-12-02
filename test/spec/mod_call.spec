@@ -10,12 +10,24 @@ def foo(i):
 #: bar: int
 bar = foo(5)
 ---
+#: foo: int -> int
+def foo(i):
+    return i
+
+foo(5)
+---
 #: foo: unit -> int
 def foo():
     return 29
 
 #: bar: int
 bar = foo()
+---
+#: foo: unit -> int
+def foo():
+    return 29
+
+foo()
 ---
 #: foo: int -> int
 def foo(i):
@@ -28,6 +40,17 @@ def bar(i, j, f):
 
 #: baz: int
 baz = bar(1, 2, foo)
+---
+#: foo: int -> int
+def foo(i):
+    return i + 1
+
+#: bar: (int, int, int -> int) -> int
+def bar(i, j, f):
+
+    return j + f(i)
+
+bar(1, 2, foo)
 ---
 #: foo: int -> int
 def foo(i):
