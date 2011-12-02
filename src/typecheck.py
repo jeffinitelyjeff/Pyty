@@ -3,7 +3,7 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError, ASTTraversalError
-from parse_type import PType, int_t, float_t, bool_t, str_t, unit_t
+from ptype import PType, int_t, float_t, bool_t, str_t, unit_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec

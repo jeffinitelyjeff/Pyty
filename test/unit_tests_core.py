@@ -12,7 +12,7 @@ from ast_extensions import TypeDecASTModule
 from typecheck import (check_expr, check_mod, get_check_expr_func_name,
                        call_function)
 from parse_file import parse_type_decs
-from parse_type import PType
+from ptype import PType
 from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
 from settings import (TEST_CODE_SUBDIR, DEBUG_SUBJECT_FILE, DEBUG_UNTYPED_AST,
                       DEBUG_TYPED_AST, DEBUG_TYPEDECS)

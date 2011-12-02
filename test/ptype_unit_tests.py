@@ -5,8 +5,8 @@ from lepl import sexpr_to_tree
 # Include src in the Python search path
 sys.path.insert(0, '../src')
 
-from parse_type import (PType, TypeSpecParser, better_sexpr_to_tree, Lst, Tup,
-                        Dct, Fun)
+from ptype import (PType, TypeSpecParser, better_sexpr_to_tree, Lst, Tup,
+                   Dct, Fun)
 
 base_ts = ['int', 'float', 'bool', 'str', 'unit']
 

@@ -3,7 +3,7 @@ import ast
 import logging
 
 from ast_extensions import TypeDec, TypeStore, TypeDecASTModule
-from parse_type import PType
+from ptype import PType
 from settings import DEBUG_TYPEDEC_PARSING
 from logger import Logger
 # from epydoc import docparser ; may need this for functions

@@ -2,7 +2,7 @@ import ast
 import logging
 
 from util import disjoint_sum, cname
-from parse_type import PType, TypeSpecParser
+from ptype import PType
 
 def dump_self(self):
     return ast.dump(self)
