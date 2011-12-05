@@ -88,6 +88,10 @@ class PType:
         """Return if `self` is the `str` base PType."""
         return self.t == "str"
 
+    def is_unicode(self):
+        """Returns if `self` is the `unicode` base PType."""
+        return self.t == "unicode"
+
     def is_unit(self):
         """Return if `self` is the `unit` base PType."""
         return self.t == "unit"
@@ -257,6 +261,7 @@ class TypeSpecParser:
     float_tok = Token(r'float')
     bool_tok = Token(r'bool')
     str_tok = Token(r'str')
+    unicode_tok = Token(r'unicode')
     unit_tok = Token(r'unit')
 
     list_start = Token(r'\[')
@@ -275,7 +280,9 @@ class TypeSpecParser:
     tight_typ = Delayed()
     typ = Delayed()
 
-    base_typ = int_tok | float_tok | bool_tok | str_tok | unit_tok
+    num_typ = int_tok | float_tok # | long_tok | complex_tok
+    str_typ = str_tok | unicode_tok
+    base_typ = num_typ | str_typ | bool_tok | unit_tok
 
     lst = ~list_start & typ & ~list_end > Lst
 
@@ -309,4 +316,5 @@ int_t = PType('int')
 float_t = PType('float')
 bool_t = PType('bool')
 str_t = PType('str')
+unicode_t = PType('unicode')
 unit_t = PType('unit')

@@ -15,6 +15,16 @@ def log_center(s):
 
     return "\n" + l*'-' + ' ' + s + ' ' + r*'-' + "\n"
 
+def escape(s):
+    """Escapes all instances of single or double quotes. Returns the escaped
+    string.
+
+    `"` --> `\"`
+    `'` --> `\'`
+    """
+
+    return s.replace(r'"', r'\"').replace(r"'", r"\'")
+
 ### Some short hand
 
 def cname(obj):

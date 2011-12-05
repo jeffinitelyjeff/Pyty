@@ -496,12 +496,38 @@ def check_Num_expr(num, t, env):
     if t.is_int():
 
         # (int) assignment rule.
-        return isinstance(n, int)
+        return type(n) is int
 
     elif t.is_float():
 
         # (flt) assignment rule.
-        return isinstance(n, float) # or isinstance(n, int)
+        return type(n) is float
+
+    else:
+
+        # No type assignment rule found.
+        return False
+
+def check_Str_expr(s, t, env):
+    """
+    Check if AST Str expr node `s` typechecks as type `t` under type environment
+    `env`.
+
+    `ast.Str`
+      - `s`: the string literal (as a Python object)
+    """
+
+    assert s.__class__ == ast.Str
+
+    if t.is_str():
+
+        # (str) assignment rule.
+        return type(s.s) is str
+
+    elif t.is_unicode():
+
+        # (ustr) assignment rule.
+        return type(s.s) is unicode
 
     else:
 

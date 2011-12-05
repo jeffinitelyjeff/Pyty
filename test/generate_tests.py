@@ -12,6 +12,7 @@ import typecheck
 from settings import (TEST_CODE_SUBDIR, SPEC_SUBDIR, SPEC_EXPR_PREFIX,
                       SPEC_MOD_PREFIX, UNIT_TEST_CORE, UNIT_TEST_OUTPUT)
 from logger import announce_file
+from util import escape
 
 """
 Uses the specification of the files in C{TEST_SPECS} to generate lots of
@@ -33,8 +34,10 @@ announce_file("generate_tests.py")
 def _expr_test_function_def(test_name, expr_string, expr_kind,
                             type, expected_result):
     template = "    def test_%s(self):\n" + \
-               "        self._check_expr(\"%s\",\"%s\",\"%s\",\"%s\")\n\n"
-    return template % (test_name, expr_string, expr_kind, type, expected_result)
+               "        self._check_expr('%s','%s','%s','%s')\n\n"
+    return template % tuple(escape(t) for t in (test_name, expr_string,
+                                                expr_kind, type,
+                                                expected_result))
 
 # note: the expected result is not used in creating the test call because that
 #       information is stored in the file generated to hold the module.
