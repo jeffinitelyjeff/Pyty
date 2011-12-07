@@ -33,6 +33,14 @@ False is not 2.0 : bool
 1 > 2 < -3 is not 0 is 4 : bool
 1 > 2 is not 2.0 == 3.1 : bool
 1 < 2 == 2.0 < 2.1 : bool
+"hi there" == "yo bye" : bool
+"hi there" == 2 : bool
+"a" < "b" : bool
+"b" >= "c" : bool
+u"a" > u"c" : bool
+u"d" <= u"e" : bool
+
+
 ----fail----
 1.0 < 2 : bool # SUBTYPING
 1 < 2.0 : bool # SUBTYPING
@@ -55,3 +63,10 @@ False is not 2.0 : bool
 1 < 3.0 : float
 1 > 2.0 is not 2 == 3.1 : bool
 1 < 2 < 2.0 < 2.1 : bool
+"hi there" == "yo bye" : str
+"hi there" == 2 : int
+"a" < u"b" : bool
+u"b" >= "c" : bool
+u"a" > "c" : bool
+u"d" <= u"e" : unicode
+u"d" <= u"e" : str

@@ -808,15 +808,16 @@ def check_Compare_expr(compare, t, env):
     if len(ops) == 1 and t.is_bool():
         # We're in a base case.
 
+        e1 = es[0]
+
         if ops[0].__class__ in eq_ops:
             # (eqcmp) assignment rule.
             return True
         elif ops[0].__class__ in num_ops:
             # (numcmp) assignment rule.
-            return ((check_expr(e0, int_t, env) and
-                     check_expr(es[0], int_t, env)) or
-                    (check_expr(e0, float_t, env) and
-                     check_expr(es[0], float_t, env)))
+            ts = (int_t, float_t, str_t, unicode_t)
+            return any(all(check_expr(e, t, env) for e in (e0, e1)) for t in ts)
+
         else:
             # no assignment rule found.
             return False
