@@ -647,8 +647,8 @@ def check_BinOp_expr(binop, t, env):
 
             # (srep) assignment rule.
             return ((check_expr(l, unicode_t, env)
-                     and check_expr(r, unicode_t, env))
-                    or (check_expr(l, unicode_t, env)
+                     and check_expr(r, int_t, env))
+                    or (check_expr(l, int_t, env)
                         and check_expr(r, unicode_t, env)))
 
         elif op.__class__ is ast.Mod:

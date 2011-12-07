@@ -32,7 +32,7 @@ expr type: BinOp
 '' + 'nuthoa' : str
 "unehtauneh enahu  ee' 'nh. ," + "" : str
 '''"hi there"''' * 4 : str
-8 * '''"hi there"''' : str
+8 * """'hi there'""" : str
 '''"hi there"''' * 0 : str
 -1 * '''"hi there"''' : str
 "hello, %s" % "jeff" : str
@@ -43,7 +43,7 @@ u"unehtauneh enahu  ee' 'nh. ," + u'' : unicode
 u'''"hi there"''' * 4 : unicode
 8 * u'''"hi there"''' : unicode
 u'''"hi there"''' * 0 : unicode
--1 * u'''"hi there"''' : unicode
+-1 * u'''hi there''' : unicode
 u"hello, %s" % "jeff" : unicode
 u"hello" % u"jeff" : unicode
 
