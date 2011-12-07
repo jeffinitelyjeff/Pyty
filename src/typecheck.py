@@ -3,7 +3,7 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError, ASTTraversalError
-from ptype import PType, int_t, float_t, bool_t, str_t, unit_t
+from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec
@@ -592,90 +592,146 @@ def check_BinOp_expr(binop, t, env):
     assert op.__class__ in arith_ops + bit_ops, \
         "Invalid binary operator, %s" % cname(op)
 
-    if op.__class__ in arith_ops:
 
-        if t.is_int() or t.is_float():
+    # Numeric operations.
+    if t.is_int() or t.is_float():
 
-            # (arith) rule
+        if op.__class__ in arith_ops:
+
+            # (arith) assignment rule.
             return check_expr(l, t, env) and check_expr(r, t, env)
 
-        elif t.is_list():
+        else: # op.__class__ in bit_ops
 
-            if op.__class__ is ast.Add:
+            # (bitop) assignment rule.
+            return (t.is_int() and
+                    check_expr(l, int_t, env) and
+                    check_expr(r, int_t, env))
 
-                # (lcat)
-                return check_expr(l, t, env) and check_expr(r, t, env)
+    # String operations (for str).
+    elif t.is_str():
 
-            elif op.__class__ is ast.Mult:
+        if op.__class__ is ast.Add:
 
-                # (lrep)
-                return ((check_expr(l, t, env) and check_expr(r, int_t, env))
-                        or (check_expr(l, int_t, env) and check_expr(r, t, env)))
+            # (scat) assignment rule.
+            return check_expr(l, str_t, env) and check_expr(r, str_t, env)
 
-            else:
-                # No rule to assign a list type to a binop unless op is add or
-                # mult.
-                return False
+        elif op.__class__ is ast.Mult:
 
-        elif t.is_tuple():
+            # (srep) assignment rule.
+            return ((check_expr(l, str_t, env)
+                     and check_expr(r, int_t, env))
+                    or (check_expr(l, int_t, env)
+                        and check_expr(r, str_t, env)))
 
-            if op.__class__ is ast.Add:
+        elif op.__class__ is ast.Mod:
 
-                # (tcat)
-                # This is pretty inefficient; we check every way which `t` can
-                # be split up into two tuples, but this seems to be the only way
-                # around type inference.
-                return any(check_expr(l, t.tuple_ts_slice(0, i), env)
-                           and check_expr(r, t.tuple_ts_slice(i), env)
-                           for i in range(1, len(t.tuple_ts())))
-
-            elif op.__class__ is ast.Mult:
-
-                # (trep)
-
-                # We have to restrict ourselves to repeating tuples by integer
-                # values because we need to know the value while type checking
-                # to figure out the expected shape of the type.
-
-                # Figure out if we're looking at e * m or m * e.
-                if l.__class__ is ast.Num and isinstance(l.n, int):
-                    e = r
-                    m = l.n
-                elif r.__class__ is ast.Num and isinstance(r.n, int):
-                    e = l
-                    m = r.n
-                else:
-                    # These are the only two froms of expressions which can be
-                    # assigned in (trep).
-                    return False
-
-                # the length of the tuple we expect e to typecheck as.
-                e_len = len(t.tuple_ts()) / m
-                # the tuple we expect e to typecheck as.
-                e_typ = t.tuple_ts_slice(0, e_len)
-
-                return (len(t.tuple_ts()) % m == 0 and
-                        check_expr(e, e_typ, env) and
-                        all(e_typ == t.tuple_ts_slice(e_len*i, e_len*(i+1))
-                            for i in range(1, m)))
-
-            else:
-                # No rule to assign a tuple type to a binop unless op is add or
-                # mult.
-                return False
+            # (sform) assignment rule.
+            return check_expr(l, str_t, env)
 
         else:
 
-            # An arithmetic binary operation can only typecheck as an int,
-            # float, list, or tuple.
+            # No assignment rule found.
             return False
 
-    else: # op in bit_ops
+    # String operations (for unicode).
+    elif t.is_unicode():
 
-        # (bitop) rule
-        return (t.is_int() and
-                check_expr(l, int_t, env) and
-                check_expr(r, int_t, env))
+        if op.__class__ is ast.Add:
+
+            # (scat) assignment rule.
+            return (check_expr(l, unicode_t, env)
+                    and check_expr(r, unicode_t, env))
+
+        elif op.__class__ is ast.Mult:
+
+            # (srep) assignment rule.
+            return ((check_expr(l, unicode_t, env)
+                     and check_expr(r, unicode_t, env))
+                    or (check_expr(l, unicode_t, env)
+                        and check_expr(r, unicode_t, env)))
+
+        elif op.__class__ is ast.Mod:
+
+            # (sform) assignment rule.
+            return check_expr(l, unicode_t, env)
+
+        else:
+
+            # No assignment rule found.
+            return False
+
+    # List operations.
+    elif t.is_list():
+
+        if op.__class__ is ast.Add:
+
+            # (lcat) assignment rule.
+            return check_expr(l, t, env) and check_expr(r, t, env)
+
+        elif op.__class__ is ast.Mult:
+
+            # (lrep) assignment rule.
+            return ((check_expr(l, t, env) and check_expr(r, int_t, env))
+                    or (check_expr(l, int_t, env) and check_expr(r, t, env)))
+
+        else:
+
+            # No assignment rule found.
+            return False
+
+    # Tuple operations.
+    elif t.is_tuple():
+
+        if op.__class__ is ast.Add:
+
+            # (tcat) assignment rule.
+            # This is pretty inefficient; we check every way which `t` can
+            # be split up into two tuples, but this seems to be the only way
+            # around type inference.
+            return any(check_expr(l, t.tuple_ts_slice(0, i), env)
+                       and check_expr(r, t.tuple_ts_slice(i), env)
+                       for i in range(1, len(t.tuple_ts())))
+
+        elif op.__class__ is ast.Mult:
+
+            # (trep) assignment rule.
+            # We have to restrict ourselves to repeating tuples by integer
+            # values because we need to know the value while type checking
+            # to figure out the expected shape of the type.
+
+            # Figure out if we're looking at e * m or m * e.
+            if l.__class__ is ast.Num and isinstance(l.n, int):
+                e = r
+                m = l.n
+            elif r.__class__ is ast.Num and isinstance(r.n, int):
+                e = l
+                m = r.n
+            else:
+                # These are the only two froms of expressions which can be
+                # assigned in (trep).
+                return False
+
+            # the length of the tuple we expect e to typecheck as.
+            e_len = len(t.tuple_ts()) / m
+            # the tuple we expect e to typecheck as.
+            e_typ = t.tuple_ts_slice(0, e_len)
+
+            return (len(t.tuple_ts()) % m == 0 and
+                    check_expr(e, e_typ, env) and
+                    all(e_typ == t.tuple_ts_slice(e_len*i, e_len*(i+1))
+                        for i in range(1, m)))
+
+        else:
+
+            # No assignment rule found.
+            return False
+
+    else:
+
+        # No assignmment rules found.
+        return False
+
 
 def check_UnaryOp_expr(unop, t, env):
     """

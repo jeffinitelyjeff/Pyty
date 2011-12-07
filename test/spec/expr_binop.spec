@@ -28,6 +28,25 @@ expr type: BinOp
 3 * (1, 2) : (int, int, int, int, int, int)
 (True, 1) * 3 : (bool, int, bool, int, bool, int)
 2 * (1.0, 3, False) : (float, int, bool, float, int, bool)
+"nueh" + "nhuteoa" : str
+'' + 'nuthoa' : str
+"unehtauneh enahu  ee' 'nh. ," + "" : str
+'''"hi there"''' * 4 : str
+8 * '''"hi there"''' : str
+'''"hi there"''' * 0 : str
+-1 * '''"hi there"''' : str
+"hello, %s" % "jeff" : str
+"hello" % "jeff" : str
+u"nueh" + u"nhuteoa" : unicode
+u'' + u"nuthoa" : unicode
+u"unehtauneh enahu  ee' 'nh. ," + u'' : unicode
+u'''"hi there"''' * 4 : unicode
+8 * u'''"hi there"''' : unicode
+u'''"hi there"''' * 0 : unicode
+-1 * u'''"hi there"''' : unicode
+u"hello, %s" % "jeff" : unicode
+u"hello" % u"jeff" : unicode
+
 ----fail----
 False + True : bool
 False + 0 : bool
@@ -62,3 +81,16 @@ False % 1.0 : float
 2 * (1.0, 3, False) : (float, int, bool, int, int, int)
 2 * (1.0, 3, False) : (float, int, bool, bool, bool, bool)
 2 * (1.0, 3, False) : (float, int, bool, float, int, bool, float, int, bool)
+"nueh" + u"nhuteoa" : str
+u'' + 'nuthoa' : str
+"unehtauneh enahu  ee' 'nh. ," + u"" : str
+'''"hi there"''' * 4.2 : str
+u'''"hi there"''' * 0.0 : str
+-1.0 * u'''"hi there"''' : str
+u"hello, %s" % "jeff" : str
+u"hello" % u"jeff" : str
+u'''"hi there"''' * 4.0 : unicode
+8.0 * u'''"hi there"''' : unicode
+-1.0 * u'''"hi there"''' : unicode
+"hello, %s" % "jeff" : unicode
+"hello" % u"jeff" : unicode
