@@ -954,17 +954,17 @@ def check_Subscript_expr(subs, t, env):
                     check_expr(col, t, env))
 
     # Tuple subscripting.
-    elif col_t.is_slice():
+    elif col_t.is_tuple():
 
         if is_index:
 
             col_ts = col_t.tuple_ts()
 
             # (tidx) assignment rule.
-            return (idx.__class__ is ast.Num and
-                    isinstance(idx.n, int) and
-                    0 <= idx.n < len(col_ts) and
-                    col_ts[idx.n] == t)
+            return (i.__class__ is ast.Num and
+                    isinstance(i.n, int) and
+                    0 <= i.n < len(col_ts) and
+                    col_ts[i.n] == t)
 
         else: # is_slice
 
