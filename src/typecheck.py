@@ -887,8 +887,11 @@ def check_Subscript_expr(subs, t, env):
 
     `ast.Subscript`
       - `value`: the collection being subscripted
-      - `slice`: kind of subscript (`ast.Index` or `ast.Slice`)
-      - `ctx`: context (`ast.Load`, `ast.Store`, etc.)
+      - `slice`: `ast.Index` or `ast.Slice`
+        + `value`: expr used as index (if `ast.Index`)
+        + `lower`: expr used as lower bound (if `ast.Slice`)
+        + `upper`: expr used as upper bound (if `ast.Slice`)
+        + `step`: expr used as step (if `ast.Slice`)
 
     For the purposes of typechecking, we should be able to ignore the context
     because this should be automatically handled by the structure of the
@@ -902,128 +905,96 @@ def check_Subscript_expr(subs, t, env):
 
     assert subs.__class__ == ast.Subscript
 
-    if subs.slice.__class__ == ast.Index:
-        return check_Subscript_Index_expr(subs, t, env)
-    elif subs.slice.__class__ == ast.Slice:
-        return check_Subscript_Slice_expr(subs, t, env)
+    col = subs.value
+    is_index = subs.slice.__class__ is ast.Index
+    is_slice = subs.slice.__class__ is ast.Slice
+    assert is_index or is_slice
+
+    # Store the attributes of the slice.
+    if is_index:
+        i = subs.slice.value
+    else: # is_slice
+        l = subs.slice.lower
+        u = subs.slice.upper
+        s = subs.slice.step
+
+    # Type inference on the collection being subscripted.
+    col_t = infer_expr(col, env)
+
+    if col_t is None:
+        # The collection doesn't typecheck properly.
+        return False
+
+    # String subscripting.
+    if col_t.is_str():
+
+        if is_index:
+
+            # (sidx) assignment rule.
+            return check_expr(i, int_t, env)
+
+        else: # is_slice
+
+            # (sslc) assignment rule.
+            return all(x is None or check_expr(x, int_t, env) for x in (l,u,s))
+
+    # List subscripting.
+    elif col_t.is_list():
+
+        if is_index:
+
+            # (lidx) assignment rule.
+            return (check_expr(i, int_t, env) and
+                    check_expr(col, PType.list_of(t), env))
+
+        else: # is_slice
+
+            # (lslc) assignment rule.
+            return (check_expr(x, int_t, env) or x is None for x in (l,u,s) and
+                    check_expr(col, t, env))
+
+    # Tuple subscripting.
+    elif col_t.is_slice():
+
+        if is_index:
+
+            col_ts = col_t.tuple_ts()
+
+            # (tidx) assignment rule.
+            return (idx.__class__ is ast.Num and
+                    isinstance(idx.n, int) and
+                    0 <= idx.n < len(col_ts) and
+                    col_ts[idx.n] == t)
+
+        else: # is_slice
+
+            col_ts = col_t.tuple_ts()
+            ts = t.tuple_ts()
+
+            # (tslc) assignment rule.
+
+            # Rule out some easy failure cases.
+            if not t.is_tuple():
+                return False # not expceting a tuple type.
+            elif any(x.__class__ is not ast.Num for x in (l,u,s)):
+                return False # not numeric literals.
+            elif any(not isistance(x.n, int) for x in (l,u,s)):
+                return False # not int literals.
+            else:
+
+                # If we got here, then we know:
+                # - t is a tuple type.
+                # - all slice arguments are integer literals.
+
+                low = l if l is not None else 0
+                upp = u if u is not None else len(col_t)
+                stp = s if s is not None else 1
+
+                return all(col_ts[i] == ts[i] for i in range(low, upp, stp))
+
     else:
-        assert False, ("Slices should be ast.Index or ast.Slice, "
-                       "not %" % cname(subs.slice))
 
-def check_Subscript_Index_expr(subs, t, env):
-    """
-    Check if AST Subscript expr node `subs` typechecks as type `t` under type
-    environment `env`. Assumes `subs` is a Subscript node representing an index.
-
-    `ast.Subscript`
-      - `value`: the collection being subscripted
-      - `slice`: `ast.Index`
-        + `value`: expr used as subscript index
-
-    `ast.Num`
-      - `n`: the numeric literal (as a Python object)
-    """
-
-    assert subs.__class__ == ast.Subscript
-    assert subs.slice.__class__ == ast.Index
-
-    col = subs.value
-    idx = subs.slice.value
-
-    # We actually need to know the type of the item we're indexing. It's not
-    # enough to know the type of the AST node; we have to do a limited form of
-    # type inference to determine the actual type.
-    col = subs.value
-    col_t = infer_expr(col, env)
-
-    if col_t is None:
-        # The collection itself doesn't typecheck properly.
-        return False
-
-    assert col_t.is_list() or col_t.is_tuple(), \
-        "Subscripted col should be list or tuple, not " + col_t
-
-    if col_t.is_list():
-
-        # (lidx) assignment rule.
-        return (check_expr(col, PType.list_of(t), env) and
-                check_expr(idx, int_t, env))
-
-    else: # col_t.is_tuple()
-
-        col_ts = col_t.tuple_ts()
-
-        # (tidx) assignment rule.
-        return (idx.__class__ is ast.Num and
-                isinstance(idx.n, int) and
-                0 <= idx.n < len(col_ts) and
-                col_ts[idx.n] == t)
-
-def check_Subscript_Slice_expr(subs, t, env):
-    """
-    Check if AST Subscript expr node `subs` typechecks as type `t` under type
-    environment `env`. Assumes `subs` is a Subscript node representing a slice.
-
-    `ast.Subscript`
-      - `value`: the collection being subscripted
-      - `slice`: `ast.Slice`
-        + `lower`: expr used as first arg to slice
-        + `upper`: expr used as second arg to slice
-        + `step`: expr used as third arg to slice
-
-    `ast.Num`
-      - `n`: the number value
-    """
-
-    assert subs.__class__ == ast.Subscript
-    assert subs.slice.__class__ == ast.Slice
-
-    # To typecheck a slice expression, we actually need to know the type of the
-    # item we're indexing. It's not enough to know the type of the AST node; we
-    # have to do a limited form of type inference to determine the actual type.
-    col = subs.value
-    col_t = infer_expr(col, env)
-
-    if col_t is None:
-
-        # The collection itself doesn't typecheck properly.
-        return False
-
-    assert col_t.is_list() or col_t.is_tuple(), \
-        "Subscripted collection must be list or tuple type, not " + col_t
-
-    l = subs.slice.lower
-    u = subs.slice.upper
-    s = subs.slice.step
-
-    if col_t.is_list():
-
-        # (lslc) assignment rule.
-        return ( (l is None or check_expr(l, int_t, env)) and
-                 (u is None or check_expr(u, int_t, env)) and
-                 (s is None or check_expr(s, int_t, env)) and
-                 check_expr(col, t, env) )
-
-    else: # col_t.is_tuple()
-
-        # (tslc) assignment rule.
-
-        # Rule out some easy failure cases.
-        if not t.is_tuple():
-            return False # TODO Not expecting a tuple type
-        elif not all(x.__class__ is ast.Num for x in [l,u,s]):
-            return False # TODO Not numeric literals
-        elif not all(type(x) is int for x in [l,u,s]):
-            return False # TODO Not int literals
-        else:
-
-            low = l if l is not None else 0
-            upp = u if u is not None else len(col_t)
-            stp = s if s is not None else 1
-
-            return all(col_t.tuple_ts()[i] == t.tuple_ts()[i]
-                       for i in range(low, upp, step))
-
+        return False # Only subscripts of str, list, and tuple work.
 
 def check_IfExp_expr(ifx, t, env):
     """
