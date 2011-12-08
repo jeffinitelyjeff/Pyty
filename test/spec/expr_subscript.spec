@@ -14,10 +14,10 @@ expr type: Subscript
 [(True,)][0] : (bool,)
 ((True, True),)[0] : (bool, bool)
 [(True, True)][0] : (bool, bool)
-# [(True, False), (False, False), (True, True)][0] : (bool, bool)
-# [(True, False), (False, False), (True, True)][0][1] : bool
-# [(True, 4), (False, 1), (True, 9)][2][0] : bool
-# [(True, 4), (False, 1), (True, 9)][2][1] : int
+[(True, False), (False, False), (True, True)][0] : (bool, bool)
+[(True, False), (False, False), (True, True)][0][1] : bool
+[(True, 4), (False, 1), (True, 9)][2][0] : bool
+[(True, 4), (False, 1), (True, 9)][2][1] : int
 
 
 ----fail----
