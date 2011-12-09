@@ -216,6 +216,8 @@ def infer_Subscript_expr(subs, env):
         if is_index:
 
             # (tidx) assignment rule.
+            # Note: we don't need to normalize i.n by len(col_ts) if i.n < 0
+            # becasue col_ts[i.n] handles this automatically.
             if node_is_int(i)  and -n <= i.n < n:
                 return col_ts[i.n]
             else:

@@ -57,6 +57,9 @@ ur"test string"[3] : unicode
 (0, 1, 2, 3, 4, 5, 6)[:5:] : (int, int, int, int, int, int)
 (0, 1, 2, 3, 4, 5, 6)[::3] : (int, int, int)
 (0, 1, 2, 3, 4, 5, 6)[::] : (int, int, int, int, int, int, int)
+(True, "1", u'1.0', 5.0, None)[-500:] : (bool, str, unicode, float, unit)
+(True, "1", u'1.0', 5.0, None)[-500:-1] : (bool, str, unicode, float)
+(True, "1", u'1.0', 5.0, None)[-500:-1:-1] : (float, unicode, str, bool)
 
 ## Nested collections
 [(1, 2, 3), (4, 5, 6), (7, 8, 9)][0] : (int, int, int)
@@ -134,6 +137,11 @@ u"test string"[::3] : str
 ("1", "2", "3")[100] : str
 ("1.0", u"2.0", u"3.0")[0] : unicode
 (None, 6.0, 5)[1] : unit
+(True, "1", u'1.0', 5.0, None)[-500] : unit
+(True, "1", u'1.0', 5.0, None)[-500] : bool
+(True, "1", u'1.0', 5.0, None)[-500] : str
+(True, "1", u'1.0', 5.0, None)[-500] : unicode
+(True, "1", u'1.0', 5.0, None)[-500] : float
 
 ## Tuple slicing
 (0.0, 1, 2, 3, 4, 5, 6)[1:10:3] : [int]

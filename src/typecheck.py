@@ -960,8 +960,9 @@ def check_Subscript_expr(subs, t, env):
             col_ts = col_t.tuple_ts()
             n = len(col_ts)
 
-            # Note: we don't need to normalize i.n by len(col_ts) because
-            # col_ts[i.n] handles this automatically.
+            # (tidx) assignment rule.
+            # Note: we don't need to normalize i.n by len(col_ts) if i.n < 0
+            # because col_ts[i.n] handles this automatically.
             return node_is_int(i) and -n <= i.n < n and col_ts[i.n] == t
 
         else: # is_slice
