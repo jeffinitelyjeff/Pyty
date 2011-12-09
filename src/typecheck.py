@@ -965,11 +965,13 @@ def check_Subscript_expr(subs, t, env):
 
             col_ts = col_t.tuple_ts()
 
-            # (tidx) assignment rule.
-            return (i.__class__ is ast.Num and
-                    isinstance(i.n, int) and
-                    0 <= i.n < len(col_ts) and
-                    col_ts[i.n] == t)
+            # Rule out easy failure case.
+            if not (i.__class__ is ast.Num and isinstance(i.n, int)):
+                return False # not int numeric literal
+
+            m = i.n if i.n >= 0 else i.n + len(col_ts)
+
+            return 0 <= m < len(col_ts) and col_ts[m] == t
 
         else: # is_slice
 
@@ -978,31 +980,35 @@ def check_Subscript_expr(subs, t, env):
             # Rule out some easy failure cases.
             if not t.is_tuple():
                 return False # not expceting a tuple type.
-            elif any(x.__class__ is not ast.Num for x in (l,u,s)):
+            if any(x.__class__ is not ast.Num for x in (l,u,s)):
                 return False # not numeric literals.
-            elif any(not isistance(x.n, int) for x in (l,u,s)):
+            if any(not isistance(x.n, int) for x in (l,u,s)):
                 return False # not int literals.
-            else:
 
-                # If we got here, then we know:
-                # - t is a tuple type.
-                # - all slice arguments are integer literals.
-                # Note that we have to check to make sure to provide the correct
-                # default if the step is provided as `None`; this is entirely
-                # not ideal, and we would like to fail whenever `None` is
-                # encountered here, but it's unavoidable because `l[1:10:]` is
-                # constructed with a `None` literal for the step parameter.
+            # If we got here, then we know:
+            # - t is a tuple type.
+            # - all slice arguments are integer literals.
 
-                col_ts = col_t.tuple_ts()
-                ts = t.tuple_ts()
+            col_ts = col_t.tuple_ts()
+            ts = t.tuple_ts()
 
-                low = l if l is not None else 0
-                upp = u if u is not None else len(col_t)
-                stp = (s if (s is not None and (s.__class__ is not ast.Name
-                                                 or s.id != "None"))
-                        else 1)
+            # Note that we have to check to make sure to provide the correct
+            # default if the step is provided as `None`; this is entirely
+            # not ideal, and we would like to fail whenever `None` is
+            # encountered here, but it's unavoidable because `l[1:10:]` is
+            # constructed with a `None` literal for the step parameter.
 
-                return all(col_ts[i] == ts[i] for i in range(low, upp))
+            low = l if l is not None else 0
+            upp = u if u is not None else len(col_t)
+            stp = (s if (s is not None and (s.__class__ is not ast.Name
+                                            or s.id != "None"))
+                   else 1)
+
+            low = low if low >= 0 else low + len(col_ts)
+            upp = upp if upp >= 0 else upp + len(col_ts)
+            stp = stp if stp >= 0 else -step
+
+            return all(col_ts[i] == ts[i] for i in range(low, upp))
 
     else:
 
