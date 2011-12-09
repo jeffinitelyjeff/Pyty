@@ -1,7 +1,7 @@
 import ast
 import logging
 
-from util import cname, slice_range
+from util import cname, slice_range, node_is_int
 from errors import TypeUnspecifiedError
 from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_INFER
@@ -215,8 +215,8 @@ def infer_Subscript_expr(subs, env):
         if is_index:
 
             # (tidx) assignment rule.
-            if type(i) is int and 0 <= i < n:
-                return col_ts[i]
+            if node_is_int(i) and type(i.n) is int and -n <= i.n < n:
+                return col_ts[i.n]
             else:
                 return None
 

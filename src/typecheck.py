@@ -950,7 +950,8 @@ def check_Subscript_expr(subs, t, env):
         else: # is_slice
 
             # (lslc) assignment rule.
-            return (all(x is None or check_expr(x, int_t, env) for x in (l,u)) and
+            return ((l is None or check_expr(l, int_t, env)) and
+                    (u is None or check_expr(u, int_t, env)) and
                     (s is None or node_is_None(s) or check_expr(s, int_t, env)) and
                     check_expr(col, t, env))
 
