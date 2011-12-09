@@ -31,6 +31,18 @@ but in the generated python source files (with file name
 
 announce_file("generate_tests.py")
 
+def _split_last(s, sub):
+    """Splits string `s` at the last occurrence of substring `sub` and returns a
+    tuple of the form (left, right)."""
+
+    return (sub.join(s.split(sub)[:-1]), s.split(sub)[-1])
+
+def _split_first(s, sub):
+    """Splits string `s` at the first occurrence of substring `sub` and returns
+    a tuple of the form (left, right)."""
+
+    return (s.split(sub)[0], sub.join(s.split(sub)[1:]))
+
 def _expr_test_function_def(test_name, expr_string, expr_kind,
                             type, expected_result):
     template = "    def test_%s(self):\n" + \
@@ -120,8 +132,8 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
                 if expr != '' and not re.match(r'^#[^\n]*$', expr):
                     count += 1
 
-                    actual_expr = expr.split(':')[0].strip()
-                    type = expr.split(':')[1].split('#')[0].strip()
+                    actual_expr, type = _split_last(expr, ':')
+                    type = _split_first(type, '#')[0].strip()
 
                     test_name = spec_file.split('.')[0]+str(count)
 

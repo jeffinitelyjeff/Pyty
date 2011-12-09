@@ -561,12 +561,17 @@ def check_Name_expr(name, t, env):
 
     if id == 'True' or id == 'False':
 
-        # (bool) type assignment rule
+        # (bool) assignment rule
         return t.is_bool()
+
+    elif id == 'None':
+
+        # (none) assignment rule.
+        return t.is_unit()
 
     else:
 
-        # (idn) type assignment rule
+        # (idn) assignment rule
         return env_get(env, id) == t
 
 def check_BinOp_expr(binop, t, env):
@@ -968,9 +973,6 @@ def check_Subscript_expr(subs, t, env):
 
         else: # is_slice
 
-            col_ts = col_t.tuple_ts()
-            ts = t.tuple_ts()
-
             # (tslc) assignment rule.
 
             # Rule out some easy failure cases.
@@ -985,12 +987,22 @@ def check_Subscript_expr(subs, t, env):
                 # If we got here, then we know:
                 # - t is a tuple type.
                 # - all slice arguments are integer literals.
+                # Note that we have to check to make sure to provide the correct
+                # default if the step is provided as `None`; this is entirely
+                # not ideal, and we would like to fail whenever `None` is
+                # encountered here, but it's unavoidable because `l[1:10:]` is
+                # constructed with a `None` literal for the step parameter.
+
+                col_ts = col_t.tuple_ts()
+                ts = t.tuple_ts()
 
                 low = l if l is not None else 0
                 upp = u if u is not None else len(col_t)
-                stp = s if s is not None else 1
+                stp = (s if (s is not None and (s.__class__ is not ast.Name
+                                                 or s.id != "None"))
+                        else 1)
 
-                return all(col_ts[i] == ts[i] for i in range(low, upp, stp))
+                return all(col_ts[i] == ts[i] for i in range(low, upp))
 
     else:
 
