@@ -116,22 +116,25 @@ def slice_range(l, u, s, n):
             (node_is_int(s) or node_is_None(s) or s is None)):
         return None
 
-    # Provide default values if parameters are emtpy.
-    low = 0 if l is None else l.n
-    upp = n if u is None else u.n
+    if l is None or l.n < -n:
+        low = 0
+    elif -n <= l.n < 0:
+        low = l.n + n
+    elif l.n > n:
+        low = n
+    else:
+        low = l.n
+
+    if u is None or u.n > n:
+        upp = n
+    elif -n <= u.n < 0:
+        upp = u.n + n
+    elif u.n < -n:
+        upp = 0
+    else:
+        upp = u.n
+
     stp = 1 if s is None or node_is_None(s) else s.n
-
-    # Normalize bounds by `n` if they're negative.
-    low = low + n if low < 0 else low
-    upp = upp + n if upp < 0 else upp
-
-    # Provide sane interpretations if bounds are still too low.
-    low = 0 if low < 0 else low
-    upp = 0 if upp < 0 else upp
-
-    # Provide sane interpretations if bounds are too high.
-    low = n if low > n else low
-    upp = n if upp > n else upp
 
     rng = range(low, upp, int(math.fabs(stp)))
 
