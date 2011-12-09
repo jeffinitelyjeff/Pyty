@@ -62,30 +62,6 @@ class PType:
         else:
             return PType(Dct([t0.t, t1.t]))
 
-    def is_bool(self):
-        """Return if `self` is the `bool` base PType."""
-        return self.t == "bool"
-
-    def is_int(self):
-        """Return if `self` is the `int` base PType."""
-        return self.t == "int"
-
-    def is_float(self):
-        """Return if `self` is the `float` base PType."""
-        return self.t == "float"
-
-    def is_str(self):
-        """Return if `self` is the `str` base PType."""
-        return self.t == "str"
-
-    def is_unicode(self):
-        """Returns if `self` is the `unicode` base PType."""
-        return self.t == "unicode"
-
-    def is_unit(self):
-        """Return if `self` is the `unit` base PType."""
-        return self.t == "unit"
-
     def is_list(self):
         """Return if `self` is a `list` PType."""
         return self.t.__class__ == Lst

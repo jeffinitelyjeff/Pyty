@@ -1,7 +1,7 @@
 import ast
 import logging
 
-from util import cname, slice_range, node_is_int
+from util import cname, slice_range, node_is_int, node_is_None
 from errors import TypeUnspecifiedError, ASTTraversalError
 from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_TYPECHECK
@@ -494,12 +494,12 @@ def check_Num_expr(num, t, env):
 
     n = num.n
 
-    if t.is_int():
+    if t == int_t:
 
         # (int) assignment rule.
         return type(n) is int
 
-    elif t.is_float():
+    elif t == float_t:
 
         # (flt) assignment rule.
         return type(n) is float
@@ -520,12 +520,12 @@ def check_Str_expr(s, t, env):
 
     assert s.__class__ == ast.Str
 
-    if t.is_str():
+    if t == str_t:
 
         # (str) assignment rule.
         return type(s.s) is str
 
-    elif t.is_unicode():
+    elif t == unicode_t:
 
         # (ustr) assignment rule.
         return type(s.s) is unicode
@@ -563,12 +563,12 @@ def check_Name_expr(name, t, env):
     if id == 'True' or id == 'False':
 
         # (bool) assignment rule
-        return t.is_bool()
+        return t == bool_t
 
     elif id == 'None':
 
         # (none) assignment rule.
-        return t.is_unit()
+        return t == unit_t
 
     else:
 
@@ -600,7 +600,7 @@ def check_BinOp_expr(binop, t, env):
 
 
     # Numeric operations.
-    if t.is_int() or t.is_float():
+    if t == int_t or t == float_t:
 
         if op.__class__ in arith_ops:
 
@@ -610,12 +610,12 @@ def check_BinOp_expr(binop, t, env):
         else: # op.__class__ in bit_ops
 
             # (bitop) assignment rule.
-            return (t.is_int() and
+            return (t == int_t and
                     check_expr(l, int_t, env) and
                     check_expr(r, int_t, env))
 
     # String operations (for str).
-    elif t.is_str():
+    elif t == str_t:
 
         if op.__class__ is ast.Add:
 
@@ -641,7 +641,7 @@ def check_BinOp_expr(binop, t, env):
             return False
 
     # String operations (for unicode).
-    elif t.is_unicode():
+    elif t == unicode_t:
 
         if op.__class__ is ast.Add:
 
@@ -761,22 +761,22 @@ def check_UnaryOp_expr(unop, t, env):
 
     assert rator.__class__ in [ast.Invert, ast.Not, ast.UAdd, ast.USub]
 
-    if rator.__class__ is ast.Invert and t.is_int():
+    if rator.__class__ is ast.Invert and t == int_t:
 
         # (inv) assignment rule.
         return check_expr(rand, int_t, env)
 
-    elif rator.__class__ is ast.Not and t.is_bool():
+    elif rator.__class__ is ast.Not and t == bool_t:
 
         # (not) assignment rule.
         return check_expr(rand, bool_t, env)
 
-    elif rator.__class__ in [ast.UAdd, ast.USub] and t.is_int():
+    elif rator.__class__ in [ast.UAdd, ast.USub] and t == int_t:
 
         # (uadd) assignment rule v1.
         return check_expr(rand, int_t, env)
 
-    elif rator.__class__ in [ast.UAdd, ast.USub] and t.is_float():
+    elif rator.__class__ in [ast.UAdd, ast.USub] and t == float_t:
 
         # (uadd) assignment rule v2.
         return check_expr(rand, float_t, env)
@@ -811,7 +811,7 @@ def check_Compare_expr(compare, t, env):
     ops = compare.ops
     es = compare.comparators
 
-    if len(ops) == 1 and t.is_bool():
+    if len(ops) == 1 and t == bool_t:
         # We're in a base case.
 
         e1 = es[0]
@@ -828,7 +828,7 @@ def check_Compare_expr(compare, t, env):
             # no assignment rule found.
             return False
 
-    elif t.is_bool():
+    elif t == bool_t:
 
         # (cmp) assignment rule.
 
@@ -950,7 +950,8 @@ def check_Subscript_expr(subs, t, env):
         else: # is_slice
 
             # (lslc) assignment rule.
-            return ((check_expr(x, int_t, env) or x is None for x in (l,u,s)) and
+            return (all(x is None or check_expr(x, int_t, env) for x in (l,u)) and
+                    (s is None or node_is_None(s) or check_expr(s, int_t, env)) and
                     check_expr(col, t, env))
 
     # Tuple subscripting.
