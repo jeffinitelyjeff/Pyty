@@ -7,6 +7,7 @@ from ptype import PType, int_t, float_t, bool_t, str_t, unit_t
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec
+from infer import infer_expr, env_get
 
 log = None
 
@@ -963,9 +964,6 @@ def check_IfExp_expr(ifx, t, env):
     return (check_expr(test, bool_t, env) and
             check_expr(e1, t, env) and
             check_expr(e2, t, env))
-
-# UGH, this is ugly
-from infer import infer_expr, env_get
 
 def check_Call_expr(call, t, env):
     """
