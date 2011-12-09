@@ -173,7 +173,7 @@ def infer_Subscript_expr(subs, env):
         if is_index:
 
             # (sidx) assignment rule.
-            if infer_expr(i, env) == int_t:
+            if typecheck.check_expr(i, int_t, env):
                 return col_t
             else:
                 return None
@@ -181,7 +181,7 @@ def infer_Subscript_expr(subs, env):
         else: # is_slice
 
             # (sslc) assignment rule.
-            if all(infer_expr(x, env) == int_t for x in (l, u, s)):
+            if all(typecheck.check_expr(x, int_t, env) for x in (l, u, s)):
                 return col_t
             else:
                 return None
@@ -192,7 +192,7 @@ def infer_Subscript_expr(subs, env):
         if is_index:
 
             # (lidx) assignment rule.
-            if infer_expr(i, env) == int_t:
+            if typecheck.check_expr(i, int_t, env):
                 return col_t.list_t()
             else:
                 return None
@@ -200,7 +200,8 @@ def infer_Subscript_expr(subs, env):
         else: # is_slice
 
             # (lslc) assignment rule.
-            if all(x is None or infer_expr(x, env) == int_t for x in (l, u, s)):
+            if all(x is None or typecheck.check_expr(x, int_t, env)
+                   for x in (l, u, s)):
                 return col_t
             else:
                 return None
