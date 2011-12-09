@@ -216,7 +216,7 @@ def infer_Subscript_expr(subs, env):
         if is_index:
 
             # (tidx) assignment rule.
-            if node_is_int(i) and type(i.n) is int and -n <= i.n < n:
+            if node_is_int(i)  and -n <= i.n < n:
                 return col_ts[i.n]
             else:
                 return None

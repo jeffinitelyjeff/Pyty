@@ -958,14 +958,11 @@ def check_Subscript_expr(subs, t, env):
         if is_index:
 
             col_ts = col_t.tuple_ts()
+            n = len(col_ts)
 
-            # Rule out easy failure case.
-            if not node_is_int(i):
-                return False # not int numeric literal
-
-            m = i.n if i.n >= 0 else i.n + len(col_ts)
-
-            return 0 <= m < len(col_ts) and col_ts[m] == t
+            # Note: we don't need to normalize i.n by len(col_ts) because
+            # col_ts[i.n] handles this automatically.
+            return node_is_int(i) and -n <= i.n < n and col_ts[i.n] == t
 
         else: # is_slice
 

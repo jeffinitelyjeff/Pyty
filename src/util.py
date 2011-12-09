@@ -131,7 +131,7 @@ def slice_range(l, u, s, n):
 
 def valid_int_slice(l, u, s, env):
     """Determine if three AST expr nodes representing the parameters to a simple
-    slice are valid integers (or Nones)."""
+    slice are valid integers (or Nones) under type environment `env`."""
 
     # These are imported here because we don't want to pollute the entire util
     # module with potential circular references. In theory, util.py functions
