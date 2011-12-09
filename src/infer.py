@@ -3,7 +3,7 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError
-from ptype import PType, int_t, float_t, bool_t, str_t
+from ptype import PType, int_t, float_t, bool_t, str_t, unit_t
 from settings import DEBUG_INFER
 
 log = None
@@ -62,13 +62,13 @@ def infer_Num_expr(num, env):
     Determine the type of AST `Num` expression under type environment `env`.
     """
 
-    assert num.__class__ == ast.Num
+    assert num.__class__ is ast.Num
 
     n = num.n
 
-    if type(n) == int:
+    if type(n) is int:
         return int_t
-    elif type(n) == float:
+    elif type(n) is float:
         return float_t
     else:
         assert False, "Only handling int and float numbers, not " + cname(n)
@@ -78,13 +78,25 @@ def infer_Name_expr(name, env):
     Determine the type of AST `Name` expression under type environment `env`.
     """
 
-    assert name.__class__ == ast.Name
+    assert name.__class__ is ast.Name
 
     # The Python AST treats boolean literals like any other identifier.
     if name.id == 'True' or name.id == 'False':
         return bool_t
+    # And the None literal.
+    elif name.id == 'None':
+        return unit_t
     else:
         return env_get(env, name.id)
+
+def infer_Str_expr(str, env):
+    """
+    Determine the type of AST `Str` expression under type environment `env`.
+    """
+
+    assert str.__class__ is ast.Str
+
+    return str_t
 
 def infer_List_expr(lst, env):
     """
@@ -94,7 +106,7 @@ def infer_List_expr(lst, env):
     elements is the same type).
     """
 
-    assert lst.__class__ == ast.List
+    assert lst.__class__ is ast.List
 
     els = lst.elts
 
@@ -105,7 +117,7 @@ def infer_Tuple_expr(tup, env):
     Determine the type of AST `Tuple` expression under type environment `env`.
     """
 
-    assert tup.__class__ == ast.Tuple
+    assert tup.__class__ is ast.Tuple
 
     els = tup.elts
 
@@ -117,7 +129,7 @@ def infer_Subscript_expr(subs, env):
     `env`.
     """
 
-    assert subs.__class__ == ast.Subscript
+    assert subs.__class__ is ast.Subscript
     assert subs.slice.__class__ in [ast.Index, ast.Slice], \
         ("Subscript slice should only be ast.Index or ast.Slice, not " +
          cname(subs.slice))
@@ -129,7 +141,7 @@ def infer_Subscript_expr(subs, env):
         ("The collection being subscripted should be a list or tuple type, "
          "not " + col_t)
 
-    if subs.slice.__class__ == ast.Index:
+    if subs.slice.__class__ is ast.Index:
 
         if col_t.is_list():
 
@@ -149,7 +161,7 @@ def infer_Subscript_expr(subs, env):
 
             # FIXME: Need to better handle uniform tuples.
 
-    else: # this means subs.slice.__class__ == ast.Slice
+    else: # this means subs.slice.__class__ is ast.Slice
 
         if col_t.is_list():
 

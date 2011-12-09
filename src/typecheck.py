@@ -706,10 +706,10 @@ def check_BinOp_expr(binop, t, env):
             # to figure out the expected shape of the type.
 
             # Figure out if we're looking at e * m or m * e.
-            if l.__class__ is ast.Num and isinstance(l.n, int):
+            if l.__class__ is ast.Num and type(l.n) is int:
                 e = r
                 m = l.n
-            elif r.__class__ is ast.Num and isinstance(r.n, int):
+            elif r.__class__ is ast.Num and type(r.n) is int:
                 e = l
                 m = r.n
             else:
@@ -966,7 +966,7 @@ def check_Subscript_expr(subs, t, env):
             col_ts = col_t.tuple_ts()
 
             # Rule out easy failure case.
-            if not (i.__class__ is ast.Num and isinstance(i.n, int)):
+            if not (i.__class__ is ast.Num and type(i.n) is int):
                 return False # not int numeric literal
 
             m = i.n if i.n >= 0 else i.n + len(col_ts)
