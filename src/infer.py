@@ -6,6 +6,9 @@ from errors import TypeUnspecifiedError
 from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_INFER
 
+# Need to use this form to resolve circular import.
+import typecheck
+
 log = None
 
 def i_debug(s, cond=True):
@@ -190,7 +193,3 @@ def infer_Subscript_expr(subs, env):
             # tuple slicing.
             return PType.tuple_of(
                 [t.tuple_ts()[idxs[i]] for i in range(idxs)])
-
-
-# UGH, this is ugly
-from typecheck import check_expr
