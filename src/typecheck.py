@@ -926,7 +926,7 @@ def check_Subscript_expr(subs, t, env):
         return False
 
     # String subscripting.
-    if col_t.is_str():
+    if col_t == t == str_t or col_t == t == unicode_t:
 
         if is_index:
 
