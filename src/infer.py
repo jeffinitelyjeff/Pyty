@@ -3,7 +3,7 @@ import logging
 
 from util import cname
 from errors import TypeUnspecifiedError
-from ptype import PType, int_t, float_t, bool_t, str_t, unit_t
+from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_INFER
 
 log = None
@@ -49,7 +49,7 @@ def infer_expr(e, env):
 
     t = call_function(n, e, env)
 
-    if check_expr(e, t, env):
+    if t is not None and check_expr(e, t, env):
         return t
     else:
         return None
@@ -89,14 +89,18 @@ def infer_Name_expr(name, env):
     else:
         return env_get(env, name.id)
 
-def infer_Str_expr(str, env):
+def infer_Str_expr(s, env):
     """
     Determine the type of AST `Str` expression under type environment `env`.
     """
 
-    assert str.__class__ is ast.Str
+    assert s.__class__ is ast.Str
+    assert type(s.s) in (str, unicode)
 
-    return str_t
+    if type(s.s) is str:
+        return str_t
+    else: # type(s.s) is unicode
+        return unicode_t
 
 def infer_List_expr(lst, env):
     """
@@ -139,7 +143,7 @@ def infer_Subscript_expr(subs, env):
 
     assert col_t.is_list() or col_t.is_tuple(), \
         ("The collection being subscripted should be a list or tuple type, "
-         "not " + col_t)
+         "not " + str(col_t))
 
     if subs.slice.__class__ is ast.Index:
 

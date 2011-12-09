@@ -955,7 +955,7 @@ def check_Subscript_expr(subs, t, env):
         else: # is_slice
 
             # (lslc) assignment rule.
-            return (check_expr(x, int_t, env) or x is None for x in (l,u,s) and
+            return ((check_expr(x, int_t, env) or x is None for x in (l,u,s)) and
                     check_expr(col, t, env))
 
     # Tuple subscripting.
