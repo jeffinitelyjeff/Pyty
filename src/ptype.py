@@ -36,41 +36,31 @@ class PType:
 
     @staticmethod
     def list_of(t):
-        """Creates a PType object which represents a list of elements which
-        have type C{t}.
+        """Create a PType representing a list of elements of PType `t`."""
 
-        @type t: L{PType}
-        """
-
-        return PType(Lst([t.t]))
-
-    @staticmethod
-    def any_list():
-        """Creates a PType object which represents a list of any type.
-        """
-
-        return PType('[_]')
+        if t.t is None:
+            return None
+        else:
+            return PType(Lst([t.t]))
 
     @staticmethod
     def tuple_of(ts):
-        """Creates a PType object which represents a list of elements which
-        have types C{ts}.
+        """Create a PType representing a tuple of the list of PTypes `ts`."""
 
-        @type ts: [L{PType}]
-        """
-
-        return PType(Tup([t.t for t in ts]))
+        if any(t.t is None for t in ts):
+            return None
+        else:
+            return PType(Tup([t.t for t in ts]))
 
     @staticmethod
     def dict_of(t0, t1):
-        """Creates a PType object which represents a dictionary mapping
-        elements of type C{t0} to elements of type C{t1}.
+        """Create a PType representing a dictionary mapping PType `t0` to PType
+        `t1`."""
 
-        @type t0: L{PType}
-        @type t1: L{PType}
-        """
-
-        return PType(Dct([t0.t, t1.t]))
+        if t0 is None or t1 is None:
+            return None
+        else:
+            return PType(Dct([t0.t, t1.t]))
 
     def is_bool(self):
         """Return if `self` is the `bool` base PType."""
