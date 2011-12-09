@@ -985,7 +985,8 @@ def check_Subscript_expr(subs, t, env):
                 # The range wasn't valid.
                 return False
 
-            return all(col_ts[i] == ts[i] for i in rng)
+            z = zip(range(0, len(rng)), rng)
+            return all(col_ts[j] == ts[i] for (i,j) in z)
 
     else:
 

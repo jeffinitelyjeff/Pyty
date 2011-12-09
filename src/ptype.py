@@ -38,7 +38,7 @@ class PType:
     def list_of(t):
         """Create a PType representing a list of elements of PType `t`."""
 
-        if t.t is None:
+        if t is None:
             return None
         else:
             return PType(Lst([t.t]))
@@ -47,7 +47,7 @@ class PType:
     def tuple_of(ts):
         """Create a PType representing a tuple of the list of PTypes `ts`."""
 
-        if any(t.t is None for t in ts):
+        if any(t is None for t in ts):
             return None
         else:
             return PType(Tup([t.t for t in ts]))

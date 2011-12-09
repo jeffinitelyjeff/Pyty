@@ -116,15 +116,15 @@ def slice_range(l, u, s, n):
         return False
 
     low = l.n if l is not None else 0
-    upp = u.n if u is not None else len(col_t)
+    upp = u.n if u is not None else n
     stp = s.n if not (s is None or node_is_None(s)) else 1
 
     low = low if low >= 0 else low + n
     upp = upp if upp >= 0 else upp + n
 
-    rng = range(low, upp, math.fabs(stp))
+    rng = range(low, upp, int(math.fabs(stp)))
 
-    if step < 0:
+    if stp < 0:
         rng.reverse()
 
     return rng

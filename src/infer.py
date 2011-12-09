@@ -230,7 +230,7 @@ def infer_Subscript_expr(subs, env):
             if rng is None:
                 return None
             else:
-                return PType.tuple_of([col_ts[rng[i]] for i in rng])
+                return PType.tuple_of([col_ts[i] for i in rng])
 
     else:
 
