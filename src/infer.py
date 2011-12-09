@@ -1,7 +1,7 @@
 import ast
 import logging
 
-from util import cname, slice_range, node_is_int
+from util import cname, slice_range, node_is_int, valid_int_slice
 from errors import TypeUnspecifiedError
 from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_INFER
@@ -180,8 +180,10 @@ def infer_Subscript_expr(subs, env):
 
         else: # is_slice
 
+            check = typecheck.check_expr
+
             # (sslc) assignment rule.
-            if all(typecheck.check_expr(x, int_t, env) for x in (l, u, s)):
+            if valid_int_slice(l, u, s, env):
                 return col_t
             else:
                 return None
@@ -200,8 +202,7 @@ def infer_Subscript_expr(subs, env):
         else: # is_slice
 
             # (lslc) assignment rule.
-            if all(x is None or typecheck.check_expr(x, int_t, env)
-                   for x in (l, u, s)):
+            if valid_int_slice(l, u, s, env):
                 return col_t
             else:
                 return None

@@ -1,7 +1,7 @@
 import ast
 import logging
 
-from util import cname, slice_range, node_is_int, node_is_None
+from util import cname, slice_range, node_is_int, node_is_None, valid_int_slice
 from errors import TypeUnspecifiedError, ASTTraversalError
 from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_TYPECHECK
@@ -936,7 +936,7 @@ def check_Subscript_expr(subs, t, env):
         else: # is_slice
 
             # (sslc) assignment rule.
-            return all(x is None or check_expr(x, int_t, env) for x in (l,u,s))
+            return valid_int_slice(l, u, s, env) and check_expr(col, t, env)
 
     # List subscripting.
     elif col_t.is_list():
@@ -950,10 +950,7 @@ def check_Subscript_expr(subs, t, env):
         else: # is_slice
 
             # (lslc) assignment rule.
-            return ((l is None or check_expr(l, int_t, env)) and
-                    (u is None or check_expr(u, int_t, env)) and
-                    (s is None or node_is_None(s) or check_expr(s, int_t, env)) and
-                    check_expr(col, t, env))
+            return valid_int_slice(l, u, s, env) and check_expr(col, t, env)
 
     # Tuple subscripting.
     elif col_t.is_tuple():

@@ -49,14 +49,14 @@ ur"test string"[3] : unicode
 (True, 3.0, None)[2] : unit
 
 ## Tuple slicing
-(0, 1, 2, 3, 4, 5, 6)[1:3:2] : [int]
-(0, 1, 2, 3, 4, 5, 6)[:3:2] : [int]
-(0, 1, 2, 3, 4, 5, 6)[1::3] : [int]
-(0, 1, 2, 3, 4, 5, 6)[1:5:] : [int]
-(0, 1, 2, 3, 4, 5, 6)[1::] : [int]
-(0, 1, 2, 3, 4, 5, 6)[:5:] : [int]
-(0, 1, 2, 3, 4, 5, 6)[::3] : [int]
-(0, 1, 2, 3, 4, 5, 6)[::] : [int]
+(0, 1, 2, 3, 4, 5, 6)[1:3:2] : (int, int)
+(0, 1, 2, 3, 4, 5, 6)[:3:2] : (int, int)
+(0, 1, 2, 3, 4, 5, 6)[1::3] : (int, int)
+(0, 1, 2, 3, 4, 5, 6)[1:5:] : (int, int, int, int, int)
+(0, 1, 2, 3, 4, 5, 6)[1::] : (int, int, int, int, int, int)
+(0, 1, 2, 3, 4, 5, 6)[:5:] : (int, int, int, int, int, int)
+(0, 1, 2, 3, 4, 5, 6)[::3] : (int, int, int)
+(0, 1, 2, 3, 4, 5, 6)[::] : (int, int, int, int, int, int, int)
 
 ## Nested collections
 [(1, 2, 3), (4, 5, 6), (7, 8, 9)][0] : (int, int, int)
@@ -75,7 +75,7 @@ ur"test string"[3] : unicode
 [(["a", "b"], ["c", "d"]), (["e", "f"], ["g", "h"])][0][1][-1] : str
 "hello"[0][0][0] : str
 u"hell"[0][0][0] : unicode
-[(1, 2, 3), (4, 5, 6), (7, 8, 9)][:3:2][2] : int
+[(1, 2, 3), (4, 5, 6), (7, 8, 9)][:3:2][2] : (int, int, int)
 ([1.0, 2.0], [3.0, 4.0])[-1][:1:2] : [float]
 [(True, False), (False, False), (True, True)][1::2][1][0] : bool
 [(True, 4), (False, 1), (True, 9)][2][0:-1] : (bool, int)
@@ -155,11 +155,8 @@ u"test string"[::3] : str
 
 
 ## Nested collections
-[(1, 2, 3), (4, 5, 6), (7, 8, 9)][0] : (int, int, int)
-([1.0, 2.0], [3.0, 4.0])[-1] : [float]
-[(True, False), (False, False), (True, True)][0] : (bool, bool)
-[(True, 4), (False, 1), (True, 9)][2] : (bool, int)
-[(["a", "b"], ["c", "d"]), (["e", "f"], ["g", "h"])][0] : ([str], [str])
+[(1, 2, 3), (4, 5, 6.0), (7, 8, 9)][0] : (int, int, int)
+([1.0, 2.0], [3, 4.0])[-1] : [float]
 
 ## Nested operations
 [(1, 2.0, 3), (4, 5, 6), (7, 8, 9)][0][2] : int
