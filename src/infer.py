@@ -1,7 +1,7 @@
 import ast
 import logging
 
-from util import cname
+from util import cname, slice_range
 from errors import TypeUnspecifiedError
 from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_INFER
@@ -52,7 +52,7 @@ def infer_expr(e, env):
 
     t = call_function(n, e, env)
 
-    if t is not None and check_expr(e, t, env):
+    if t is not None and typecheck.check_expr(e, t, env):
         return t
     else:
         return None
@@ -134,62 +134,105 @@ def infer_Subscript_expr(subs, env):
     """
     Determine the type of AST `Subscript` expression under type environment
     `env`.
+
+    `ast.Subscript`
+      - `value`: the collection being subscripted
+      - `slice`: `ast.Index` or `ast.Slice`
+        + `value`: expr used as index (if `ast.Index`)
+        + `lower`: expr used as lower bound (if `ast.Slice`)
+        + `upper`: expr used as upper bound (if `ast.Slice`)
+        + `step`: expr used as step (if `ast.Slice`)
+
+    We can only subscript tuples with numeric literals because the inference
+    algorithm needs to actually know the values of the subscript parameters.
     """
 
     assert subs.__class__ is ast.Subscript
-    assert subs.slice.__class__ in [ast.Index, ast.Slice], \
-        ("Subscript slice should only be ast.Index or ast.Slice, not " +
-         cname(subs.slice))
 
     col = subs.value
     col_t = infer_expr(col, env)
 
-    assert col_t.is_list() or col_t.is_tuple(), \
-        ("The collection being subscripted should be a list or tuple type, "
-         "not " + str(col_t))
+    is_index = subs.slice.__class__ is ast.Index
+    is_slice = subs.slice.__class__ is ast.Slice
+    assert is_index or is_slice
 
-    if subs.slice.__class__ is ast.Index:
+    # Store the attributes of the slice.
+    if is_index:
+        i = subs.slice.value
+    else: # is_slice
+        l = subs.slice.lower
+        u = subs.slice.upper
+        s = subs.slice.step
 
-        if col_t.is_list():
+    if col_t is None:
+        return None
 
-            # If we access an individual element of a list of type [a], then the
-            # individual element has type a.
-            return col_t.list_t()
+    # String subscripting
+    elif col_t == str_t or col_t == unicode_t:
 
-        else: # this means col_t.is_tuple()
+        if is_index:
 
-            # We're assuming that the expression properly typechecks, so we know
-            # that the slice index is a nonnegative int literal.
-            idx = subs.slice.value.n
+            # (sidx) assignment rule.
+            if infer_expr(i, env) == int_t:
+                return col_t
+            else:
+                return None
 
-            # Best way to explain this is to look at the inference rule for
-            # tuple indexing.
-            return col_t.tuple_ts()[idx]
+        else: # is_slice
 
-            # FIXME: Need to better handle uniform tuples.
+            # (sslc) assignment rule.
+            if all(infer_expr(x, env) == int_t for x in (l, u, s)):
+                return col_t
+            else:
+                return None
 
-    else: # this means subs.slice.__class__ is ast.Slice
+    # List subscripting
+    elif col_t.is_list():
 
-        if col_t.is_list():
+        if is_index:
 
-            # If we access a slice of a list of type [a], then the slice has
-            # type [a].
-            return t
+            # (lidx) assignment rule.
+            if infer_expr(i, env) == int_t:
+                return col_t.list_t()
+            else:
+                return None
 
-        else: # this means col_t.is_tuple()
+        else: # is_slice
 
-            # FIXME: Need to better handle uniform tuples.
+            # (lslc) assignment rule.
+            if all(x is None or infer_expr(x, env) == int_t for x in (l, u, s)):
+                return col_t
+            else:
+                return None
 
-            slc = subs.slice
+    # Tuple subscripting
+    elif col_t.is_tuple():
 
-            # We're assuming that the expression properly typechecks, so we know
-            # that the slice parameters are nonnegative int literals.
-            l = slc.lower.n if slc.lower is not None else 0
-            u = slc.upper.n if slc.upper is not None else len(col_t)
-            s = slc.step.n  if slc.step  is not None else 1
-            idxs = range(l, u, s)
+        col_ts = col_t.tuple_ts()
+        n = len(col_ts)
 
-            # Best way to explain this is to look at the inference rule for
-            # tuple slicing.
-            return PType.tuple_of(
-                [t.tuple_ts()[idxs[i]] for i in range(idxs)])
+        if is_index:
+
+            # (tidx) assignment rule.
+            if type(i) is int and 0 <= i < n:
+                return col_ts[i]
+            else:
+                return None
+
+        else: # is_slice
+
+            # (tslc) assignment rule.
+
+            col_ts = col_t.tuple_ts()
+
+            rng = slice_range(l, u, s, len(col_ts))
+
+            if rng is None:
+                return None
+            else:
+                return PType.tuple_of([col_ts[rng[i]] for i in rng])
+
+    else:
+
+        # No assignment rule found.
+        return None

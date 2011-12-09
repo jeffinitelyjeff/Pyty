@@ -1,3 +1,5 @@
+import ast
+import math
 import logging
 from datetime import datetime
 
@@ -72,4 +74,58 @@ def disjoint_sum(union, sets):
 
     return u == union
 
+### Operations used for inference and checking
+
+def node_is_None(node):
+    """Determine if a given AST node represents the `None` literal."""
+
+    return node.__class__ is ast.Name and node.id == 'None'
+
+def node_is_True(node):
+    """Determine if a given AST node represents the `True` literal."""
+
+    return node.__class__ is ast.Name and node.id == 'True'
+
+def node_is_False(node):
+    """Determine if a given AST node represents the `False` literal."""
+
+    return node.__class__ is ast.Name and node.id == 'False'
+
+def node_is_int(node):
+    """Determine if a given AST node represents an integer literal."""
+
+    return node.__class__ is ast.Num and type(node.n) is int
+
+def slice_range(l, u, s, n):
+    """
+    Given three AST `Num` nodes representing the parameters to a simple slice
+    and the length `n` of the collection being sliced, returns a range of the
+    indices hit by the slice. Namely, this method handles empty values, negative
+    values, and the odd `None` parameter when we have to.
+
+    Returns `None` if any parameter present but not an integer literal.
+
+    - `l`: AST node representing lower bound of slice.
+    - `u`: AST node representing upper bound of slice.
+    - `s`: AST node representing step of slice.
+    """
+
+    # Ensure we're dealing with integer literals.
+    if not ((l is None or node_is_int(l)) and (u is None or node_is_int(u)) and
+            (s is None or node_is_None(s) or node_is_int(s))):
+        return False
+
+    low = l.n if l is not None else 0
+    upp = u.n if u is not None else len(col_t)
+    stp = s.n if not (s is None or node_is_None(s)) else 1
+
+    low = low if low >= 0 else low + n
+    upp = upp if upp >= 0 else upp + n
+
+    rng = range(low, upp, math.fabs(stp))
+
+    if step < 0:
+        rng.reverse()
+
+    return rng
 

@@ -1,7 +1,7 @@
 import ast
 import logging
 
-from util import cname
+from util import cname, slice_range, node_is_int
 from errors import TypeUnspecifiedError, ASTTraversalError
 from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_TYPECHECK
@@ -899,19 +899,16 @@ def check_Subscript_expr(subs, t, env):
         + `upper`: expr used as upper bound (if `ast.Slice`)
         + `step`: expr used as step (if `ast.Slice`)
 
-    For the purposes of typechecking, we should be able to ignore the context
-    because this should be automatically handled by the structure of the
-    typechecking algorithm. `ast.Store` contexts only show up on the left-hand
-    side of assignment statements, so they will be typechecked by the assignment
-    statement typechecking rule, not by the generic subscript typechecking rule.
-
-    Until we're sure where we can use type inference, we can only subscript
-    tuples by numeric (integer) literals.
+    We can only subscript tuples with numeric literals because the type checker
+    needs to actually know the values of the subscript parameters.
     """
 
     assert subs.__class__ == ast.Subscript
 
+    # Type inference is necessary becuase subscripting is very overloaded.
     col = subs.value
+    col_t = infer_expr(col, env)
+
     is_index = subs.slice.__class__ is ast.Index
     is_slice = subs.slice.__class__ is ast.Slice
     assert is_index or is_slice
@@ -924,15 +921,12 @@ def check_Subscript_expr(subs, t, env):
         u = subs.slice.upper
         s = subs.slice.step
 
-    # Type inference on the collection being subscripted.
-    col_t = infer_expr(col, env)
-
     if col_t is None:
         # The collection doesn't typecheck properly.
         return False
 
     # String subscripting.
-    if col_t == t == str_t or col_t == t == unicode_t:
+    elif col_t == t == str_t or col_t == t == unicode_t:
 
         if is_index:
 
@@ -967,7 +961,7 @@ def check_Subscript_expr(subs, t, env):
             col_ts = col_t.tuple_ts()
 
             # Rule out easy failure case.
-            if not (i.__class__ is ast.Num and type(i.n) is int):
+            if not node_is_int(i):
                 return False # not int numeric literal
 
             m = i.n if i.n >= 0 else i.n + len(col_ts)
@@ -978,38 +972,20 @@ def check_Subscript_expr(subs, t, env):
 
             # (tslc) assignment rule.
 
-            # Rule out some easy failure cases.
+            # Rule out easy failure case.
             if not t.is_tuple():
                 return False # not expceting a tuple type.
-            if any(x.__class__ is not ast.Num for x in (l,u,s)):
-                return False # not numeric literals.
-            if any(not isistance(x.n, int) for x in (l,u,s)):
-                return False # not int literals.
-
-            # If we got here, then we know:
-            # - t is a tuple type.
-            # - all slice arguments are integer literals.
 
             col_ts = col_t.tuple_ts()
             ts = t.tuple_ts()
 
-            # Note that we have to check to make sure to provide the correct
-            # default if the step is provided as `None`; this is entirely
-            # not ideal, and we would like to fail whenever `None` is
-            # encountered here, but it's unavoidable because `l[1:10:]` is
-            # constructed with a `None` literal for the step parameter.
+            rng = slice_range(l, u, s, len(col_ts))
 
-            low = l if l is not None else 0
-            upp = u if u is not None else len(col_t)
-            stp = (s if (s is not None and (s.__class__ is not ast.Name
-                                            or s.id != "None"))
-                   else 1)
+            if rng is None:
+                # The range wasn't valid.
+                return False
 
-            low = low if low >= 0 else low + len(col_ts)
-            upp = upp if upp >= 0 else upp + len(col_ts)
-            stp = stp if stp >= 0 else -step
-
-            return all(col_ts[i] == ts[i] for i in range(low, upp))
+            return all(col_ts[i] == ts[i] for i in rng)
 
     else:
 
