@@ -105,9 +105,10 @@ def slice_range(l, u, s, n):
 
     Returns `None` if any parameter present but not an integer literal.
 
-    - `l`: AST node representing lower bound of slice.
-    - `u`: AST node representing upper bound of slice.
-    - `s`: AST node representing step of slice.
+    - `l`: AST `Num` node representing lower bound of slice.
+    - `u`: AST `Num` node representing upper bound of slice.
+    - `s`: AST `Num` node representing step of slice.
+    - `n`: (int) length of the collection being sliced.
     """
 
     # Ensure we're dealing with integer literals.
@@ -144,8 +145,15 @@ def slice_range(l, u, s, n):
     return rng
 
 def valid_int_slice(l, u, s, env):
-    """Determine if three AST expr nodes representing the parameters to a simple
-    slice are valid integers (or Nones) under type environment `env`."""
+    """
+    Determine if three AST expr nodes representing the parameters to a simple
+    slice are valid integers (or Nones) under type environment `env`.
+
+    `l`: AST expr node representing lower bound of slice.
+    `u`: AST expr node representing upper bound of slice.
+    `s`: AST expr node representing step of slice.
+    `n`: (int) length of the collection being sliced.
+    """
 
     # These are imported here because we don't want to pollute the entire util
     # module with potential circular references. In theory, util.py functions
