@@ -785,20 +785,24 @@ def check_Compare_expr(compare, t, env):
     ops = compare.ops
     es = compare.comparators
 
+    # Base case; either (eq) or (ineq).
     if len(ops) == 1 and t == bool_t:
-        # We're in a base case.
 
         e1 = es[0]
 
         if ops[0].__class__ in eq_ops:
-            # (eqcmp) assignment rule.
+
+            # (eq) assignment rule.
             return True
+
         elif ops[0].__class__ in num_ops:
-            # (numcmp) assignment rule.
+
+            # (ineq) assignment rule.
             ts = (int_t, float_t, str_t, unicode_t)
             return any(all(check_expr(e, t, env) for e in (e0, e1)) for t in ts)
 
         else:
+
             # no assignment rule found.
             return False
 
@@ -806,7 +810,7 @@ def check_Compare_expr(compare, t, env):
 
         # (cmp) assignment rule.
 
-        head = ast.Compare(e0, [ops[0]], [es[0]])
+        head = ast.Compare(e0, ops[:1], es[:1])
         tail = ast.Compare(es[0], ops[1:], es[1:])
 
         return check_expr(head, bool_t, env) and check_expr(tail, bool_t, env)
