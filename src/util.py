@@ -159,10 +159,10 @@ def valid_int_slice(l, u, s, env):
     # module with potential circular references. In theory, util.py functions
     # shouldn't need to refer to checking or inferring, but this is a function
     # that happens to be shared between typecheck.py and infer.py.
-    from typecheck import check_expr as check
+    from check import check_expr
     from ptype import int_t
 
-    return ((l is None or check(l, int_t, env)) and
-            (u is None or check(u, int_t, env)) and
-            (s is None or node_is_None(s) or check(s, int_t, env)))
+    return ((l is None or check_expr(l, int_t, env)) and
+            (u is None or check_expr(u, int_t, env)) and
+            (s is None or node_is_None(s) or check_expr(s, int_t, env)))
 

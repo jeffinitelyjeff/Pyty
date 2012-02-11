@@ -9,8 +9,8 @@ import ast
 sys.path.insert(0, '../src')
 
 from ast_extensions import TypeDecASTModule
-from typecheck import (check_expr, check_mod, get_check_expr_func_name,
-                       call_function)
+from check import (check_expr, check_mod, get_check_expr_func_name,
+                   call_function)
 from parse_file import parse_type_decs
 from ptype import PType
 from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
@@ -23,7 +23,7 @@ from util import log_center
 # objects.
 import ast_extensions
 import parse_file
-import typecheck
+import check
 import infer
 
 """
@@ -34,7 +34,7 @@ code file in the test_files directory).
 
 announce_file("unit_tests_core.py")
 
-log = typecheck.log = parse_file.log = infer.log = Logger()
+log = check.log = parse_file.log = infer.log = Logger()
 
 class PytyTests(unittest.TestCase):
 

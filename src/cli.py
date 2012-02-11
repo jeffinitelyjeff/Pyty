@@ -1,7 +1,8 @@
 import ast
 
 from logger import Logger
-from typecheck import check_expr, infer_expr
+from check import check_expr
+from infer import infer_expr
 from ptype import PType
 
 import typecheck

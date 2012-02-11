@@ -7,7 +7,7 @@ from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
 from settings import DEBUG_INFER
 
 # Need to use this form to resolve circular import.
-import typecheck
+import check
 
 log = None
 
@@ -52,7 +52,7 @@ def infer_expr(e, env):
 
     t = call_function(n, e, env)
 
-    if t is not None and typecheck.check_expr(e, t, env):
+    if t is not None and check.check_expr(e, t, env):
         return t
     else:
         return None
@@ -173,14 +173,12 @@ def infer_Subscript_expr(subs, env):
         if is_index:
 
             # (sidx) assignment rule.
-            if typecheck.check_expr(i, int_t, env):
+            if check.check_expr(i, int_t, env):
                 return col_t
             else:
                 return None
 
         else: # is_slice
-
-            check = typecheck.check_expr
 
             # (sslc) assignment rule.
             if valid_int_slice(l, u, s, env):
@@ -194,7 +192,7 @@ def infer_Subscript_expr(subs, env):
         if is_index:
 
             # (lidx) assignment rule.
-            if typecheck.check_expr(i, int_t, env):
+            if check.check_expr(i, int_t, env):
                 return col_t.list_t()
             else:
                 return None

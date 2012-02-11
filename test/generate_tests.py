@@ -8,11 +8,12 @@ from datetime import datetime
 sys.path.insert(0, '../src')
 
 from errors import TypeIncorrectlySpecifiedError, TypeUnspecifiedError
-import typecheck
 from settings import (TEST_CODE_SUBDIR, SPEC_SUBDIR, SPEC_EXPR_PREFIX,
                       SPEC_MOD_PREFIX, UNIT_TEST_CORE, UNIT_TEST_OUTPUT)
 from logger import announce_file
 from util import escape
+
+import check
 
 """
 Uses the specification of the files in C{TEST_SPECS} to generate lots of
@@ -86,7 +87,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
         # function in typecheck.py to actually deal with that kind of
         # expression.
         try:
-            getattr(typecheck, "check_%s_expr" % expr_kind)
+            getattr(check, "check_%s_expr" % expr_kind)
         except AttributeError:
             raise Exception("Expression test spec states that checking " +
                             "against expressions of type " + expr_kind +
