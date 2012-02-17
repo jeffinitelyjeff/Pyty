@@ -560,14 +560,14 @@ def check_Name_expr(name, t, env):
 
     assert name.__class__ is ast.Name
 
-    id = name.id
+    id_str = name.id
 
-    if id == 'True' or id == 'False':
+    if id_str == 'True' or id_str == 'False':
 
         # (bool) assignment rule
         return t == bool_t
 
-    elif id == 'None':
+    elif id_str == 'None':
 
         # (none) assignment rule.
         return t == unit_t
@@ -575,7 +575,7 @@ def check_Name_expr(name, t, env):
     else:
 
         # (idn) assignment rule
-        return env_get(env, id) == t
+        return env_get(env, id_str) == t
 
 def check_BinOp_expr(binop, t, env):
     """

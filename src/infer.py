@@ -117,17 +117,33 @@ def infer_Str_expr(s, env):
 def infer_Name_expr(name, env):
     """
     Determine the type of AST `Name` expression under type environment `env`.
+
+    `ast.Name`
+      - `id`: the identifier (as a Python `str`)
+      - `ctx`: the context (e.g., load, store) in which the expr is used
+
+    The AST treats `True` and `False` as Name nodes with id of `"True"` or
+    `"False"`, strangely enough.
     """
+
     assert name.__class__ is ast.Name
 
-    # The Python AST treats boolean literals like any other identifier.
-    if name.id == 'True' or name.id == 'False':
+    id_str = name.id
+
+    if id_str == 'True' or id_str == 'False':
+
+        # (bool) assignment rule.
         return bool_t
-    # And the None literal.
-    elif name.id == 'None':
+
+    elif id_str == 'None':
+
+        # (none) assignment rule.
         return unit_t
+
     else:
-        return env_get(env, name.id)
+
+        # (idn) assignment rule.
+        return env_get(env, id_str)
 
 def infer_List_expr(lst, env):
     """
