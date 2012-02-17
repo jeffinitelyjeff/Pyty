@@ -823,7 +823,7 @@ def check_Compare_expr(compare, t, env):
         return False
 
 
-def check_List_expr(list, t, env):
+def check_List_expr(lst, t, env):
     """
     Check if AST List expr node `list` typechecks as type `t` under type
     environment `env`.
@@ -833,17 +833,20 @@ def check_List_expr(list, t, env):
       - `ctx': context of the expr (e.g., load, store)
     """
 
-    assert list.__class__ is ast.List
+    assert lst.__class__ is ast.List
 
-    es = list.elts
+    elts_list = lst.elts
 
     if t.is_list():
-        # Check whether each expression typechecks as the type which t is a list
-        # of.
+
+        # (lst) assignment rule.
         e_t = t.list_t()
-        return all(check_expr(e, e_t, env) for e in es)
+        return all(check_expr(e, e_t, env) for e in elts_list)
+    
     else:
-        return False # desired type not a list
+
+        # No assignment rule found.
+        return False
 
 def check_Tuple_expr(tup, t, env):
     """

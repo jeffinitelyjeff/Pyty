@@ -149,15 +149,26 @@ def infer_List_expr(lst, env):
     """
     Determine the type of AST `List` expression under type environment `env`.
 
-    This assumes that the list properly typechecks (ie, that each of its
-    elements is the same type).
+    `ast.List`
+      - `elts`: Python list of contained expr nodes
+      - `ctx': context of the expr (e.g., load, store)
     """
 
     assert lst.__class__ is ast.List
 
-    els = lst.elts
+    elts_list = lst.elts
 
-    return PType.list_of(infer_expr(els[0], env))
+    first_type = infer_expr(elts_list[0], env)
+
+    if all(infer_expr(e, env) == first_type for e in elts_list[1:]):
+
+        # (lst) assignment rule.
+        return PType.list_of(first_type)
+
+    else:
+
+        # No assignment rule found.
+        return None
 
 def infer_Tuple_expr(tup, env):
     """
