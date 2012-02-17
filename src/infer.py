@@ -178,9 +178,15 @@ def infer_Tuple_expr(tup, env):
 
     elts_list = tup.elts
 
-    # (tup) assignment rule.
-    # Note that this rule applies to any tuple expression.
-    return PType.tuple_of([infer_expr(e, env) for e in elts_list])
+    if all(infer_expr(e, env) != None for e in elts_list):
+
+        # (tup) assignment rule.
+        return PType.tuple_of([infer_expr(e, env) for e in elts_list])
+
+    else:
+
+        # No assignment rule found.
+        return None
 
 def infer_Subscript_expr(subs, env):
     """
