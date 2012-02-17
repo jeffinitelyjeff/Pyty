@@ -63,37 +63,37 @@ class PType:
 
     @staticmethod
     def int():
-        if PType.INT_T is None:
+        if not hasattr(PType, 'INT_T'):
             PType.INT_T = PType(PType.INT)
         return PType.INT_T
 
     @staticmethod
     def float():
-        if PType.FLOAT_T is None:
+        if not hasattr(PType, 'FLOAT_T'):
             PType.FLOAT_T = PType(PType.FLOAT)
         return PType.FLOAT_T
 
     @staticmethod
     def bool():
-        if PType.BOOL_T is None:
+        if not hasattr(PType, 'BOOL_T'):
             PType.BOOL_T = PType(PType.BOOL)
         return PType.BOOL_T
 
     @staticmethod
     def string():
-        if PType.STR_T is None:
+        if not hasattr(PType, 'STR_T'):
             PType.STR_T = PType(PType.STRING)
         return PType.STR_T
 
     @staticmethod
-    def unicode_string():
-        if PType.UNICODE_T is None:
+    def unicode():
+        if not hasattr(PType, 'UNICODE_T'):
             PType.UNICODE_T = PType(PType.UNICODE)
         return PType.UNICODE_T
 
     @staticmethod
     def unit():
-        if PType.UNIT_T is None:
+        if not hasattr(PType, 'UNIT_T'):
             PType.UNIT_T = PType(PType.UNIT)
         return PType.UNIT_T
 
@@ -281,10 +281,3 @@ class TypeSpecParser:
             return better_sexpr_to_tree(TypeSpecParser.typ.parse(s)[0])
         except (RuntimeLexerError, FullFirstMatchException):
             raise TypeIncorrectlySpecifiedError(s)
-
-int_t = PType('int')
-float_t = PType('float')
-bool_t = PType('bool')
-str_t = PType('str')
-unicode_t = PType('unicode')
-unit_t = PType('unit')

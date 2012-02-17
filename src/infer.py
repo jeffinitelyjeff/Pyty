@@ -3,11 +3,19 @@ import logging
 
 from util import cname, slice_range, node_is_int, valid_int_slice
 from errors import TypeUnspecifiedError
-from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
+from ptype import PType
 from settings import DEBUG_INFER
 
 # Need to use this form to resolve circular import.
 import check
+
+int_t = PType.int()
+float_t = PType.float()
+bool_t = PType.bool()
+str_t = PType.string()
+unicode_t = PType.unicode()
+unit_t = PType.unit()
+
 
 log = None
 

@@ -3,7 +3,7 @@ import logging
 
 from util import cname, slice_range, node_is_int, node_is_None, valid_int_slice
 from errors import TypeUnspecifiedError, ASTTraversalError
-from ptype import PType, int_t, float_t, bool_t, str_t, unit_t, unicode_t
+from ptype import PType
 from settings import DEBUG_TYPECHECK
 from logger import Logger
 from ast_extensions import TypeDec
@@ -16,6 +16,13 @@ def t_debug(s, cond=True):
 
 def call_function(fun_name, *args, **kwargs):
     return globals()[fun_name](*args, **kwargs)
+
+int_t = PType.int()
+float_t = PType.float()
+bool_t = PType.bool()
+str_t = PType.string()
+unicode_t = PType.unicode()
+unit_t = PType.unit()
 
 # ---------------------------------------------------------------------------
 # GENERAL CHECKING FUNCTIONS ------------------------------------------------
