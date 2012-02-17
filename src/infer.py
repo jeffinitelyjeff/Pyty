@@ -50,12 +50,7 @@ def infer_expr(e, env):
     # that is not in the very limited subset of the language that we're trying
     # to perform type inference on.
 
-    t = call_function(n, e, env)
-
-    if t is not None and check.check_expr(e, t, env):
-        return t
-    else:
-        return None
+    return call_function(n, e, env)
 
 def get_infer_expr_func_name(expr_type):
     return "infer_%s_expr" % expr_type
@@ -76,12 +71,12 @@ def infer_Num_expr(num, env):
 
         # (int) assignment rule.
         return int_t
-    
+
     elif type(n) is float:
 
         # (flt) assignment rule.
         return float_t
-    
+
     else:
 
         # No type assignment rule found.
@@ -160,7 +155,7 @@ def infer_List_expr(lst, env):
 
     first_type = infer_expr(elts_list[0], env)
 
-    if all(infer_expr(e, env) == first_type for e in elts_list[1:]):
+    if all(check.check_expr(e, first_type, env) for e in elts_list[1:]):
 
         # (lst) assignment rule.
         return PType.list_of(first_type)
@@ -183,7 +178,8 @@ def infer_Tuple_expr(tup, env):
 
     elts_list = tup.elts
 
-    # (tup) assignment rule. Note that this rule applies to any tuple expression.
+    # (tup) assignment rule.
+    # Note that this rule applies to any tuple expression.
     return PType.tuple_of([infer_expr(e, env) for e in elts_list])
 
 def infer_Subscript_expr(subs, env):
@@ -221,7 +217,7 @@ def infer_Subscript_expr(subs, env):
         s = subs.slice.step
 
     if col_t is None:
-        
+
         # If we can't assign a type to the collection, then we can't assign a
         # type to its subscript.
         return None
@@ -247,7 +243,7 @@ def infer_Subscript_expr(subs, env):
     # List subscripting
     elif col_t.is_list():
 
-        if is_index and infer_expr(i, env) == int_t:
+        if is_index and check.check_expr(i, int_t, env):
 
             # (lidx) assignment rule.
             return col_t.list_t()
@@ -273,18 +269,24 @@ def infer_Subscript_expr(subs, env):
             # (tidx) assignment rule.
             return col_ts[i.n]
 
-        else: # is_slice
+        elif is_slice:
 
             rng = slice_range(l, u, s, len(col_ts))
 
             if rng is not None:
-                
+
                 # (tslc) assignment rule.
                 return PType.tuple_of([col_ts[i] for i in rng])
 
             else:
 
+                # No assignment rule found.
                 return None
+
+        else:
+
+            # No assignment rule found.
+            return None
 
     else:
 
