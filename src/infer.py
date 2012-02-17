@@ -87,6 +87,33 @@ def infer_Num_expr(num, env):
         # No type assignment rule found.
         return None
 
+def infer_Str_expr(s, env):
+    """
+    Determine the type of AST `Str` expression under type environment `env`.
+
+    `ast.Str`
+      - `s`: the string literal (as a Python object)
+    """
+
+    assert s.__class__ is ast.Str
+
+    the_string = s.s
+
+    if type(the_string) is str:
+
+        # (str) assignment rule.
+        return str_t
+
+    elif type(the_string) is unicode:
+
+        # (ustr) assignment rule.
+        return unicode_t
+
+    else:
+
+        # No type assignment rule found..
+        return None
+
 def infer_Name_expr(name, env):
     """
     Determine the type of AST `Name` expression under type environment `env`.
@@ -101,19 +128,6 @@ def infer_Name_expr(name, env):
         return unit_t
     else:
         return env_get(env, name.id)
-
-def infer_Str_expr(s, env):
-    """
-    Determine the type of AST `Str` expression under type environment `env`.
-    """
-
-    assert s.__class__ is ast.Str
-    assert type(s.s) in (str, unicode)
-
-    if type(s.s) is str:
-        return str_t
-    else: # type(s.s) is unicode
-        return unicode_t
 
 def infer_List_expr(lst, env):
     """

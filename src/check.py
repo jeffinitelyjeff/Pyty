@@ -520,15 +520,17 @@ def check_Str_expr(s, t, env):
 
     assert s.__class__ is ast.Str
 
+    the_string = s.s
+
     if t == str_t:
 
         # (str) assignment rule.
-        return type(s.s) is str
+        return type(the_string) is str
 
     elif t == unicode_t:
 
         # (ustr) assignment rule.
-        return type(s.s) is unicode
+        return type(the_string) is unicode
 
     else:
 
