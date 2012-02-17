@@ -221,45 +221,46 @@ def infer_Subscript_expr(subs, env):
         s = subs.slice.step
 
     if col_t is None:
+        
+        # If we can't assign a type to the collection, then we can't assign a
+        # type to its subscript.
         return None
 
     # String subscripting
     elif col_t == str_t or col_t == unicode_t:
 
-        if is_index:
+        if is_index and infer_expr(i, env) == int_t:
 
             # (sidx) assignment rule.
-            if check.check_expr(i, int_t, env):
-                return col_t
-            else:
-                return None
+            return col_t
 
-        else: # is_slice
+        elif is_slice and valid_int_slice(l, u, s, env):
 
             # (sslc) assignment rule.
-            if valid_int_slice(l, u, s, env):
-                return col_t
-            else:
-                return None
+            return col_t
+
+        else:
+
+            # No assignment rule found.
+            return None
 
     # List subscripting
     elif col_t.is_list():
 
-        if is_index:
+        if is_index and infer_expr(i, env) == int_t:
 
             # (lidx) assignment rule.
-            if check.check_expr(i, int_t, env):
-                return col_t.list_t()
-            else:
-                return None
+            return col_t.list_t()
 
-        else: # is_slice
+        elif is_slice and valid_int_slice(l, u, s, env):
 
             # (lslc) assignment rule.
-            if valid_int_slice(l, u, s, env):
-                return col_t
-            else:
-                return None
+            return col_t
+
+        else:
+
+            # No assignment rule found.
+            return None
 
     # Tuple subscripting
     elif col_t.is_tuple():
@@ -267,28 +268,23 @@ def infer_Subscript_expr(subs, env):
         col_ts = col_t.tuple_ts()
         n = len(col_ts)
 
-        if is_index:
+        if is_index and node_is_int(i) and -n <= i.n < n:
 
             # (tidx) assignment rule.
-            # Note: we don't need to normalize i.n by len(col_ts) if i.n < 0
-            # becasue col_ts[i.n] handles this automatically.
-            if node_is_int(i)  and -n <= i.n < n:
-                return col_ts[i.n]
-            else:
-                return None
+            return col_ts[i.n]
 
         else: # is_slice
 
-            # (tslc) assignment rule.
-
-            col_ts = col_t.tuple_ts()
-
             rng = slice_range(l, u, s, len(col_ts))
 
-            if rng is None:
-                return None
-            else:
+            if rng is not None:
+                
+                # (tslc) assignment rule.
                 return PType.tuple_of([col_ts[i] for i in rng])
+
+            else:
+
+                return None
 
     else:
 

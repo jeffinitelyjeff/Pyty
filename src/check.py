@@ -910,6 +910,7 @@ def check_Subscript_expr(subs, t, env):
         s = subs.slice.step
 
     if col_t is None:
+        
         # The collection doesn't typecheck properly.
         return False
 
