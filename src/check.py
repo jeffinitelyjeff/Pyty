@@ -490,7 +490,7 @@ def check_Num_expr(num, t, env):
       - `n`: the numeric literal (as a Python object)
     """
 
-    assert num.__class__ == ast.Num
+    assert num.__class__ is ast.Num
 
     n = num.n
 
@@ -518,7 +518,7 @@ def check_Str_expr(s, t, env):
       - `s`: the string literal (as a Python object)
     """
 
-    assert s.__class__ == ast.Str
+    assert s.__class__ is ast.Str
 
     if t == str_t:
 
@@ -556,7 +556,7 @@ def check_Name_expr(name, t, env):
     checking name loads.
     """
 
-    assert name.__class__ == ast.Name
+    assert name.__class__ is ast.Name
 
     id = name.id
 
@@ -586,7 +586,7 @@ def check_BinOp_expr(binop, t, env):
       - `right`: right expr
     """
 
-    assert binop.__class__ == ast.BinOp
+    assert binop.__class__ is ast.BinOp
 
     l = binop.left
     r = binop.right
@@ -728,7 +728,7 @@ def check_UnaryOp_expr(unop, t, env):
 
     """
 
-    assert unop.__class__ == ast.UnaryOp
+    assert unop.__class__ is ast.UnaryOp
 
     rator = unop.op
     rand = unop.operand
@@ -774,7 +774,7 @@ def check_Compare_expr(compare, t, env):
     `left` `ops[0]` `comparators[0]` `ops[1]` `comparators[1]` ...
     """
 
-    assert compare.__class__ == ast.Compare
+    assert compare.__class__ is ast.Compare
 
     # Operators that need to take numbers.
     num_ops = [ast.Lt, ast.LtE, ast.Gt, ast.GtE]
@@ -831,7 +831,7 @@ def check_List_expr(list, t, env):
       - `ctx': context of the expr (e.g., load, store)
     """
 
-    assert list.__class__ == ast.List
+    assert list.__class__ is ast.List
 
     es = list.elts
 
@@ -853,7 +853,7 @@ def check_Tuple_expr(tup, t, env):
       - `ctx`: context of the expr (e.g., load, store)
     """
 
-    assert tup.__class__ == ast.Tuple
+    assert tup.__class__ is ast.Tuple
 
     es = tup.elts
 
@@ -881,7 +881,7 @@ def check_Subscript_expr(subs, t, env):
     needs to actually know the values of the subscript parameters.
     """
 
-    assert subs.__class__ == ast.Subscript
+    assert subs.__class__ is ast.Subscript
 
     # Type inference is necessary becuase subscripting is very overloaded.
     col = subs.value
@@ -978,7 +978,7 @@ def check_IfExp_expr(ifx, t, env):
       - `orelse`: the value of the expression if `test` is false.
     """
 
-    assert ifx.__class__ == ast.IfExp
+    assert ifx.__class__ is ast.IfExp
 
     test = ifx.test
     e1 = ifx.body
@@ -1008,7 +1008,7 @@ def check_Call_expr(call, t, env):
         arguments).
     """
 
-    assert call.__class__ == ast.Call
+    assert call.__class__ is ast.Call
 
     f = call.func
     args = call.args
