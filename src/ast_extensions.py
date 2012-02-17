@@ -177,7 +177,7 @@ class TypeDec(ast.stmt):
             self.col_offset = col
 
         if type(t) == str:
-            self.t = PType(t)
+            self.t = PType.from_str(t)
             assert self.t.__class__ == PType, \
                    ("Got a %s back from TypeSpecParser.parse, not a PType" %
                     cname(self.t.__class__))

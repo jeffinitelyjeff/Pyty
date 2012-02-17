@@ -166,7 +166,7 @@ def infer_List_expr(lst, env):
     if all(check.check_expr(e, first_type, env) for e in elts_list[1:]):
 
         # (lst) assignment rule.
-        return PType.list_of(first_type)
+        return PType.list(first_type)
 
     else:
 
@@ -189,7 +189,7 @@ def infer_Tuple_expr(tup, env):
     if all(infer_expr(e, env) != None for e in elts_list):
 
         # (tup) assignment rule.
-        return PType.tuple_of([infer_expr(e, env) for e in elts_list])
+        return PType.tuple([infer_expr(e, env) for e in elts_list])
 
     else:
 
@@ -260,7 +260,7 @@ def infer_Subscript_expr(subs, env):
         if is_index and check.check_expr(i, int_t, env):
 
             # (lidx) assignment rule.
-            return col_t.list_t()
+            return col_t.elt
 
         elif is_slice and valid_int_slice(l, u, s, env):
 
@@ -275,7 +275,7 @@ def infer_Subscript_expr(subs, env):
     # Tuple subscripting
     elif col_t.is_tuple():
 
-        col_ts = col_t.tuple_ts()
+        col_ts = col_t.elts
         n = len(col_ts)
 
         if is_index and node_is_int(i) and -n <= i.n < n:
@@ -290,7 +290,7 @@ def infer_Subscript_expr(subs, env):
             if rng is not None:
 
                 # (tslc) assignment rule.
-                return PType.tuple_of([col_ts[i] for i in rng])
+                return PType.tuple([col_ts[i] for i in rng])
 
             else:
 

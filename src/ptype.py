@@ -23,6 +23,7 @@ class PType:
     DICT = 10
 
     def __init__(self, tag):
+        assert type(tag) is int and 0 <= tag <= 10
         self.tag = tag
 
     @staticmethod
@@ -55,9 +56,9 @@ class PType:
         elif ast.__class__ == Tup:
             return PType.tuple([from_ast(t) for t in ast.elt_ts()])
         elif ast.__class__ == Dct:
-            return PType.dict(from_ast(t.key_t()), from_ast(t.val_t()))
+            return PType.dict(from_ast(ast.key_t()), from_ast(ast.val_t()))
         elif ast.__class__ == Fun:
-            return PType.arrow(from_ast(t.domain_t()), from_ast(t.range_t()))
+            return PType.arrow(from_ast(ast.domain_t()), from_ast(ast.range_t()))
         else:
             assert True, ast.__class__.__name__
 
@@ -156,6 +157,8 @@ class PType:
             return "str"
         elif self.tag == PType.UNICODE:
             return "unicode"
+        elif self.tag == PType.UNIT:
+            return "unit"
         elif self.tag == PType.ARROW:
             return self.dom.__repr__() + " -> " + self.ran.__repr__()
         elif self.tag == PType.LIST:
@@ -163,17 +166,26 @@ class PType:
         elif self.tag == PType.TUPLE:
             return "(" + ", ".join(elt.__repr__() for elt in self.elts) + ")"
         elif self.tag == PType.UTUPLE:
-            return elt.__repr__() + "^" + str(elt.n)
+            return self.elt.__repr__() + "^" + str(self.n)
         elif self.tag == PType.DICT:
-            return "{" + elt.dom.__repr__() + ": " + elt.ran.__repr__() + "}"
+            return "{" + self.dom.__repr__() + ": " + self.ran.__repr__() + "}"
         else:
-            assert True
+            assert True, self.tag
 
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def tuple_slice(self, start=0, end=None, step=1):
+
+        assert self.is_tuple()
+
+        if end is None:
+            end = len(self.elts)
+
+        return PType.tuple(self.elts[start:end:step])
 
 def reverse_parse(type_ast):
     if type(type_ast) == str:

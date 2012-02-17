@@ -116,5 +116,5 @@ def parse_type_dec(line, lineno, var_name, type_spec):
 
     col_offset = line.index("#:")
 
-    return TypeDec([name_node], PType(type_spec), lineno,
+    return TypeDec([name_node], PType.from_str(type_spec), lineno,
                    col_offset)

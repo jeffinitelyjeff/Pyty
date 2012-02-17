@@ -160,7 +160,9 @@ def valid_int_slice(l, u, s, env):
     # shouldn't need to refer to checking or inferring, but this is a function
     # that happens to be shared between typecheck.py and infer.py.
     from check import check_expr
-    from ptype import int_t
+    from ptype import PType
+
+    int_t = PType.int()
 
     return ((l is None or check_expr(l, int_t, env)) and
             (u is None or check_expr(u, int_t, env)) and

@@ -176,7 +176,7 @@ def check_Expr_stmt(stmt, env):
 
         # Determine the type that the call expression should typecheck as by
         # looking at the type of the function being called.
-        tau = infer_expr(call.func, env).range_t()
+        tau = infer_expr(call.func, env).ran
 
         return check_expr(call, tau, env)
 
@@ -221,14 +221,14 @@ def check_FunctionDef_stmt(stmt, env):
     # function definition, so choosing the sigma and tau reduces to environment
     # lookup.
     t = env_get(env, name)
-    sigma = t.domain_t()
-    tau = t.range_t()
+    sigma = t.dom
+    tau = t.ran
 
     # Next, ensure that the input type is the correct form given the number of
     # parameters.
     if not ((len(args) == 0 and sigma == unit_t) or
             (len(args) == 1 and sigma != unit_t) or
-            (sigma.is_tuple() and len(sigma.tuple_ts()) == len(args))):
+            (sigma.is_tuple() and len(sigma.elts) == len(args))):
         return False
 
     # The environment to use while typechecking the function body.
@@ -243,7 +243,7 @@ def check_FunctionDef_stmt(stmt, env):
     elif len(args) > 1:
         t_debug(str(args))
         t_debug(str(sigma))
-        for (arg, arg_t) in zip(args, sigma.tuple_ts()):
+        for (arg, arg_t) in zip(args, sigma.elts):
             body_env[arg.id] = arg_t
 
     return check_stmt_list(body, body_env)
@@ -387,7 +387,7 @@ def check_For_stmt(stmt, env):
         return False
 
     # (lfor) assigment rule.
-    return (check_expr(stmt.iter, PType.list_of(t), env) and
+    return (check_expr(stmt.iter, PType.list(t), env) and
             check_stmt_list(stmt.body, env) and
             check_stmt_list(stmt.orelse, env))
 
@@ -678,9 +678,9 @@ def check_BinOp_expr(binop, t, env):
             # This is pretty inefficient; we check every way which `t` can
             # be split up into two tuples, but this seems to be the only way
             # around type inference.
-            return any(check_expr(l, t.tuple_ts_slice(0, i), env)
-                       and check_expr(r, t.tuple_ts_slice(i), env)
-                       for i in range(1, len(t.tuple_ts())))
+            return any(check_expr(l, t.tuple_slice(0, i), env)
+                       and check_expr(r, t.tuple_slice(i), env)
+                       for i in range(1, len(t.elts)))
 
         elif op.__class__ is ast.Mult:
 
@@ -702,13 +702,13 @@ def check_BinOp_expr(binop, t, env):
                 return False
 
             # the length of the tuple we expect e to typecheck as.
-            e_len = len(t.tuple_ts()) / m
+            e_len = len(t.elts) / m
             # the tuple we expect e to typecheck as.
-            e_typ = t.tuple_ts_slice(0, e_len)
+            e_typ = t.tuple_slice(0, e_len)
 
-            return (len(t.tuple_ts()) % m == 0 and
+            return (len(t.elts) % m == 0 and
                     check_expr(e, e_typ, env) and
-                    all(e_typ == t.tuple_ts_slice(e_len*i, e_len*(i+1))
+                    all(e_typ == t.tuple_slice(e_len*i, e_len*(i+1))
                         for i in range(1, m)))
 
         else:
@@ -847,7 +847,7 @@ def check_List_expr(lst, t, env):
     if t.is_list():
 
         # (lst) assignment rule.
-        e_t = t.list_t()
+        e_t = t.elt
         return all(check_expr(e, e_t, env) for e in elts_list)
     
     else:
@@ -871,14 +871,14 @@ def check_Tuple_expr(tup, t, env):
 
     if t.is_uniform_tuple():
 
-        cont_t = t.tuple_ts()[0]
-        return (len(elts_list) == len(t.tuple_ts()) and
+        cont_t = t.elts[0]
+        return (len(elts_list) == len(t.elts) and
                 all(check_expr(e, cont_t, env) for e in elts_list))
 
     elif t.is_tuple():
 
         # (tup) assignment rule.
-        ts_list = t.tuple_ts()
+        ts_list = t.elts
         return (len(elts_list) == len(ts_list) and
                 all(check_expr(e, t0, env)
                     for (e, t0) in zip(elts_list, ts_list)))
@@ -948,7 +948,7 @@ def check_Subscript_expr(subs, t, env):
 
             # (lidx) assignment rule.
             return (check_expr(i, int_t, env) and
-                    check_expr(col, PType.list_of(t), env))
+                    check_expr(col, PType.list(t), env))
 
         else: # is_slice
 
@@ -960,7 +960,7 @@ def check_Subscript_expr(subs, t, env):
 
         if is_index:
 
-            col_ts = col_t.tuple_ts()
+            col_ts = col_t.elts
             n = len(col_ts)
 
             # (tidx) assignment rule.
@@ -976,8 +976,8 @@ def check_Subscript_expr(subs, t, env):
             if not t.is_tuple():
                 return False # not expceting a tuple type.
 
-            col_ts = col_t.tuple_ts()
-            ts = t.tuple_ts()
+            col_ts = col_t.elts
+            ts = t.elts
 
             rng = slice_range(l, u, s, len(col_ts))
 
@@ -1050,8 +1050,8 @@ def check_Call_expr(call, t, env):
     if f_t is None:
         return False
 
-    sigma = f_t.domain_t()
-    tau = f_t.range_t()
+    sigma = f_t.dom
+    tau = f_t.ran
 
     # In the type system, we treat no arguments as unit type, and multiple
     # arguments as a tuple.
