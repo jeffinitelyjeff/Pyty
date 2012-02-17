@@ -862,12 +862,19 @@ def check_Tuple_expr(tup, t, env):
 
     elts_list = tup.elts
 
-    if t.is_tuple():
+    if t.is_uniform_tuple():
+
+        cont_t = t.tuple_ts()[0]
+        return (len(elts_list) == len(t.tuple_ts()) and
+                all(check_expr(e, cont_t, env) for e in elts_list))
+
+    elif t.is_tuple():
 
         # (tup) assignment rule.
         ts_list = t.tuple_ts()
         return (len(elts_list) == len(ts_list) and
-                all(check_expr(e, t0, env) for (e, t0) in zip(elts_list, ts_list)))
+                all(check_expr(e, t0, env)
+                    for (e, t0) in zip(elts_list, ts_list)))
     
     else:
 

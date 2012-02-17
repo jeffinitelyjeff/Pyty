@@ -70,6 +70,11 @@ class PType:
         """Return if `self` is a `tuple` PType."""
         return self.t.__class__ == Tup
 
+    def is_uniform_tuple(self):
+        """Return if `self` is a uniform `tuple` PType."""
+        return (self.is_tuple() and
+                all(t == self.tuple_ts()[0] for t in self.tuple_ts()[1:]))
+
     def is_dict(self):
         """Return if `self` is a `dict` PType."""
         return self.t.__class__ == Dct
