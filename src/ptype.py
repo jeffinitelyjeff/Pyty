@@ -6,175 +6,174 @@ from errors import TypeIncorrectlySpecifiedError
 
 
 class PType:
-    """PType is an outside wrapper for the Type AST returned by the parser
-    generator. Methods are provided to access element types, which are only
-    wrapped into PTypes once they are accessed.
-    """
 
-    def __init__(self, typ):
-        """
-        Create new `PType` from a specified type.
+    # Literals.
+    INT = 0
+    FLOAT = 1
+    BOOL = 2
+    STRING = 3
+    UNICODE = 4
+    UNIT = 5
 
-        Pre-condition: `typ` is a string or PType AST.
-        """
+    # Containers.
+    ARROW = 6
+    LIST = 7
+    TUPLE = 8
+    UTUPLE = 9
+    DICT = 10
 
-        if type(typ) is str:
-            self.t = TypeSpecParser.parse(typ)
-        elif typ.__class__ in [Lst, Tup, Dct, Fun]:
-            self.t = typ
+    def __init__(self, tag):
+        self.tag = tag
+
+    @staticmethod
+    def from_str(s):
+        parsed = TypeSpecParser.parse(s)
+        return PType.from_type_ast(parsed)
+
+    @staticmethod
+    def from_type_ast(ast):
+        # shorthand.
+        from_ast = PType.from_type_ast
+        
+        if type(ast) is str:
+            if ast == "int":
+                return PType.INT_T
+            elif ast == "float":
+                return PType.FLOAT_T
+            elif ast == "bool":
+                return PType.BOOL_T
+            elif ast == "str":
+                return PType.STR_T
+            elif ast == "unicode":
+                return PType.UNICODE_T
+            elif ast == "unit":
+                return PType.UNIT_T
+            else:
+                assert True, ast
+        elif ast.__class__ == Lst:
+            return PType.list(from_ast(ast.elt_t()))
+        elif ast.__class__ == Tup:
+            return PType.tuple([from_ast(t) for t in ast.elt_ts()])
+        elif ast.__class__ == Dct:
+            return PType.dict(from_ast(t.key_t()), from_ast(t.val_t()))
+        elif ast.__class__ == Fun:
+            return PType.arrow(from_ast(t.domain_t()), from_ast(t.range_t()))
         else:
-            assert False, "PType must be constructed with string or PType"
+            assert True, ast.__class__.__name__
+
+    @staticmethod
+    def int():
+        if PType.INT_T is None:
+            PType.INT_T = PType(PType.INT)
+        return PType.INT_T
+
+    @staticmethod
+    def float():
+        if PType.FLOAT_T is None:
+            PType.FLOAT_T = PType(PType.FLOAT)
+        return PType.FLOAT_T
+
+    @staticmethod
+    def bool():
+        if PType.BOOL_T is None:
+            PType.BOOL_T = PType(PType.BOOL)
+        return PType.BOOL_T
+
+    @staticmethod
+    def string():
+        if PType.STR_T is None:
+            PType.STR_T = PType(PType.STRING)
+        return PType.STR_T
+
+    @staticmethod
+    def unicode_string():
+        if PType.UNICODE_T is None:
+            PType.UNICODE_T = PType(PType.UNICODE)
+        return PType.UNICODE_T
+
+    @staticmethod
+    def unit():
+        if PType.UNIT_T is None:
+            PType.UNIT_T = PType(PType.UNIT)
+        return PType.UNIT_T
+
+    @staticmethod
+    def arrow(dom, ran):
+        t = PType(PType.ARROW)
+        t.dom = dom
+        t.ran = ran
+        return t
+
+    @staticmethod
+    def list(elt):
+        t = PType(PType.LIST)
+        t.elt = elt
+        return t
+
+    @staticmethod
+    def tuple(elts):
+        t = PType(PType.TUPLE)
+        t.elts = elts
+        return t
+
+    @staticmethod
+    def utuple(elt, n):
+        t = PType(PTYPE.UTUPLE)
+        t.elt = elt
+        t.n = n
+        return t
+
+    @staticmethod
+    def dict(dom, ran):
+        t = PType(PType.DICT)
+        t.dom = dom
+        t.ran = ran
+        return t
+
+    def is_arrow(self):
+        return self.tag == PType.ARROW
+
+    def is_list(self):
+        return self.tag == PType.LIST
+
+    def is_tuple(self):
+        return self.tag == PType.TUPLE
+
+    def is_uniform_tuple(self):
+        return self.tag == PType.UTUPLE
+
+    def is_dict(self):
+        return self.tag == PType.DICT
 
     def __repr__(self):
-        return reverse_parse(self.t)
+        if self.tag == PType.INT:
+            return "int"
+        elif self.tag == PType.FLOAT:
+            return "float"
+        elif self.tag == PType.BOOL:
+            return "bool"
+        elif self.tag == PType.STRING:
+            return "str"
+        elif self.tag == PType.UNICODE:
+            return "unicode"
+        elif self.tag == PType.ARROW:
+            return self.dom.__repr__() + " -> " + self.ran.__repr__()
+        elif self.tag == PType.LIST:
+            return "[" + self.elt.__repr__() + "]"
+        elif self.tag == PType.TUPLE:
+            return "(" + ", ".join(elt.__repr__() for elt in self.elts) + ")"
+        elif self.tag == PType.UTUPLE:
+            return elt.__repr__() + "^" + str(elt.n)
+        elif self.tag == PType.DICT:
+            return "{" + elt.dom.__repr__() + ": " + elt.ran.__repr__() + "}"
+        else:
+            assert True
 
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-    @staticmethod
-    def list_of(t):
-        """Create a PType representing a list of elements of PType `t`."""
-
-        if t is None:
-            return None
-        else:
-            return PType(Lst([t.t]))
-
-    @staticmethod
-    def tuple_of(ts):
-        """Create a PType representing a tuple of the list of PTypes `ts`."""
-
-        if any(t is None for t in ts):
-            return None
-        else:
-            return PType(Tup([t.t for t in ts]))
-
-    @staticmethod
-    def dict_of(t0, t1):
-        """Create a PType representing a dictionary mapping PType `t0` to PType
-        `t1`."""
-
-        if t0 is None or t1 is None:
-            return None
-        else:
-            return PType(Dct([t0.t, t1.t]))
-
-    def is_list(self):
-        """Return if `self` is a `list` PType."""
-        return self.t.__class__ == Lst
-
-    def is_tuple(self):
-        """Return if `self` is a `tuple` PType."""
-        return self.t.__class__ == Tup
-
-    def is_uniform_tuple(self):
-        """Return if `self` is a uniform `tuple` PType."""
-        return (self.is_tuple() and
-                all(t == self.tuple_ts()[0] for t in self.tuple_ts()[1:]))
-
-    def is_dict(self):
-        """Return if `self` is a `dict` PType."""
-        return self.t.__class__ == Dct
-
-    def is_function(self):
-        """Return if `self` is a `function` PType."""
-        return self.t.__class__ == Fun
-
-    def list_t(self):
-        """
-        Get the PType which `self` is a list of.
-
-        Pre-condition: `self.is_list()`
-        """
-
-        assert self.is_list()
-        return PType(self.t.elt_t())
-
-    def tuple_ts(self):
-        """
-        Get the PTypes which `self` is a tuple of.
-
-        Pre-condition: `self.is_tuple()`
-        """
-
-        assert self.is_tuple()
-        return [PType(x) for x in self.t.elt_ts()]
-
-    def tuple_ts_slice(self, start=0, end=None, step=1):
-        """
-        Get a slice of the PTypes which `self` is a tuple of.
-
-        Pre-condition: `self.is_tuple()`
-        """
-
-        assert self.is_tuple()
-
-        if end is None:
-            end = len(self.tuple_ts())
-
-        return PType.tuple_of(self.tuple_ts()[start:end:step])
-
-    def key_t(self):
-        """
-        Get the PType of keys which `self` maps from.
-
-        Pre-condition: `self.is_dict()`
-        """
-
-        assert self.is_dict()
-        return PType(self.t.key_t())
-
-    def val_t(self):
-        """
-        Get the PType of values which `self` maps to.
-
-        Pre-condition: `self.is_dict()`
-        """
-
-        assert self.is_dict()
-        return PType(self.t.val_t())
-
-    def dict_ts(self):
-        """
-        Get the PTypes which `self` maps.
-
-        Pre-condition: `self.is_dict()`
-        """
-
-        return [self.key_t(), self.val_t()]
-
-    def domain_t(self):
-        """
-        Get the PType which `self` maps from.
-
-        Pre-condition: `self.is_function()`
-        """
-
-        assert self.is_function()
-        return PType(self.t.domain_t())
-
-    def range_t(self):
-        """
-        Get the PType which `self` maps to.
-
-        Pre-condition: `self.is_function()`
-        """
-
-        assert self.is_function()
-        return PType(self.t.range_t())
-
-    def function_ts(self):
-        """
-        Get the PTypes which `self` maps.
-
-        Pre-condition: `self.is_function()`
-        """
-
-        assert self.is_function()
-        return [self.domain_t(), self.range_t()]
 
 def reverse_parse(type_ast):
     if type(type_ast) == str:
