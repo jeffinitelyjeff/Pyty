@@ -860,14 +860,19 @@ def check_Tuple_expr(tup, t, env):
 
     assert tup.__class__ is ast.Tuple
 
-    es = tup.elts
+    elts_list = tup.elts
 
     if t.is_tuple():
-        e_ts = t.tuple_ts()
-        return (len(es) == len(e_ts) and
-                all(check_expr(es[i], e_ts[i], env) for i in range(len(e_ts))))
+
+        # (tup) assignment rule.
+        ts_list = t.tuple_ts()
+        return (len(elts_list) == len(ts_list) and
+                all(check_expr(e, t0, env) for (e, t0) in zip(elts_list, ts_list)))
+    
     else:
-        return False # desired type is not a tuple
+
+        # No assignment rule found.
+        return False 
 
 def check_Subscript_expr(subs, t, env):
     """

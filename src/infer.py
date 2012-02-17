@@ -173,13 +173,18 @@ def infer_List_expr(lst, env):
 def infer_Tuple_expr(tup, env):
     """
     Determine the type of AST `Tuple` expression under type environment `env`.
+
+    `ast.Tuple`
+      - `elts`: Python list of contained expr nodes
+      - `ctx`: context of the expr (e.g., load, store)
     """
 
     assert tup.__class__ is ast.Tuple
 
-    els = tup.elts
+    elts_list = tup.elts
 
-    return PType.tuple_of([infer_expr(el, env) for el in els])
+    # (tup) assignment rule. Note that this rule applies to any tuple expression.
+    return PType.tuple_of([infer_expr(e, env) for e in elts_list])
 
 def infer_Subscript_expr(subs, env):
     """
