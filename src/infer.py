@@ -63,6 +63,9 @@ def get_infer_expr_func_name(expr_type):
 def infer_Num_expr(num, env):
     """
     Determine the type of AST `Num` expression under type environment `env`.
+
+    `ast.Num`
+      - `n`: the numeric literal (as a Python object)
     """
 
     assert num.__class__ is ast.Num
@@ -70,17 +73,24 @@ def infer_Num_expr(num, env):
     n = num.n
 
     if type(n) is int:
+
+        # (int) assignment rule.
         return int_t
+    
     elif type(n) is float:
+
+        # (flt) assignment rule.
         return float_t
+    
     else:
-        assert False, "Only handling int and float numbers, not " + cname(n)
+
+        # No type assignment rule found.
+        return None
 
 def infer_Name_expr(name, env):
     """
     Determine the type of AST `Name` expression under type environment `env`.
     """
-
     assert name.__class__ is ast.Name
 
     # The Python AST treats boolean literals like any other identifier.
