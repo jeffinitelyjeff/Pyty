@@ -634,7 +634,7 @@ def check_BinOp_expr(binop, t, env):
 
         elif op.__class__ is ast.Mult:
 
-            # (srep) or (surep) assignment rule.
+            # (srep) or (urep) assignment rule.
             # t is str_t or unicode_t.
             return ((check_expr(l, t, env) and check_expr(r, int_t, env)) or
                     (check_expr(l, int_t, env) and check_expr(r, t, env)))
