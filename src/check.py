@@ -808,7 +808,8 @@ def check_Compare_expr(compare, t, env):
 
             # (ineq) assignment rule.
             ts = (int_t, float_t, str_t, unicode_t)
-            return any(all(check_expr(e, t, env) for e in (e0, e1)) for t in ts)
+            return any(check_expr(e0, t, env) and check_expr(e1, t, env)
+                       for t in ts)
 
         else:
 
