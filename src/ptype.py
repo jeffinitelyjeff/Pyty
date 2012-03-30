@@ -27,7 +27,7 @@ class PType:
     UNIV = 12
 
     def __init__(self, tag):
-        assert type(tag) is int and 0 <= tag <= 10
+        assert type(tag) is int and 0 <= tag <= 12
         self.tag = tag
 
     @staticmethod
@@ -39,18 +39,18 @@ class PType:
     def from_type_ast(ast):
         # shorthand.
         from_ast = PType.from_type_ast
-        
+
         if type(ast) is str:
             if ast == "int":
                 return PType.INT_T
             elif ast == "float":
                 return PType.FLOAT_T
-            elif ast == "bool":
-                return PType.BOOL_T
             elif ast == "str":
                 return PType.STR_T
             elif ast == "unicode":
                 return PType.UNICODE_T
+            elif ast == "bool":
+                return PType.BOOL_T
             elif ast == "unit":
                 return PType.UNIT_T
             else:
