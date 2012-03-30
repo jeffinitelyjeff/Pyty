@@ -84,12 +84,6 @@ class PType:
         return PType.FLOAT_T
 
     @staticmethod
-    def bool():
-        if not hasattr(PType, 'BOOL_T'):
-            PType.BOOL_T = PType(PType.BOOL)
-        return PType.BOOL_T
-
-    @staticmethod
     def string():
         if not hasattr(PType, 'STR_T'):
             PType.STR_T = PType(PType.STRING)
@@ -101,6 +95,13 @@ class PType:
             PType.UNICODE_T = PType(PType.UNICODE)
         return PType.UNICODE_T
 
+
+    @staticmethod
+    def bool():
+        if not hasattr(PType, 'BOOL_T'):
+            PType.BOOL_T = PType(PType.BOOL)
+        return PType.BOOL_T
+
     @staticmethod
     def unit():
         if not hasattr(PType, 'UNIT_T'):
@@ -108,15 +109,14 @@ class PType:
         return PType.UNIT_T
 
     @staticmethod
-    def arrow(dom, ran):
-        t = PType(PType.ARROW)
-        t.dom = dom
-        t.ran = ran
+    def list(elt):
+        t = PType(PType.LIST)
+        t.elt = elt
         return t
 
     @staticmethod
-    def list(elt):
-        t = PType(PType.LIST)
+    def set(elt):
+        t = PType(PType.SET)
         t.elt = elt
         return t
 
@@ -127,8 +127,15 @@ class PType:
         return t
 
     @staticmethod
-    def dict(dom, ran):
-        t = PType(PType.DICT)
+    def map(dom, ran):
+        t = PType(PType.MAP)
+        t.dom = dom
+        t.ran = ran
+        return t
+    
+    @staticmethod
+    def arrow(dom, ran):
+        t = PType(PType.ARROW)
         t.dom = dom
         t.ran = ran
         return t
