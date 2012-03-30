@@ -162,18 +162,31 @@ class PType:
         return t
 
     ## Type tests.
-
-    def is_arrow(self):
-        return self.tag == PType.ARROW
+    # Note these are unnecessary for the nullary type constructors becasue those
+    # are singletons and can be compared with object equality.
 
     def is_list(self):
         return self.tag == PType.LIST
 
+    def is_set(self):
+        return self.tag == PType.SET
+
     def is_tuple(self):
         return self.tag == PType.TUPLE
 
-    def is_dict(self):
-        return self.tag == PType.DICT
+    def is_map(self):
+        return self.tag == PType.MAP
+
+    def is_arrow(self):
+        return self.tag == PType.ARROW
+
+    def is_var(self):
+        return self.tag == PType.VAR
+
+    def is_univ(self):
+        return self.tag == PType.UNIV
+
+    ## Print representation of a PType.
 
     def __repr__(self):
         if self.tag == PType.INT:
