@@ -57,13 +57,18 @@ class PType:
                 assert True, ast
         elif ast.__class__ == Lst:
             return PType.list(from_ast(ast.elt_t()))
+        elif ast.__class__ == Set:
+            return PType.set(from_ast(ast.elt_t()))
         elif ast.__class__ == Tup:
             return PType.tuple([from_ast(t) for t in ast.elt_ts()])
-        elif ast.__class__ == Dct:
-            return PType.dict(from_ast(ast.key_t()), from_ast(ast.val_t()))
-        elif ast.__class__ == Fun:
+        elif ast.__class__ == Map:
+            return PType.map(from_ast(ast.key_t()), from_ast(ast.val_t()))
+        elif ast.__class__ == Arr:
             return PType.arrow(from_ast(ast.domain_t()), from_ast(ast.range_t()))
+        elif ast.__class__ == Var:
+            return PType.var(ast)
         else:
+            # Note that there's no UNIV case; shouldn't be user-specifiable.
             assert True, ast.__class__.__name__
 
     @staticmethod
