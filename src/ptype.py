@@ -309,7 +309,7 @@ class TypeSpecParser:
     unicode_tok = Token(r'unicode')
     bool_tok = Token(r'bool')
     unit_tok = Token(r'unit')
-    var_tok = Token(r"'[a-zA-Z0-9]")
+    var_tok = Token(r"'[a-zA-Z0-9]+")
 
     list_start = Token(r'\[')
     list_end = Token(r'\]')

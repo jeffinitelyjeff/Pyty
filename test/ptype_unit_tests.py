@@ -73,6 +73,13 @@ class PTypeTests(unittest.TestCase):
         true( PType.from_str("unicode -> {int:float}").is_arrow() )
         true( PType.from_str("unicode -> str -> int").is_arrow() )
         true( PType.from_str("(unicode -> str) -> int").is_arrow() )
+
+    def test_is_var(self):
+        true = self.assertTrue
+        true( PType.from_str("'a").is_var() )
+        true( PType.from_str("'alpha").is_var() )
+        true( PType.from_str("'Yothere").is_var() )
+        true( PType.from_str("'hiB9").is_var() )
     
 
 class TypeSpecTests(unittest.TestCase):
@@ -196,78 +203,79 @@ class TypeSpecTests(unittest.TestCase):
                 rep("[%s] -> [%s]" % (t0, t1), Arr([Lst([t0]), Lst([t1])]))
                 rep("(%s,) -> (%s,)" % (t0, t1), Arr([Tup([t0]), Tup([t1])]))
 
-                for t2 in base_ts.keys():
+                # These take forever to run, and are probably redundant.
+                # for t2 in base_ts.keys():
 
-                    rep("[(%s, %s, %s)]" % (t0, t1, t2),
-                        Lst([Tup([t0, t1, t2])]))
-                    rep("([%s], [%s], [%s])" % (t0, t1, t2),
-                        Tup([Lst([t0]), Lst([t1]), Lst([t2])]))
-                    rep("((%s,), (%s,), (%s,))" % (t0, t1, t2),
-                        Tup([Tup([t0]), Tup([t1]), Tup([t2])]))
+                #     rep("[(%s, %s, %s)]" % (t0, t1, t2),
+                #         Lst([Tup([t0, t1, t2])]))
+                #     rep("([%s], [%s], [%s])" % (t0, t1, t2),
+                #         Tup([Lst([t0]), Lst([t1]), Lst([t2])]))
+                #     rep("((%s,), (%s,), (%s,))" % (t0, t1, t2),
+                #         Tup([Tup([t0]), Tup([t1]), Tup([t2])]))
 
-                    rep("([(%s, %s)], %s)" % (t0, t1, t2),
-                        Tup([Lst([Tup([t0, t1])]), t2]))
-                    rep("([{%s: %s}], %s)" % (t0, t1, t2),
-                        Tup([Lst([Mpp([t0, t1])]), t2]))
-                    rep("([%s -> %s], %s)" % (t0, t1, t2),
-                        Tup([Lst([Arr([t0, t1])]), t2]))
-                    rep("(([%s], [%s]), %s)" % (t0, t1, t2),
-                        Tup([Tup([Lst([t0]), Lst([t1])]), t2]))
-                    rep("(((%s,), (%s,)), %s)" % (t0, t1, t2),
-                        Tup([Tup([Tup([t0]), Tup([t1])]), t2]))
-                    rep("({[%s]: [%s]}, %s)" % (t0, t1, t2),
-                        Tup([Mpp([Lst([t0]), Lst([t1])]), t2]))
-                    rep("({(%s,): (%s,)}, %s)" % (t0, t1, t2),
-                        Tup([Mpp([Tup([t0]), Tup([t1])]), t2]))
-                    rep("([%s] -> [%s], %s)" % (t0, t1, t2),
-                        Tup([Arr([Lst([t0]), Lst([t1])]), t2]))
-                    rep("((%s,) -> (%s,), %s)" % (t0, t1, t2),
-                        Tup([Arr([Tup([t0]), Tup([t1])]), t2]))
+                #     rep("([(%s, %s)], %s)" % (t0, t1, t2),
+                #         Tup([Lst([Tup([t0, t1])]), t2]))
+                #     rep("([{%s: %s}], %s)" % (t0, t1, t2),
+                #         Tup([Lst([Mpp([t0, t1])]), t2]))
+                #     rep("([%s -> %s], %s)" % (t0, t1, t2),
+                #         Tup([Lst([Arr([t0, t1])]), t2]))
+                #     rep("(([%s], [%s]), %s)" % (t0, t1, t2),
+                #         Tup([Tup([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("(((%s,), (%s,)), %s)" % (t0, t1, t2),
+                #         Tup([Tup([Tup([t0]), Tup([t1])]), t2]))
+                #     rep("({[%s]: [%s]}, %s)" % (t0, t1, t2),
+                #         Tup([Mpp([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("({(%s,): (%s,)}, %s)" % (t0, t1, t2),
+                #         Tup([Mpp([Tup([t0]), Tup([t1])]), t2]))
+                #     rep("([%s] -> [%s], %s)" % (t0, t1, t2),
+                #         Tup([Arr([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("((%s,) -> (%s,), %s)" % (t0, t1, t2),
+                #         Tup([Arr([Tup([t0]), Tup([t1])]), t2]))
 
-                    # FIXME Should rethink this; dict keys can't be arbitrary
-                    # expressions
-                    rep("{[(%s, %s)]: %s}" % (t0, t1, t2),
-                        Mpp([Lst([Tup([t0, t1])]), t2]))
-                    rep("{[{%s: %s}]: %s}" % (t0, t1, t2),
-                        Mpp([Lst([Mpp([t0, t1])]), t2]))
-                    rep("{[%s -> %s]: %s}" % (t0, t1, t2),
-                        Mpp([Lst([Arr([t0, t1])]), t2]))
-                    rep("{([%s], [%s]): %s}" % (t0, t1, t2),
-                        Mpp([Tup([Lst([t0]), Lst([t1])]), t2]))
-                    rep("{((%s,), (%s,)): %s}" % (t0, t1, t2),
-                        Mpp([Tup([Tup([t0]), Tup([t1])]), t2]))
-                    rep("{{[%s]: [%s]}: %s}" % (t0, t1, t2),
-                        Mpp([Mpp([Lst([t0]), Lst([t1])]), t2]))
-                    rep("{{(%s,): (%s,)}: %s}" % (t0, t1, t2),
-                        Mpp([Mpp([Tup([t0]), Tup([t1])]), t2]))
-                    rep("{[%s] -> [%s]: %s}" % (t0, t1, t2),
-                        Mpp([Arr([Lst([t0]), Lst([t1])]), t2]))
-                    rep("{(%s,) -> (%s,): %s}" % (t0, t1, t2),
-                        Mpp([Arr([Tup([t0]), Tup([t1])]), t2]))
+                #     # FIXME Should rethink this; dict keys can't be arbitrary
+                #     # expressions
+                #     rep("{[(%s, %s)]: %s}" % (t0, t1, t2),
+                #         Mpp([Lst([Tup([t0, t1])]), t2]))
+                #     rep("{[{%s: %s}]: %s}" % (t0, t1, t2),
+                #         Mpp([Lst([Mpp([t0, t1])]), t2]))
+                #     rep("{[%s -> %s]: %s}" % (t0, t1, t2),
+                #         Mpp([Lst([Arr([t0, t1])]), t2]))
+                #     rep("{([%s], [%s]): %s}" % (t0, t1, t2),
+                #         Mpp([Tup([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("{((%s,), (%s,)): %s}" % (t0, t1, t2),
+                #         Mpp([Tup([Tup([t0]), Tup([t1])]), t2]))
+                #     rep("{{[%s]: [%s]}: %s}" % (t0, t1, t2),
+                #         Mpp([Mpp([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("{{(%s,): (%s,)}: %s}" % (t0, t1, t2),
+                #         Mpp([Mpp([Tup([t0]), Tup([t1])]), t2]))
+                #     rep("{[%s] -> [%s]: %s}" % (t0, t1, t2),
+                #         Mpp([Arr([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("{(%s,) -> (%s,): %s}" % (t0, t1, t2),
+                #         Mpp([Arr([Tup([t0]), Tup([t1])]), t2]))
 
-                    rep("[(%s, %s)] -> %s" % (t0, t1, t2),
-                        Arr([Lst([Tup([t0, t1])]), t2]))
-                    rep("[{%s: %s}] -> %s" % (t0, t1, t2),
-                        Arr([Lst([Mpp([t0, t1])]), t2]))
-                    rep("[%s -> %s] -> %s" % (t0, t1, t2),
-                        Arr([Lst([Arr([t0, t1])]), t2]))
-                    rep("([%s], [%s]) -> %s" % (t0, t1, t2),
-                        Arr([Tup([Lst([t0]), Lst([t1])]), t2]))
-                    rep("((%s,), (%s,)) -> %s" % (t0, t1, t2),
-                        Arr([Tup([Tup([t0]), Tup([t1])]), t2]))
-                    rep("{[%s]: [%s]} -> %s" % (t0, t1, t2),
-                        Arr([Mpp([Lst([t0]), Lst([t1])]), t2]))
-                    rep("{(%s,): (%s,)} -> %s" % (t0, t1, t2),
-                        Arr([Mpp([Tup([t0]), Tup([t1])]), t2]))
-                    rep("([%s] -> [%s]) -> %s" % (t0, t1, t2),
-                        Arr([Arr([Lst([t0]), Lst([t1])]), t2]))
-                    rep("((%s,) -> (%s,)) -> %s" % (t0, t1, t2),
-                        Arr([Arr([Tup([t0]), Tup([t1])]), t2]))
+                #     rep("[(%s, %s)] -> %s" % (t0, t1, t2),
+                #         Arr([Lst([Tup([t0, t1])]), t2]))
+                #     rep("[{%s: %s}] -> %s" % (t0, t1, t2),
+                #         Arr([Lst([Mpp([t0, t1])]), t2]))
+                #     rep("[%s -> %s] -> %s" % (t0, t1, t2),
+                #         Arr([Lst([Arr([t0, t1])]), t2]))
+                #     rep("([%s], [%s]) -> %s" % (t0, t1, t2),
+                #         Arr([Tup([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("((%s,), (%s,)) -> %s" % (t0, t1, t2),
+                #         Arr([Tup([Tup([t0]), Tup([t1])]), t2]))
+                #     rep("{[%s]: [%s]} -> %s" % (t0, t1, t2),
+                #         Arr([Mpp([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("{(%s,): (%s,)} -> %s" % (t0, t1, t2),
+                #         Arr([Mpp([Tup([t0]), Tup([t1])]), t2]))
+                #     rep("([%s] -> [%s]) -> %s" % (t0, t1, t2),
+                #         Arr([Arr([Lst([t0]), Lst([t1])]), t2]))
+                #     rep("((%s,) -> (%s,)) -> %s" % (t0, t1, t2),
+                #         Arr([Arr([Tup([t0]), Tup([t1])]), t2]))
 
-                    # rep("[%s] -> ([%s] -> %s)" % (t0, t1, t2),
-                    #     Arr(Arr(Lst(t0), Lst(t1)), t2))
-                    # rep("(%s,) -> ((%s,) -> %s)" % (t0, t1, t2),
-                    #     Arr(Arr(Tup([t0]), Tup([t1])), t2))
+                #     # rep("[%s] -> ([%s] -> %s)" % (t0, t1, t2),
+                #     #     Arr(Arr(Lst(t0), Lst(t1)), t2))
+                #     # rep("(%s,) -> ((%s,) -> %s)" % (t0, t1, t2),
+                #     #     Arr(Arr(Tup([t0]), Tup([t1])), t2))
 
 
 if __name__ == '__main__':
