@@ -235,7 +235,7 @@ class PType:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    ## Special-case methods.
+    ## Special methods.
 
     def tuple_slice(self, start=0, end=None, step=1):
 
@@ -268,6 +268,15 @@ class PType:
 
         else:
             assert True, self.tag
+
+    def quantify(self):
+
+        quant = self
+
+        for v in self.free_type_vars():
+            quant = PType.univ(v, quant)
+
+        return quant
 
 
 def better_sexpr_to_tree(a):
