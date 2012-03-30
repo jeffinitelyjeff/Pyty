@@ -9,56 +9,71 @@ from ptype import (PType, TypeSpecParser, better_sexpr_to_tree, Lst, Stt, Tup,
                    Mpp, Arr)
 
 int_t = PType.int()
-flt_t = PType.float()
+float_t = PType.float()
 str_t = PType.string()
 unicode_t = PType.unicode()
 bool_t = PType.bool()
 unit_t = PType.unit()
-base_ts = {int_t, flt_t, str_t, unicode_t, bool_t, unit_t}
+
+base_ts = {"int": int_t, "float": float_t, "str": str_t, "unicode": unicode_t,
+           "bool": bool_t, "unit": unit_t}
 
 class PTypeTests(unittest.TestCase):
 
     def test_is_basetype(self):
         true = self.assertTrue
         true( int_t.is_base() )
-        true( flt_t.is_base() )
+        true( float_t.is_base() )
         true( str_t.is_base() )
         true( unicode_t.is_base() )
         true( bool_t.is_base() )
         true( unit_t.is_base() )
 
-        equal = equal
+        equal = self.assertEqual
         equal( PType.int(), int_t )
-        equal( PType.float(), flt_t )
+        equal( PType.float(), float_t )
         equal( PType.string(), str_t )
         equal( PType.unicode(), unicode_t )
         equal( PType.bool(), bool_t )
         equal( PType.unit(), unit_t )
+        all(equal(PType.from_str(k), v) for (k,v) in base_ts.iteritems())
 
     def test_is_list(self):
         true = self.assertTrue
+        true( PType.from_str("[int]").is_list() )
+        true( PType.from_str("[float]").is_list() )
+        true( PType.from_str("[{float:str}]").is_list() )
 
-        true( PType("[int]").is_list() )
-        true( PType("[float]").is_list() )
-        true( PType("[_]").is_list() )
-        true( PType("[{float:str}]").is_list() )
+    def test_is_set(self):
+        true = self.assertTrue
+        true( PType.from_str("{bool}").is_set() )
+        true( PType.from_str("{unit}").is_set() )
+        true( PType.from_str("{(int, bool, float)}").is_set() )
+        true( PType.from_str("{ int -> bool }").is_set() )
+        true( PType.from_str("{{str: bool}}").is_set() )
 
     def test_is_tuple(self):
         true = self.assertTrue
+        true( PType.from_str("(float,bool,int)").is_tuple() )
+        true( PType.from_str("(bool,)").is_tuple() )
+        true( PType.from_str("(bool,float,int,bool)").is_tuple() )
+        true( PType.from_str("([int],[bool])").is_tuple() )
+        true( PType.from_str("({int:float},{float:int})").is_tuple() )
 
-        true( PType("(float,bool,int)").is_tuple() )
-        true( PType("(bool,)").is_tuple() )
-        true( PType("(bool,float,_,int,bool)").is_tuple() )
-        true( PType("([int],[bool])").is_tuple() )
-        true( PType("({int:float},{float:int})").is_tuple() )
-
-    def test_is_dict(self):
+    def test_is_map(self):
         true = self.assertTrue
+        true( PType.from_str("{int:float}").is_map() )
+        true( PType.from_str("{float -> str:int}").is_map() )
+        true( PType.from_str("{int:unicode}").is_map() )
+        true( PType.from_str("{(int,int):float}").is_map() )
 
-        true( PType("{int:float}").is_dict() )
-        true( PType("{_:int}").is_dict() )
-        true( PType("{int:_}").is_dict() )
-        true( PType("{(int,int):float}").is_dict() )
+    def test_is_arrow(self):
+        true = self.assertTrue
+        true( PType.from_str("int -> float").is_map() )
+        true( PType.from_str("unicode -> {int:float}").is_map() )
+        true( PType.from_str("unicode -> str -> int").is_map() )
+        true( PType.from_str("(unicode -> str) -> int").is_map() )
+    
 
 class TypeSpecTests(unittest.TestCase):
 

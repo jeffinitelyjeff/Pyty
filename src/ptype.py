@@ -335,7 +335,7 @@ class TypeSpecParser:
     base_typ = num_typ | str_typ | bool_tok | unit_tok | var_tok
 
     lst = ~list_start & typ & ~list_end > Lst
-    stt = ~set_start & typ & ~set_start > Stt
+    stt = ~set_start & typ & ~set_end > Stt
     
     tup_component = ~tuple_div & typ
     tup = ~tuple_start & typ & (~tuple_div | tup_component[1:]) & ~tuple_end > Tup
