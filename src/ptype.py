@@ -59,6 +59,8 @@ class PType:
                 return PType.BOOL_T
             elif ast == "unit":
                 return PType.UNIT_T
+            elif ast.index("'") == 0:
+                return PType.var(ast)
             else:
                 assert True, ast
         elif ast.__class__ == Lst:
@@ -72,8 +74,6 @@ class PType:
         elif ast.__class__ == Arr:
             return PType.arrow(from_ast(ast.domain_t()),
                                from_ast(ast.range_t()))
-        elif ast.__class__ == Var:
-            return PType.var(ast)
         else:
             # Note that there's no UNIV case; shouldn't be user-specifiable.
             assert True, ast.__class__.__name__
@@ -306,6 +306,7 @@ class TypeSpecParser:
     unicode_tok = Token(r'unicode')
     bool_tok = Token(r'bool')
     unit_tok = Token(r'unit')
+    var_tok = Token(r"'[a-zA-Z0-9]")
 
     list_start = Token(r'\[')
     list_end = Token(r'\]')
@@ -328,7 +329,7 @@ class TypeSpecParser:
 
     num_typ = int_tok | float_tok # | long_tok | complex_tok
     str_typ = str_tok | unicode_tok
-    base_typ = num_typ | str_typ | bool_tok | unit_tok
+    base_typ = num_typ | str_typ | bool_tok | unit_tok | var_tok
 
     lst = ~list_start & typ & ~list_end > Lst
     stt = ~set_start & typ & ~set_start > Stt
