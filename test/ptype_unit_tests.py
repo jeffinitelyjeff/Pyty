@@ -168,15 +168,6 @@ class TypeSpecTests(unittest.TestCase):
     def test_arr(self):
 
         for t0 in base_ts.keys():
-
-            self.spec_has_repr("()->%s" % t0, Arr(['unit', t0]))
-            self.spec_has_repr("()-> %s" % t0, Arr(['unit', t0]))
-            self.spec_has_repr("() -> %s" % t0, Arr(['unit', t0]))
-            # FIXME
-            # self.spec_has_repr("%s->()" % t0, Arr([t0, 'unit']))
-            # self.spec_has_repr("%s-> ()" % t0, Arr([t0, 'unit']))
-            # self.spec_has_repr("%s -> ()" % t0, Arr([t0, 'unit']))
-
             for t1 in base_ts.keys():
 
                 self.spec_has_repr("%s->%s" % (t0, t1), Arr([t0, t1]))
