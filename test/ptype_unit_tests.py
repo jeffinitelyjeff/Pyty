@@ -93,7 +93,7 @@ class TypeSpecTests(unittest.TestCase):
         # are desigend to catch a specific error.
         s = better_sexpr_to_tree
 
-        for t0 in base_ts:
+        for t0 in base_ts.keys():
 
             self.assertEqual( s(Lst([t0])), "Lst\n `- '%s'" % t0 )
             self.assertEqual( s(Tup([t0])), "Tup\n `- '%s'" % t0 )
@@ -108,12 +108,12 @@ class TypeSpecTests(unittest.TestCase):
 
 
     def test_base_types(self):
-        for base_t in base_ts:
+        for base_t in base_ts.keys():
             self.spec_has_repr(base_t, base_t)
 
     def test_list(self):
 
-        for t in base_ts:
+        for t in base_ts.keys():
             self.spec_has_repr("[%s]" % t, Lst([t]))
             self.spec_has_repr("[   %s]" % t, Lst([t]))
             self.spec_has_repr("[ %s  ]" % t, Lst([t]))
@@ -121,7 +121,7 @@ class TypeSpecTests(unittest.TestCase):
 
     def test_tuple(self):
 
-        for t0 in base_ts:
+        for t0 in base_ts.keys():
 
             self.spec_has_repr("(%s,)" % t0, Tup([t0]))
             self.spec_has_repr("(%s,   )" % t0, Tup([t0]))
@@ -130,7 +130,7 @@ class TypeSpecTests(unittest.TestCase):
             self.spec_has_repr("(  %s ,)" % t0, Tup([t0]))
             self.spec_has_repr("(   %s,)" % t0, Tup([t0]))
 
-            for t1 in base_ts:
+            for t1 in base_ts.keys():
 
                 self.spec_has_repr("(%s, %s)" % (t0, t1), Tup([t0, t1]))
                 self.spec_has_repr("(%s,   %s)" % (t0, t1), Tup([t0, t1]))
@@ -138,21 +138,21 @@ class TypeSpecTests(unittest.TestCase):
                 self.spec_has_repr("(%s   ,%s)" % (t0, t1), Tup([t0, t1]))
                 self.spec_has_repr("(%s, %s,)" % (t0, t1), Tup([t0, t1]))
 
-                for t2 in base_ts:
+                for t2 in base_ts.keys():
 
                     self.spec_has_repr("(%s, %s, %s)" % (t0, t1, t2),
                                        Tup([t0, t1, t2]))
                     self.spec_has_repr("(%s, %s, %s,)" % (t0, t1, t2),
                                        Tup([t0, t1, t2]))
 
-                    for t3 in base_ts:
+                    for t3 in base_ts.keys():
 
                         self.spec_has_repr("(%s, %s, %s, %s)" % (t0, t1, t2, t3),
                                            Tup([t0, t1, t2, t3]))
                         self.spec_has_repr("(%s, %s, %s, %s,)" % (t0, t1, t2, t3),
                                            Tup([t0, t1, t2, t3]))
 
-    def test_dict(self):
+    def test_map(self):
 
         for t0 in base_ts:
 
