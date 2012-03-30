@@ -5,21 +5,35 @@ from lepl import sexpr_to_tree
 # Include src in the Python search path
 sys.path.insert(0, '../src')
 
-from ptype import (PType, TypeSpecParser, better_sexpr_to_tree, Lst, Tup,
-                   Dct, Fun)
+from ptype import (PType, TypeSpecParser, better_sexpr_to_tree, Lst, Stt, Tup,
+                   Mpp, Arr)
 
-base_ts = ['int', 'float', 'bool', 'str', 'unit']
+int_t = PType.int()
+flt_t = PType.float()
+str_t = PType.string()
+unicode_t = PType.unicode()
+bool_t = PType.bool()
+unit_t = PType.unit()
+base_ts = {int_t, flt_t, str_t, unicode_t, bool_t, unit_t}
 
 class PTypeTests(unittest.TestCase):
 
     def test_is_basetype(self):
         true = self.assertTrue
+        true( int_t.is_base() )
+        true( flt_t.is_base() )
+        true( str_t.is_base() )
+        true( unicode_t.is_base() )
+        true( bool_t.is_base() )
+        true( unit_t.is_base() )
 
-        true( PType("bool").is_bool() )
-        true( PType("int").is_int() )
-        true( PType("float").is_float() )
-        true( PType("str").is_str() )
-        true( PType("unit").is_unit() )
+        equal = equal
+        equal( PType.int(), int_t )
+        equal( PType.float(), flt_t )
+        equal( PType.string(), str_t )
+        equal( PType.unicode(), unicode_t )
+        equal( PType.bool(), bool_t )
+        equal( PType.unit(), unit_t )
 
     def test_is_list(self):
         true = self.assertTrue

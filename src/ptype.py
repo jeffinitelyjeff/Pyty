@@ -226,6 +226,9 @@ class PType:
         else:
             assert True, self.tag
 
+    def __hash__(self):
+        return hash(self.__repr__())
+
     def __eq__(self, other):
         return self.__repr__() == other.__repr__()
 
