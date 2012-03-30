@@ -63,11 +63,11 @@ class PType:
                 assert True, ast
         elif ast.__class__ == Lst:
             return PType.list(from_ast(ast.elt_t()))
-        elif ast.__class__ == Set:
+        elif ast.__class__ == Stt:
             return PType.set(from_ast(ast.elt_t()))
         elif ast.__class__ == Tup:
             return PType.tuple([from_ast(t) for t in ast.elt_ts()])
-        elif ast.__class__ == Map:
+        elif ast.__class__ == Mpp:
             return PType.map(from_ast(ast.key_t()), from_ast(ast.val_t()))
         elif ast.__class__ == Arr:
             return PType.arrow(from_ast(ast.domain_t()),
@@ -300,18 +300,22 @@ class Lst(List):
     def elt_t(self):
         return self[0]
 
+class Stt(List):
+    def elt_t(self):
+        return self[0]
+
 class Tup(List):
     def elt_ts(self):
         return [t for t in self]
 
-class Dct(List):
+class Mpp(List):
     def key_t(self):
         return self[0]
 
     def val_t(self):
         return self[1]
 
-class Fun(List):
+class Arr(List):
     def domain_t(self):
         return self[0]
 
@@ -321,23 +325,26 @@ class Fun(List):
 class TypeSpecParser:
     int_tok = Token(r'int')
     float_tok = Token(r'float')
-    bool_tok = Token(r'bool')
     str_tok = Token(r'str')
     unicode_tok = Token(r'unicode')
+    bool_tok = Token(r'bool')
     unit_tok = Token(r'unit')
 
     list_start = Token(r'\[')
     list_end = Token(r'\]')
 
+    set_start = Token(r'\{')
+    set_end = Token(r'\}')
+
     tuple_start = Token(r'\(')
     tuple_div = Token(r',')
     tuple_end = Token(r'\)')
 
-    dict_start = Token(r'\{')
-    dict_div = Token(r':')
-    dict_end = Token(r'\}')
+    map_start = Token(r'\{')
+    map_div = Token(r':')
+    map_end = Token(r'\}')
 
-    fn_div = Token(r'\->')
+    arrow_div = Token(r'\->')
 
     tight_typ = Delayed()
     typ = Delayed()
@@ -347,16 +354,17 @@ class TypeSpecParser:
     base_typ = num_typ | str_typ | bool_tok | unit_tok
 
     lst = ~list_start & typ & ~list_end > Lst
-
+    stt = ~set_start & typ & ~set_start > Stt
+    
     tup_component = ~tuple_div & typ
     tup = ~tuple_start & typ & (~tuple_div | tup_component[1:]) & ~tuple_end > Tup
 
-    dct = ~dict_start & typ & ~dict_div & typ & ~dict_end > Dct
+    mpp = ~map_start & typ & ~map_div & typ & ~map_end > Mpp
 
-    fun = tight_typ & ~fn_div & typ > Fun
+    arr = tight_typ & ~arrow_div & typ > Arr
 
     parens = ~tuple_start & typ & ~tuple_end
-    tight_typ += base_typ | lst | tup | dct | parens
+    tight_typ += base_typ | lst | stt | tup | mpp | parens
     typ += fun | tight_typ
 
     @staticmethod
