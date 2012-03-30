@@ -30,13 +30,19 @@ class PType:
         assert type(tag) is int and 0 <= tag <= 12
         self.tag = tag
 
+    ## Type constructor dispatchers.
+
     @staticmethod
     def from_str(s):
+        """Create a PType object from a string."""
+        
         parsed = TypeSpecParser.parse(s)
         return PType.from_type_ast(parsed)
 
     @staticmethod
     def from_type_ast(ast):
+        """Create a PType object from a LEPL-generated type AST."""
+        
         # shorthand.
         from_ast = PType.from_type_ast
 
@@ -71,6 +77,8 @@ class PType:
             # Note that there's no UNIV case; shouldn't be user-specifiable.
             assert True, ast.__class__.__name__
 
+    ## Type constructors.
+            
     @staticmethod
     def int():
         if not hasattr(PType, 'INT_T'):
@@ -151,7 +159,9 @@ class PType:
         t = PType(PType.UNIV)
         t.qnt = qnt
         t.ovr = ovr
-        return t    
+        return t
+
+    ## Type tests.
 
     def is_arrow(self):
         return self.tag == PType.ARROW
