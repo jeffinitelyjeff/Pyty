@@ -165,6 +165,9 @@ class PType:
     # Note these are unnecessary for the nullary type constructors becasue those
     # are singletons and can be compared with object equality.
 
+    def is_base(self):
+        return self.tag <= PType.UNIT
+
     def is_list(self):
         return self.tag == PType.LIST
 
@@ -203,20 +206,20 @@ class PType:
         elif self.tag == PType.UNIT:
             return "unit"
         
-        elif self.tag == PType.LIST:
+        elif self.is_list():
             return "[" + self.elt.__repr__() + "]"
-        elif self.tag == PType.SET:
+        elif self.is_set():
             return "{" + self.elt.__repr__() + "}"
-        elif self.tag == PType.TUPLE:
+        elif self.is_tuple():
             return "(" + ", ".join(elt.__repr__() for elt in self.elts) + ")"
-        elif self.tag == PType.MAP:
+        elif self.is_map():
             return "{" + self.dom.__repr__() + ": " + self.ran.__repr__() + "}"
-        elif self.tag == PType.ARROW:
+        elif self.is_arrow():
             return self.dom.__repr__() + " -> " + self.ran.__repr__()
         
-        elif self.tag == PType.VAR:
+        elif self.is_var():
             return self.idn
-        elif self.tag == PType.UNIV:
+        elif self.is_univ():
             return "V" + self.qnt.__repr__() + "." + self.ovr.__repr__()
             
         else:
@@ -228,6 +231,8 @@ class PType:
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    ## Special-case methods.
+
     def tuple_slice(self, start=0, end=None, step=1):
 
         assert self.is_tuple()
@@ -236,6 +241,30 @@ class PType:
             end = len(self.elts)
 
         return PType.tuple(self.elts[start:end:step])
+
+    def free_type_vars(self):
+
+        if self.is_base():
+            return {}
+        elif self.is_list():
+            return self.elt.free_type_vars()
+        elif self.is_set():
+            return self.elt.free_type_vars()
+        elif self.is_tuple():
+            return set().union(*[elt.free_type_vars() for elt in self.elts])
+        elif self.is_map():
+            return self.dom.free_type_vars() | self.ran.free_type_vars()
+        elif self.is_arrow():
+            return self.dom.free_type_vars() | self.ran.free_type_vars()
+
+        elif self.is_var():
+            return {self}
+        elif self.is_univ():
+            return self.ovr.free_type_vars() - {self.qnt}
+
+        else:
+            assert True, self.tag
+
 
 def reverse_parse(type_ast):
     if type(type_ast) == str:
