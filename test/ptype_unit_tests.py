@@ -93,6 +93,14 @@ class PTypeTests(unittest.TestCase):
         equal( PType.from_str("'a -> 'b").free_type_vars(), {alpha, beta} )
         equal( PType.from_str("{'g : ('a, int)}").free_type_vars(), {alpha, gamma} )
 
+    def test_quantify(self):
+        equal = self.assertEqual
+        equal( str(PType.from_str("'a").quantify()), "V'a.'a" )
+        equal( str(PType.from_str("'a -> 'a").quantify()), "V'a.'a -> 'a" )
+        equal( str(PType.from_str("'a -> 'b").quantify()), "V'a.V'b.'a -> 'b" )
+        equal( str(PType.from_str("{'g : ('a, int)}").quantify()),
+               "V'a.V'g.{'g: ('a, int)}" )
+
 class TypeSpecTests(unittest.TestCase):
 
     def spec_has_repr(self, spec, repr):
