@@ -267,29 +267,6 @@ class PType:
             assert True, self.tag
 
 
-def reverse_parse(type_ast):
-    if type(type_ast) == str:
-        return type_ast
-    elif type_ast.__class__ == Lst:
-        recurse = reverse_parse(type_ast.elt_t())
-        return "[" + recurse + "]"
-    elif type_ast.__class__ == Tup:
-        recurses = [reverse_parse(t) for t in type_ast.elt_ts()]
-        if len(type_ast.elt_ts()) == 1:
-            return "(" + recurses[0] + ",)"
-        else:
-            return "(" + ", ".join([str(x) for x in recurses]) + ")"
-    elif type_ast.__class__ == Dct:
-        recurse0 = reverse_parse(type_ast.key_t())
-        recurse1 = reverse_parse(type_ast.val_t())
-        return "{" + recurse0 + " : " + recurse1 + "}"
-    elif type_ast.__class__ == Fun:
-        recurse0 = reverse_parse(type_ast.domain_t())
-        recurse1 = reverse_parse(type_ast.range_t())
-        return recurse0 + " -> " + recurse1
-    else:
-        assert False, "Weird type_ast class name: " + str(type_ast.__class__)
-
 def better_sexpr_to_tree(a):
     if type(a) == str:
         return a
@@ -365,7 +342,7 @@ class TypeSpecParser:
 
     parens = ~tuple_start & typ & ~tuple_end
     tight_typ += base_typ | lst | stt | tup | mpp | parens
-    typ += fun | tight_typ
+    typ += arr | tight_typ
 
     @staticmethod
     def parse(s):
