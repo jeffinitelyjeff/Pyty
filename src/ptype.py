@@ -140,6 +140,19 @@ class PType:
         t.ran = ran
         return t
 
+    @staticmethod
+    def var(idn):
+        t = PType(PType.VAR)
+        t.idn = idn
+        return t
+
+    @staticmethod
+    def univ(qnt, ovr):
+        t = PType(PType.UNIV)
+        t.qnt = qnt
+        t.ovr = ovr
+        return t    
+
     def is_arrow(self):
         return self.tag == PType.ARROW
 
