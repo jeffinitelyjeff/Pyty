@@ -35,14 +35,14 @@ class PType:
     @staticmethod
     def from_str(s):
         """Create a PType object from a string."""
-        
+
         parsed = TypeSpecParser.parse(s)
         return PType.from_type_ast(parsed)
 
     @staticmethod
     def from_type_ast(ast):
         """Create a PType object from a LEPL-generated type AST."""
-        
+
         # shorthand.
         from_ast = PType.from_type_ast
 
@@ -70,7 +70,8 @@ class PType:
         elif ast.__class__ == Map:
             return PType.map(from_ast(ast.key_t()), from_ast(ast.val_t()))
         elif ast.__class__ == Arr:
-            return PType.arrow(from_ast(ast.domain_t()), from_ast(ast.range_t()))
+            return PType.arrow(from_ast(ast.domain_t()),
+                               from_ast(ast.range_t()))
         elif ast.__class__ == Var:
             return PType.var(ast)
         else:
@@ -78,7 +79,7 @@ class PType:
             assert True, ast.__class__.__name__
 
     ## Type constructors.
-            
+
     @staticmethod
     def int():
         if not hasattr(PType, 'INT_T'):
@@ -140,7 +141,7 @@ class PType:
         t.dom = dom
         t.ran = ran
         return t
-    
+
     @staticmethod
     def arrow(dom, ran):
         t = PType(PType.ARROW)
@@ -205,7 +206,7 @@ class PType:
             return "bool"
         elif self.tag == PType.UNIT:
             return "unit"
-        
+
         elif self.is_list():
             return "[" + self.elt.__repr__() + "]"
         elif self.is_set():
@@ -216,12 +217,12 @@ class PType:
             return "{" + self.dom.__repr__() + ": " + self.ran.__repr__() + "}"
         elif self.is_arrow():
             return self.dom.__repr__() + " -> " + self.ran.__repr__()
-        
+
         elif self.is_var():
             return self.idn
         elif self.is_univ():
             return "V" + self.qnt.__repr__() + "." + self.ovr.__repr__()
-            
+
         else:
             assert True, self.tag
 
