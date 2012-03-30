@@ -186,29 +186,39 @@ class PType:
     def is_univ(self):
         return self.tag == PType.UNIV
 
-    ## Print representation of a PType.
+    ## Basic methods.
 
     def __repr__(self):
+
         if self.tag == PType.INT:
             return "int"
         elif self.tag == PType.FLOAT:
             return "float"
-        elif self.tag == PType.BOOL:
-            return "bool"
         elif self.tag == PType.STRING:
             return "str"
         elif self.tag == PType.UNICODE:
             return "unicode"
+        elif self.tag == PType.BOOL:
+            return "bool"
         elif self.tag == PType.UNIT:
             return "unit"
-        elif self.tag == PType.ARROW:
-            return self.dom.__repr__() + " -> " + self.ran.__repr__()
+        
         elif self.tag == PType.LIST:
             return "[" + self.elt.__repr__() + "]"
+        elif self.tag == PType.SET:
+            return "{" + self.elt.__repr__() + "}"
         elif self.tag == PType.TUPLE:
             return "(" + ", ".join(elt.__repr__() for elt in self.elts) + ")"
-        elif self.tag == PType.DICT:
+        elif self.tag == PType.MAP:
             return "{" + self.dom.__repr__() + ": " + self.ran.__repr__() + "}"
+        elif self.tag == PType.ARROW:
+            return self.dom.__repr__() + " -> " + self.ran.__repr__()
+        
+        elif self.tag == PType.VAR:
+            return self.idn
+        elif self.tag == PType.UNIV:
+            return "V" + self.qnt.__repr__() + "." + self.ovr.__repr__()
+            
         else:
             assert True, self.tag
 
