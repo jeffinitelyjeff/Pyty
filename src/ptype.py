@@ -10,17 +10,21 @@ class PType:
     # Literals.
     INT = 0
     FLOAT = 1
-    BOOL = 2
-    STRING = 3
-    UNICODE = 4
+    STRING = 2
+    UNICODE = 3
+    BOOL = 4
     UNIT = 5
 
     # Containers.
-    ARROW = 6
-    LIST = 7
+    LIST = 6
+    SET = 7
     TUPLE = 8
-    UTUPLE = 9
-    DICT = 10
+    MAP = 9
+    ARROW = 10
+
+    # Polymorphism stuff.
+    VAR = 11
+    UNIV = 12
 
     def __init__(self, tag):
         assert type(tag) is int and 0 <= tag <= 10
@@ -118,13 +122,6 @@ class PType:
         return t
 
     @staticmethod
-    def utuple(elt, n):
-        t = PType(PTYPE.UTUPLE)
-        t.elt = elt
-        t.n = n
-        return t
-
-    @staticmethod
     def dict(dom, ran):
         t = PType(PType.DICT)
         t.dom = dom
@@ -139,9 +136,6 @@ class PType:
 
     def is_tuple(self):
         return self.tag == PType.TUPLE
-
-    def is_uniform_tuple(self):
-        return self.tag == PType.UTUPLE
 
     def is_dict(self):
         return self.tag == PType.DICT
@@ -165,8 +159,6 @@ class PType:
             return "[" + self.elt.__repr__() + "]"
         elif self.tag == PType.TUPLE:
             return "(" + ", ".join(elt.__repr__() for elt in self.elts) + ")"
-        elif self.tag == PType.UTUPLE:
-            return self.elt.__repr__() + "^" + str(self.n)
         elif self.tag == PType.DICT:
             return "{" + self.dom.__repr__() + ": " + self.ran.__repr__() + "}"
         else:
