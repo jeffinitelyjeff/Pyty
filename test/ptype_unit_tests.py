@@ -187,14 +187,14 @@ class TypeSpecTests(unittest.TestCase):
             for t1 in base_ts.keys():
 
                 rep("[(%s, %s)]" % (t0, t1), Lst([Tup([t0, t1])]))
-                rep("[{%s: %s}]" % (t0, t1), Lst([Dct([t0, t1])]))
-                rep("[%s -> %s]" % (t0, t1), Lst([Fun([t0, t1])]))
+                rep("[{%s: %s}]" % (t0, t1), Lst([Mpp([t0, t1])]))
+                rep("[%s -> %s]" % (t0, t1), Lst([Arr([t0, t1])]))
                 rep("([%s], [%s])" % (t0, t1), Tup([Lst([t0]), Lst([t1])]))
                 rep("((%s,), (%s,))" % (t0, t1), Tup([Tup([t0]), Tup([t1])]))
-                rep("{[%s]: [%s]}" % (t0, t1), Dct([Lst([t0]), Lst([t1])]))
-                rep("{(%s,): (%s,)}" % (t0, t1), Dct([Tup([t0]), Tup([t1])]))
-                rep("[%s] -> [%s]" % (t0, t1), Fun([Lst([t0]), Lst([t1])]))
-                rep("(%s,) -> (%s,)" % (t0, t1), Fun([Tup([t0]), Tup([t1])]))
+                rep("{[%s]: [%s]}" % (t0, t1), Mpp([Lst([t0]), Lst([t1])]))
+                rep("{(%s,): (%s,)}" % (t0, t1), Mpp([Tup([t0]), Tup([t1])]))
+                rep("[%s] -> [%s]" % (t0, t1), Arr([Lst([t0]), Lst([t1])]))
+                rep("(%s,) -> (%s,)" % (t0, t1), Arr([Tup([t0]), Tup([t1])]))
 
                 for t2 in base_ts.keys():
 
@@ -208,66 +208,66 @@ class TypeSpecTests(unittest.TestCase):
                     rep("([(%s, %s)], %s)" % (t0, t1, t2),
                         Tup([Lst([Tup([t0, t1])]), t2]))
                     rep("([{%s: %s}], %s)" % (t0, t1, t2),
-                        Tup([Lst([Dct([t0, t1])]), t2]))
+                        Tup([Lst([Mpp([t0, t1])]), t2]))
                     rep("([%s -> %s], %s)" % (t0, t1, t2),
-                        Tup([Lst([Fun([t0, t1])]), t2]))
+                        Tup([Lst([Arr([t0, t1])]), t2]))
                     rep("(([%s], [%s]), %s)" % (t0, t1, t2),
                         Tup([Tup([Lst([t0]), Lst([t1])]), t2]))
                     rep("(((%s,), (%s,)), %s)" % (t0, t1, t2),
                         Tup([Tup([Tup([t0]), Tup([t1])]), t2]))
                     rep("({[%s]: [%s]}, %s)" % (t0, t1, t2),
-                        Tup([Dct([Lst([t0]), Lst([t1])]), t2]))
+                        Tup([Mpp([Lst([t0]), Lst([t1])]), t2]))
                     rep("({(%s,): (%s,)}, %s)" % (t0, t1, t2),
-                        Tup([Dct([Tup([t0]), Tup([t1])]), t2]))
+                        Tup([Mpp([Tup([t0]), Tup([t1])]), t2]))
                     rep("([%s] -> [%s], %s)" % (t0, t1, t2),
-                        Tup([Fun([Lst([t0]), Lst([t1])]), t2]))
+                        Tup([Arr([Lst([t0]), Lst([t1])]), t2]))
                     rep("((%s,) -> (%s,), %s)" % (t0, t1, t2),
-                        Tup([Fun([Tup([t0]), Tup([t1])]), t2]))
+                        Tup([Arr([Tup([t0]), Tup([t1])]), t2]))
 
                     # FIXME Should rethink this; dict keys can't be arbitrary
                     # expressions
                     rep("{[(%s, %s)]: %s}" % (t0, t1, t2),
-                        Dct([Lst([Tup([t0, t1])]), t2]))
+                        Mpp([Lst([Tup([t0, t1])]), t2]))
                     rep("{[{%s: %s}]: %s}" % (t0, t1, t2),
-                        Dct([Lst([Dct([t0, t1])]), t2]))
+                        Mpp([Lst([Mpp([t0, t1])]), t2]))
                     rep("{[%s -> %s]: %s}" % (t0, t1, t2),
-                        Dct([Lst([Fun([t0, t1])]), t2]))
+                        Mpp([Lst([Arr([t0, t1])]), t2]))
                     rep("{([%s], [%s]): %s}" % (t0, t1, t2),
-                        Dct([Tup([Lst([t0]), Lst([t1])]), t2]))
+                        Mpp([Tup([Lst([t0]), Lst([t1])]), t2]))
                     rep("{((%s,), (%s,)): %s}" % (t0, t1, t2),
-                        Dct([Tup([Tup([t0]), Tup([t1])]), t2]))
+                        Mpp([Tup([Tup([t0]), Tup([t1])]), t2]))
                     rep("{{[%s]: [%s]}: %s}" % (t0, t1, t2),
-                        Dct([Dct([Lst([t0]), Lst([t1])]), t2]))
+                        Mpp([Mpp([Lst([t0]), Lst([t1])]), t2]))
                     rep("{{(%s,): (%s,)}: %s}" % (t0, t1, t2),
-                        Dct([Dct([Tup([t0]), Tup([t1])]), t2]))
+                        Mpp([Mpp([Tup([t0]), Tup([t1])]), t2]))
                     rep("{[%s] -> [%s]: %s}" % (t0, t1, t2),
-                        Dct([Fun([Lst([t0]), Lst([t1])]), t2]))
+                        Mpp([Arr([Lst([t0]), Lst([t1])]), t2]))
                     rep("{(%s,) -> (%s,): %s}" % (t0, t1, t2),
-                        Dct([Fun([Tup([t0]), Tup([t1])]), t2]))
+                        Mpp([Arr([Tup([t0]), Tup([t1])]), t2]))
 
                     rep("[(%s, %s)] -> %s" % (t0, t1, t2),
-                        Fun([Lst([Tup([t0, t1])]), t2]))
+                        Arr([Lst([Tup([t0, t1])]), t2]))
                     rep("[{%s: %s}] -> %s" % (t0, t1, t2),
-                        Fun([Lst([Dct([t0, t1])]), t2]))
+                        Arr([Lst([Mpp([t0, t1])]), t2]))
                     rep("[%s -> %s] -> %s" % (t0, t1, t2),
-                        Fun([Lst([Fun([t0, t1])]), t2]))
+                        Arr([Lst([Arr([t0, t1])]), t2]))
                     rep("([%s], [%s]) -> %s" % (t0, t1, t2),
-                        Fun([Tup([Lst([t0]), Lst([t1])]), t2]))
+                        Arr([Tup([Lst([t0]), Lst([t1])]), t2]))
                     rep("((%s,), (%s,)) -> %s" % (t0, t1, t2),
-                        Fun([Tup([Tup([t0]), Tup([t1])]), t2]))
+                        Arr([Tup([Tup([t0]), Tup([t1])]), t2]))
                     rep("{[%s]: [%s]} -> %s" % (t0, t1, t2),
-                        Fun([Dct([Lst([t0]), Lst([t1])]), t2]))
+                        Arr([Mpp([Lst([t0]), Lst([t1])]), t2]))
                     rep("{(%s,): (%s,)} -> %s" % (t0, t1, t2),
-                        Fun([Dct([Tup([t0]), Tup([t1])]), t2]))
+                        Arr([Mpp([Tup([t0]), Tup([t1])]), t2]))
                     rep("([%s] -> [%s]) -> %s" % (t0, t1, t2),
-                        Fun([Fun([Lst([t0]), Lst([t1])]), t2]))
+                        Arr([Arr([Lst([t0]), Lst([t1])]), t2]))
                     rep("((%s,) -> (%s,)) -> %s" % (t0, t1, t2),
-                        Fun([Fun([Tup([t0]), Tup([t1])]), t2]))
+                        Arr([Arr([Tup([t0]), Tup([t1])]), t2]))
 
                     # rep("[%s] -> ([%s] -> %s)" % (t0, t1, t2),
-                    #     Fun(Fun(Lst(t0), Lst(t1)), t2))
+                    #     Arr(Arr(Lst(t0), Lst(t1)), t2))
                     # rep("(%s,) -> ((%s,) -> %s)" % (t0, t1, t2),
-                    #     Fun(Fun(Tup([t0]), Tup([t1])), t2))
+                    #     Arr(Arr(Tup([t0]), Tup([t1])), t2))
 
 
 if __name__ == '__main__':
