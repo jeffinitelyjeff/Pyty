@@ -80,7 +80,18 @@ class PTypeTests(unittest.TestCase):
         true( PType.from_str("'alpha").is_var() )
         true( PType.from_str("'Yothere").is_var() )
         true( PType.from_str("'hiB9").is_var() )
-    
+
+    def test_free_vars(self):
+        equal = self.assertEqual
+
+        alpha = PType.from_str("'a")
+        beta = PType.from_str("'b")
+        gamma = PType.from_str("'g")
+
+        equal( PType.from_str("'a").free_type_vars(), {alpha} )
+        equal( PType.from_str("'a -> 'a").free_type_vars(), {alpha} )
+        equal( PType.from_str("'a -> 'b").free_type_vars(), {alpha, beta} )
+        equal( PType.from_str("{'g : ('a, int)}").free_type_vars(), {alpha, gamma} )
 
 class TypeSpecTests(unittest.TestCase):
 
