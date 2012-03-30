@@ -69,10 +69,10 @@ class PTypeTests(unittest.TestCase):
 
     def test_is_arrow(self):
         true = self.assertTrue
-        true( PType.from_str("int -> float").is_map() )
-        true( PType.from_str("unicode -> {int:float}").is_map() )
-        true( PType.from_str("unicode -> str -> int").is_map() )
-        true( PType.from_str("(unicode -> str) -> int").is_map() )
+        true( PType.from_str("int -> float").is_arrow() )
+        true( PType.from_str("unicode -> {int:float}").is_arrow() )
+        true( PType.from_str("unicode -> str -> int").is_arrow() )
+        true( PType.from_str("(unicode -> str) -> int").is_arrow() )
     
 
 class TypeSpecTests(unittest.TestCase):
