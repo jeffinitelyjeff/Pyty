@@ -257,23 +257,26 @@ def check_While_stmt(stmt, env):
 
     assert stmt.__class__ == ast.While
 
-    return check_If_While_stmt(stmt, env)
+    e = stmt.test
+    b0 = stmt.body
+    b1 = stmt.orelse
+
+    return (check_expr(e, bool_t, env) and
+            check_stmt_list(b0, env) and
+            check_stmt_list(b1, env))
 
 def check_If_stmt(stmt, env):
     """Conditional Block."""
 
-    return check_If_While_stmt(stmt, env)
+    assert stmt.__class__ == ast.If
 
-def check_If_While_stmt(stmt, env):
-    """TODO: get rid of this"""
+    e = stmt.test
+    b0 = stmt.body
+    b1 = stmt.orelse
 
-    test = stmt.test
-    body = stmt.body
-    orelse = stmt.orelse
-
-    return (check_expr(test, bool_t, env) and
-            check_stmt_list(body, env) and
-            check_stmt_list(orelse, env))
+    return (check_expr(e, bool_t, env) and
+            check_stmt_list(b0, env) and
+            check_stmt_list(b1, env))
 
 def check_Expr_stmt(stmt, env):
     """Expression Statement."""
