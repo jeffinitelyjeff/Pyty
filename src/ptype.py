@@ -346,7 +346,7 @@ class TypeSpecParser:
     lst = ~list_start & typ & ~list_end > Lst
     stt = ~set_start & typ & ~set_end > Stt
 
-    empty_tup = ~tuple_start & ~tuple_div & ~tuple_end > Tup
+    empty_tup = ~tuple_start & ~tuple_end > Tup
     comma_tup = ~tuple_start & (typ & ~tuple_div)[1:] & ~tuple_end > Tup
     no_comma_tup = ~tuple_start & (typ & ~tuple_div)[1:] & typ & ~tuple_end > Tup
     tup = empty_tup | comma_tup | no_comma_tup
