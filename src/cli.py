@@ -5,9 +5,9 @@ from check import check_expr
 from infer import infer_expr
 from ptype import PType
 
-import typecheck
+import check
 
-log = typecheck.log = Logger()
+log = check.log = Logger()
 infer = False
 
 if __name__ == '__main__':
