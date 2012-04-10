@@ -24,9 +24,9 @@ str_t = PType.string()
 unicode_t = PType.unicode()
 unit_t = PType.unit()
 
-# ---------------------------------------------------------------------------
-# GENERAL CHECKING FUNCTIONS ------------------------------------------------
-# ---------------------------------------------------------------------------
+
+
+## Module Typechecking.
 
 def check_mod(mod):
     """
@@ -45,30 +45,10 @@ def check_mod(mod):
     t_debug("return: " + str(result) + "\n----- ^ Typechecking module ^ -----")
     return result
 
-def check_stmt(stmt, env):
-    """
-    Check whether the statement node `stmt` typechecks under type environment
-    `env`.
 
-    We defer to the specific `check_X_stmt` functions to determine which type
-    assignemnt rule to try.
-    """
 
-    t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---"
-            "\nStmt: " + str(stmt) + "\nEnv: " + str(env))
 
-    n = get_stmt_func_name(stmt.__class__.__name__)
-
-    # if we get a KeyError, then we're inspecting an AST node that is not in
-    # the subset of the language we're considering (note: the subset is
-    # defined as whatever there are check function definitions for).
-    try:
-        result = call_function(n, stmt, env)
-        t_debug("return: " + str(result) + "\n--- ^ Typechecking stmt ^ ---")
-        return result
-    except KeyError as e:
-        t_debug("Found a stmt not in the language subset. (" + str(e) + ")")
-        return False
+## Statement List Typechecking.
 
 def check_stmt_list(stmt_list, env):
     """
@@ -92,114 +72,39 @@ def check_stmt_list(stmt_list, env):
     # Reaching here means all statements typechecked.
     return True
 
-def check_expr(expr, t, env):
-    """Checks whether the AST expression node given by C{node} typechecks as
-    an expression of type C{t}. The requirements of typechecking depend on the
-    kind of expression C{node} is, and so this function calls one of several
-    functions which typecheck C{code} as the specific kind of expression. The
-    function to call is chosen from the class name of C{node}."""
 
-    assert isinstance(expr, ast.expr), \
-           "Should be typechecking an expr node, not a " + cname(expr)
-    assert isinstance(t, PType), \
-           "Should be checking against a PType, not a " + cname(t)
 
-    n = get_check_expr_func_name(expr.__class__.__name__)
 
-    t_debug("-- v Typechecking expr as " + str(t) + " v --\nExpr: " +
-            str(expr) + "\nEnv: " + str(env))
+## Statement Typechecking.
+
+def check_stmt(stmt, env):
+    """
+    Check whether the statement `stmt` typechecks under type environment `env`.
+
+    We defer to the specific `check_X_stmt` functions to determine which type
+    assignemnt rule to try. Information about the structure of each AST node is
+    contained in the thesis PDF.
+    """
+
+    t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---"
+            "\nStmt: " + str(stmt) + "\nEnv: " + str(env))
+
+    n = "check_%s_stmt" % stmt.__class__.__name__
 
     # if we get a KeyError, then we're inspecting an AST node that is not in
     # the subset of the language we're considering (note: the subset is
-    # defined as whtaever there are check function definitions for).
+    # defined as whatever there are check function definitions for).
     try:
-        result = call_function(n, expr, t, env)
-        t_debug("return: " + str(result) + "\n-- ^ Typechecking expr ^ --")
+        result = call_function(n, stmt, env)
+        t_debug("return: " + str(result) + "\n--- ^ Typechecking stmt ^ ---")
         return result
     except KeyError as e:
-        t_debug("Found an expr not in the language subset. (" + str(e) + ")")
-        return False
-
-
-# ---------------------------------------------------------------------------
-# STATEMENT CHECKING FUNCTIONS ----------------------------------------------
-# ---------------------------------------------------------------------------
-#   Valid statement types are:
-#   = Done ------------------------------------------------------------------
-#    - Assign(expr* targets, expr value)
-#    - If(expr test, stmt* body, stmt* orelse)
-#    - While(expr test, stmt* body, stmt* orelse)
-#    - Print(expr? dest, expr* values, bool nl)
-#   = To Do -----------------------------------------------------------------
-#    - AugAssign(expr target, operator op, expr value)
-#    - For(expr test, expr iter, stmt* body, stmt* orelse)
-
-#    - FunctionDef(identifier name, arguments args, stmt* body, expr*
-#       decorator_list)
-#    - ClassDef(identifier name, expr* bases, stmt* body, expr* decorator_list)
-#    - Return(expr? value)
-#    - Delete(expr* targets)
-#    - With(expr context_expr, expr? optional_vars, stmt* body)
-#    - Raise(expr? type, expr? inst, expr? tback)
-#    - TryExcept(stmt* body, excepthandler* handlers, stmt* orelse)
-#    - TryFinally(stmt* body, stmt* finalbody)
-#    - Assert(expr test, expr? msg)
-#    - Import(alias* names)
-#    - ImportFrom(identifier? module, alias* names, int? level)
-#    - Pass
-#    - Break
-#    - Continue
-
-def get_stmt_func_name(stmt_type):
-    return "check_%s_stmt" % stmt_type
-
-def check_Expr_stmt(stmt, env):
-    """
-    Check whether expr statement node `stmt` typechecks under type environment
-    `env`.
-
-    `stmt` : `ast.Expr`
-      - `value`: expression
-
-    Note: In Python, any kind of expression can be used as a statement, but
-    we're only going to allow typechecking of call expressions. There is no
-    practical reason to use any other kind of expression as a statement.
-    """
-
-    assert stmt.__class__ == ast.Expr
-
-    if stmt.value.__class__ == ast.Call:
-
-        call = stmt.value
-
-        # (exprs) assignment rule.
-
-        # Determine the type that the call expression should typecheck as by
-        # looking at the type of the function being called.
-        tau = infer_expr(call.func, env).ran
-
-        return check_expr(call, tau, env)
-
-    else:
-
+        t_debug("Found a stmt not in the language subset. (" + str(e) + ")")
         return False
 
 
 def check_FunctionDef_stmt(stmt, env):
-    """
-    Check whether function definition node `stmt` typechecks under type
-    envirnoment `env`.
-
-    `stmt` : `ast.FunctionDef`
-      - `name`: string of function identifier.
-      - `args`: `ast.arguments`
-        + `args`: list of name nodes of normal arguments.
-        + `vararg`: string identifier for the vararg parameter.
-        + `kwarg`: string identifier for the kwarg parameter.
-        + `defaults`: list of expressions to use as default parameter values.
-      - `body`: list of statements to run to execute the function.
-      - `decorator_list`: list of decorators associated with function.
-    """
+    """Function Definition."""
 
     assert stmt.__class__ == ast.FunctionDef
 
@@ -248,17 +153,27 @@ def check_FunctionDef_stmt(stmt, env):
 
     return check_stmt_list(body, body_env)
 
+def check_Return_stmt(stmt, env):
+    """Return Statement."""
+    
+    assert stmt.__class__ == ast.Return
+    
+    e = stmt.value
+    ret_t = env_get(env, "return")
+
+    if e is None:
+
+        # (urtn) assignment rule.
+        return ret_t == unit_t
+
+    else:
+
+        # (rtn) assignment rule.
+        return check_expr(e, ret_t, env)
 
 def check_Assign_stmt(stmt, env):
-    """
-    Check whether assignment node `stmt` typechecks under type environment
-    `env`.
-
-    `ast.Assign`
-      - `value`: the value being assigned.
-      - `targets`: Python list of the expressions being assigned to.
-    """
-
+    """Assignment."""
+    
     assert stmt.__class__ == ast.Assign
 
     v = stmt.value
@@ -291,16 +206,8 @@ def check_Assign_stmt(stmt, env):
     return True
 
 def check_AugAssign_stmt(stmt, env):
-    """
-    Check whether augment assignment node `stmt` typechecks under type
-    environment `env`.
-
-    `ast.AugAssign`
-      - `target`: the expression being assigned to.
-      - `op`: the operation.
-      - `value`: the expression `op`ed to `target`.
-    """
-
+    """Augmented Assignment."""
+    
     assert stmt.__class__ == ast.AugAssign
 
     v = stmt.value
@@ -317,63 +224,17 @@ def check_AugAssign_stmt(stmt, env):
     else:
         return check_expr(binop, t, env)
 
-def check_If_stmt(stmt, env):
-    """
-    Check whether if statement node `stmt` typechecks under type environment
-    `env`.
+def check_Print_stmt(stmt, env):
+    """Print Statement."""
 
-    We currently assume that the test must be a boolean, which is not considered
-    very Pythonic by some.
+    assert stmt.__class__ == ast.Print
 
-    `ast.If`
-      - `test`: the expression being tested.
-      - `body`: Python list of statements to run if `test` is true.
-      - `orelse`: Python list of statements to run if `test` is false.
-    """
+    # todo: need to make sure no dest
 
-    return check_If_While_stmt(stmt, env)
-
-def check_While_stmt(stmt, env):
-    """
-    Check whether while node `stmt` typechecks under type environment `env`.
-
-    `ast.While`
-      - `test`: the expression being tested each iteration.
-      - `body`: Python list of statements to run on each iteration.
-      - `orelse`: Python list of statements to run if `test` is false.
-    """
-
-    assert stmt.__class__ == ast.While
-
-    return check_If_While_stmt(stmt, env)
-
-def check_If_While_stmt(stmt, env):
-    """
-    Check whether while or if node `stmt` typechecks under type environment
-    `env`.
-
-    'ast.If` and `ast.While` have identical structure, so this is a helper
-    function to house the identical logic.
-    """
-
-    test = stmt.test
-    body = stmt.body
-    orelse = stmt.orelse
-
-    return (check_expr(test, bool_t, env) and
-            check_stmt_list(body, env) and
-            check_stmt_list(orelse, env))
+    return True
 
 def check_For_stmt(stmt, env):
-    """
-    Check whether for node `stmt` typechecks under type environment `env`.
-
-    `ast.For`
-      - `target`: the loop variable
-      - `iter`: the iterable beeing looped over.
-      - `body`: list of statements to run on each iteration.
-      - `orelse`: list of statements to run at the end of the loop.
-    """
+    """For Loop."""
 
     assert stmt.__class__ == ast.For
 
@@ -391,209 +252,117 @@ def check_For_stmt(stmt, env):
             check_stmt_list(stmt.body, env) and
             check_stmt_list(stmt.orelse, env))
 
+def check_While_stmt(stmt, env):
+    """While Loop."""
 
-def check_Print_stmt(stmt, env):
-    """
-    Check whether print node `stmt` typechecks under type environment `env`.
+    assert stmt.__class__ == ast.While
 
-    I guess a print statement always typechecks?
-    """
+    return check_If_While_stmt(stmt, env)
 
-    assert stmt.__class__ == ast.Print
+def check_If_stmt(stmt, env):
+    """Conditional Block."""
 
-    return True
+    return check_If_While_stmt(stmt, env)
+
+def check_If_While_stmt(stmt, env):
+    """TODO: get rid of this"""
+
+    test = stmt.test
+    body = stmt.body
+    orelse = stmt.orelse
+
+    return (check_expr(test, bool_t, env) and
+            check_stmt_list(body, env) and
+            check_stmt_list(orelse, env))
+
+def check_Expr_stmt(stmt, env):
+    """Expression Statement."""
+
+    assert stmt.__class__ == ast.Expr
+
+    if stmt.value.__class__ == ast.Call:
+
+        call = stmt.value
+
+        # (exprs) assignment rule.
+
+        # Determine the type that the call expression should typecheck as by
+        # looking at the type of the function being called.
+        tau = infer_expr(call.func, env).ran
+
+        return check_expr(call, tau, env)
+
+    else:
+
+        return False
 
 def check_Pass_stmt(stmt, env):
-    """
-    Check whether pass node `stmt` typechecks under type environment `env`.
-
-    A pass statement should always typecheck.
-    """
+    """Pass Statement."""
 
     assert stmt.__class__ == ast.Pass
 
     return True
 
 def check_Break_stmt(stmt, env):
-    """
-    Check whether break node `stmt` typechecks under type environment `env`.
-
-    A break statement should always typecheck.
-    """
+    """Break Statement."""
 
     assert stmt.__class__ == ast.Break
 
     return True
 
 def check_Continue_stmt(stmt, env):
-    """
-    Check whether continue node `stmt` typechecks under type environment `env`.
-
-    A continue statement should always typecheck.
-    """
+    """Continue Statement."""
 
     assert stmt.__class__ == ast.Continue
 
     return True
 
-def check_Return_stmt(stmt, env):
+
+
+## Expression Checking Functions.
+
+def check_expr(expr, t, env):
     """
-    Check whether return node `stmt` typechecks under type environment `env`.
-
-    The type that the current function must return is stored as a special
-    `return` entry in the type environment.
-
-    `ast.Return`
-      - `value`: the expression being returned.
-    """
-
-    e = stmt.value
-    ret_t = env_get(env, "return")
-
-    if e is None:
-
-        # (urtn) assignment rule.
-        return ret_t == unit_t
-
-    else:
-
-        # (rtn) assignment rule.
-        return check_expr(e, ret_t, env)
-
-
-# ---------------------------------------------------------------------------
-# EXPRESSION CHECKING FUNCTIONS ---------------------------------------------
-# ---------------------------------------------------------------------------
-#   Valid expression types are:
-#   = Done ------------------------------------------------------------------
-#    - Num(object n)
-#    - Name(identifier id, expr_context ctx)
-#    - BinOp(expr left, operator op, expr right)
-#    - Compare(expr left, cmpop* ops, expr* comparators)
-#    - List(expr* elts, expr_context ctx)
-#    - Tuple(expr* elts, expr_context ctx)
-#    - UnaryOp(unaryop op, expr operand)
-#   = To Do -----------------------------------------------------------------
-#    - Subscript(expr value, slice slice, expr_context ctx)
-#    - Attribute(expr value, identifier attr, expr_context ctx)
-#    - BoolOp(boolop op, expr* values)
-#    - Lambda(arguments args, expr body)
-#    - IfExp(expr test, expr body, expr orelse)
-#    - Dict(expr* keys, expr* values)
-#    - Set(expr* elts)
-#    - Call(expr func, expr* args, keyword* keywords, expr? starargs,
-#       expr? kwargs)
-#    - Str(string s)
-
-def get_check_expr_func_name(expr_type):
-    return "check_%s_expr" % expr_type
-
-def check_Num_expr(num, t, env):
-    """
-    Check if AST Num expr node `num` typechecks as type `t` under type
+    Check whether the expression `expr` can be assigned type `t` under type
     environment `env`.
 
-    `ast.Num`
-      - `n`: the numeric literal (as a Python object)
+    We defer to the specific `check_X_expr` functions to determine which type
+    assignment rule to try. Information about the structure of each AST node is
+    contained in the thesis PDF.
     """
 
-    assert num.__class__ is ast.Num
+    assert isinstance(expr, ast.expr), \
+           "Should be typechecking an expr node, not a " + cname(expr)
+    assert isinstance(t, PType), \
+           "Should be checking against a PType, not a " + cname(t)
 
-    n = num.n
+    n = "check_%s_expr" % expr.__class__.__name__
 
-    if t == int_t:
+    t_debug("-- v Typechecking expr as " + str(t) + " v --\nExpr: " +
+            str(expr) + "\nEnv: " + str(env))
 
-        # (int) assignment rule.
-        return type(n) is int
-
-    elif t == float_t:
-
-        # (flt) assignment rule.
-        return type(n) is float
-
-    else:
-
-        # No type assignment rule found.
+    # if we get a KeyError, then we're inspecting an AST node that is not in
+    # the subset of the language we're considering (note: the subset is
+    # defined as whtaever there are check function definitions for).
+    try:
+        result = call_function(n, expr, t, env)
+        t_debug("return: " + str(result) + "\n-- ^ Typechecking expr ^ --")
+        return result
+    except KeyError as e:
+        t_debug("Found an expr not in the language subset. (" + str(e) + ")")
         return False
 
-def check_Str_expr(s, t, env):
-    """
-    Check if AST Str expr node `s` typechecks as type `t` under type environment
-    `env`.
 
-    `ast.Str`
-      - `s`: the string literal (as a Python object)
-    """
+def check_BoolOp_expr(boolop, t, env):
+    """Boolean Operations."""
 
-    assert s.__class__ is ast.Str
+    assert boolop.__class__ is ast.BoolOp
 
-    the_string = s.s
-
-    if t == str_t:
-
-        # (str) assignment rule.
-        return type(the_string) is str
-
-    elif t == unicode_t:
-
-        # (ustr) assignment rule.
-        return type(the_string) is unicode
-
-    else:
-
-        # No type assignment rule found.
-        return False
-
-def check_Name_expr(name, t, env):
-    """
-    Check if AST Name expr node `name` typechecks as type `t` under type
-    environment `env`.
-
-    `ast.Name`
-      - `id`: the identifier (as a Python `str`)
-      - `ctx`: the context (e.g., load, store) in which the expr is used
-
-    The AST treats `True` and `False` as Name nodes with id of `"True"` or
-    `"False"`, strangely enough.
-
-    Ideally, we should only be accessing name nodes in the load context, since
-    the type checking rule for an assignment statement should handle all the
-    cases where they are in load contexts. We currently have to typecheck load
-    variables because the limited type inference assumes everything it infers
-    typechecks correctly, which isn't always the case; to fix this, we also
-    verify that something checks as the type we infer, which means we'll end up
-    checking name loads.
-    """
-
-    assert name.__class__ is ast.Name
-
-    id_str = name.id
-
-    if id_str == 'True' or id_str == 'False':
-
-        # (bool) assignment rule
-        return t == bool_t
-
-    elif id_str == 'None':
-
-        # (none) assignment rule.
-        return t == unit_t
-
-    else:
-
-        # (idn) assignment rule
-        return env_get(env, id_str) == t
+    # TODO: implement!
+    return False
 
 def check_BinOp_expr(binop, t, env):
-    """
-    Check if AST BinOp expr node `binop` typechecks as type `t` under type
-    environment `env`:
-
-    `ast.BinOp`
-      - `left`: left expr
-      - `op`: the operator (an `ast.operator`)
-      - `right`: right expr
-    """
+    """Binary Operations."""
 
     assert binop.__class__ is ast.BinOp
 
@@ -721,21 +490,8 @@ def check_BinOp_expr(binop, t, env):
         # No assignmment rules found.
         return False
 
-
 def check_UnaryOp_expr(unop, t, env):
-    """
-    Check if AST UnaryOp expr node `unop` typechecks as type `t` under type
-    environment `env`.
-
-    - Invert is the bitwise inverse and can only be applied to ints
-    - Not can be applied to bools
-    - UAdd and USub can be applied to any numbers
-
-    `ast.UnaryOp`:
-      - `op`: the operator (an `ast.unaryop`)
-      - `operand`: operand expr
-
-    """
+    """Unary Operations."""
 
     assert unop.__class__ is ast.UnaryOp
 
@@ -769,19 +525,29 @@ def check_UnaryOp_expr(unop, t, env):
         # No type assignment rules found.
         return False
 
+def check_Lambda_expr(lambd, t, env):
+    """Abstraction."""
+
+    assert lambd.__class__ is ast.Lambda
+
+    # TODO: implement!
+
+def check_IfExp_expr(ifx, t, env):
+    """Conditional Expression."""
+
+    assert ifx.__class__ is ast.IfExp
+
+    test = ifx.test
+    e1 = ifx.body
+    e2 = ifx.orelse
+
+    # (ifx) assignment rule.
+    return (check_expr(test, bool_t, env) and
+            check_expr(e1, t, env) and
+            check_expr(e2, t, env))
+
 def check_Compare_expr(compare, t, env):
-    """
-    Check if AST Compare expr node `compare` typechecks as type `t` under type
-    environment `env`.
-
-    `ast.Compare`
-      - `left`: the left-most expression
-      - `ops`: list of comparison operators (all `ast.cmpop`)
-      - `comparators`: list of subsequent expressions
-
-    A chained comparison expression is structured like so:
-    `left` `ops[0]` `comparators[0]` `ops[1]` `comparators[1]` ...
-    """
+    """Comparisons."""
 
     assert compare.__class__ is ast.Compare
 
@@ -830,75 +596,90 @@ def check_Compare_expr(compare, t, env):
         # no assignment rule fonud.
         return False
 
+def check_Call_expr(call, t, env):
+    """Application."""
 
-def check_List_expr(lst, t, env):
-    """
-    Check if AST List expr node `list` typechecks as type `t` under type
-    environment `env`.
+    assert call.__class__ is ast.Call
 
-    `ast.List`
-      - `elts`: Python list of contained expr nodes
-      - `ctx': context of the expr (e.g., load, store)
-    """
+    f = call.func
+    args = call.args
 
-    assert lst.__class__ is ast.List
+    # (call) assignment rule.
 
-    elts_list = lst.elts
+    # FIXME: We're using infer_expr here, but it's not clear whether this is
+    # legitimate -- will the inferable subset of the language allow calling
+    # functions returned by other functions? (this is fine if we're just calling
+    # functions by identifiers.)
+    f_t = infer_expr(f, env)
 
-    if t.is_list():
-
-        # (lst) assignment rule.
-        e_t = t.elt
-        return all(check_expr(e, e_t, env) for e in elts_list)
-    
-    else:
-
-        # No assignment rule found.
+    # If f doesn't typecheck.
+    if f_t is None:
         return False
 
-def check_Tuple_expr(tup, t, env):
-    """
-    Check if AST Tuple expr node `tup` typechecks as type `t` under type
-    environment `env`.
+    sigma = f_t.dom
+    tau = f_t.ran
 
-    `ast.Tuple`
-      - `elts`: Python list of contained expr nodes
-      - `ctx`: context of the expr (e.g., load, store)
-    """
+    # In the type system, we treat no arguments as unit type, and multiple
+    # arguments as a tuple.
+    if len(args) == 0:
 
-    assert tup.__class__ is ast.Tuple
+        return tau == t and sigma == unit_t
 
-    elts_list = tup.elts
-
-    if t.is_tuple():
-
-        # (tup) assignment rule.
-        ts_list = t.elts
-        return (len(elts_list) == len(ts_list) and
-                all(check_expr(e, t0, env)
-                    for (e, t0) in zip(elts_list, ts_list)))
-    
     else:
 
-        # No assignment rule found.
-        return False 
+        if len(args) == 1:
+            wrap_args = args[0]
+        else:
+            wrap_args = ast.Tuple(elts=[arg for arg in args], load=ast.Load())
+
+        return tau == t and check_expr(wrap_args, sigma, env)
+
+def check_Num_expr(num, t, env):
+    """Numeric Literals."""
+
+    assert num.__class__ is ast.Num
+
+    n = num.n
+
+    if t == int_t:
+
+        # (int) assignment rule.
+        return type(n) is int
+
+    elif t == float_t:
+
+        # (flt) assignment rule.
+        return type(n) is float
+
+    else:
+
+        # No type assignment rule found.
+        return False
+
+def check_Str_expr(s, t, env):
+    """String Literals."""
+
+    assert s.__class__ is ast.Str
+
+    the_string = s.s
+
+    if t == str_t:
+
+        # (str) assignment rule.
+        return type(the_string) is str
+
+    elif t == unicode_t:
+
+        # (ustr) assignment rule.
+        return type(the_string) is unicode
+
+    else:
+
+        # No type assignment rule found.
+        return False
 
 def check_Subscript_expr(subs, t, env):
-    """
-    Check if AST Subscript expr node `subs` typechecks as type `t` under type
-    environment `env`.
-
-    `ast.Subscript`
-      - `value`: the collection being subscripted
-      - `slice`: `ast.Index` or `ast.Slice`
-        + `value`: expr used as index (if `ast.Index`)
-        + `lower`: expr used as lower bound (if `ast.Slice`)
-        + `upper`: expr used as upper bound (if `ast.Slice`)
-        + `step`: expr used as step (if `ast.Slice`)
-
-    We can only subscript tuples with numeric literals because the type checker
-    needs to actually know the values of the subscript parameters.
-    """
+    """Subscription."""
 
     assert subs.__class__ is ast.Subscript
 
@@ -987,79 +768,62 @@ def check_Subscript_expr(subs, t, env):
 
         return False # Only subscripts of str, list, and tuple work.
 
-def check_IfExp_expr(ifx, t, env):
-    """
-    Check if AST IfExp expr node `ifx` typechecks as type `t` under type
-    environment `env`.
+def check_Name_expr(name, t, env):
+    """Identifiers."""
 
-    `ast.IfExp`
-      - `test`: the conditional to branch on.
-      - `body`: the value of the expression if `test` is true.
-      - `orelse`: the value of the expression if `test` is false.
-    """
+    assert name.__class__ is ast.Name
 
-    assert ifx.__class__ is ast.IfExp
+    id_str = name.id
 
-    test = ifx.test
-    e1 = ifx.body
-    e2 = ifx.orelse
+    if id_str == 'True' or id_str == 'False':
 
-    # (ifx) assignment rule.
-    return (check_expr(test, bool_t, env) and
-            check_expr(e1, t, env) and
-            check_expr(e2, t, env))
+        # (bool) assignment rule
+        return t == bool_t
 
-def check_Call_expr(call, t, env):
-    """
-    Check if AST Call expr node `call` typechecks as type `t` under type
-    environment `env`.
+    elif id_str == 'None':
 
-    We're currently only handling user-defined function calls (not built-in
-    functions, methods of built-in objects, class objects, methods of class
-    instances, or class instances).
-
-    `ast.Call`
-      - `func`: the function being called.
-      - `args`: list of normal arguments provided.
-      - `keywords`: list of keyboard arguments provided.
-      - `starargs`: star argument (an iterable treated as additional positional
-        arguments).
-      - `kwargs`: double star argument (a mapping treated as additional keyword
-        arguments).
-    """
-
-    assert call.__class__ is ast.Call
-
-    f = call.func
-    args = call.args
-
-    # (call) assignment rule.
-
-    # FIXME: We're using infer_expr here, but it's not clear whether this is
-    # legitimate -- will the inferable subset of the language allow calling
-    # functions returned by other functions? (this is fine if we're just calling
-    # functions by identifiers.)
-    f_t = infer_expr(f, env)
-
-    # If f doesn't typecheck.
-    if f_t is None:
-        return False
-
-    sigma = f_t.dom
-    tau = f_t.ran
-
-    # In the type system, we treat no arguments as unit type, and multiple
-    # arguments as a tuple.
-    if len(args) == 0:
-
-        return tau == t and sigma == unit_t
+        # (none) assignment rule.
+        return t == unit_t
 
     else:
 
-        if len(args) == 1:
-            wrap_args = args[0]
-        else:
-            wrap_args = ast.Tuple(elts=[arg for arg in args], load=ast.Load())
+        # (idn) assignment rule
+        return env_get(env, id_str) == t
 
-        return tau == t and check_expr(wrap_args, sigma, env)
+def check_List_expr(lst, t, env):
+    """List Construction."""
 
+    assert lst.__class__ is ast.List
+
+    elts_list = lst.elts
+
+    if t.is_list():
+
+        # (lst) assignment rule.
+        e_t = t.elt
+        return all(check_expr(e, e_t, env) for e in elts_list)
+    
+    else:
+
+        # No assignment rule found.
+        return False
+
+def check_Tuple_expr(tup, t, env):
+    """Tuple Construction."""
+
+    assert tup.__class__ is ast.Tuple
+
+    elts_list = tup.elts
+
+    if t.is_tuple():
+
+        # (tup) assignment rule.
+        ts_list = t.elts
+        return (len(elts_list) == len(ts_list) and
+                all(check_expr(e, t0, env)
+                    for (e, t0) in zip(elts_list, ts_list)))
+    
+    else:
+
+        # No assignment rule found.
+        return False 
