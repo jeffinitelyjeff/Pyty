@@ -192,6 +192,10 @@ class PType:
 
     ## Basic methods.
 
+    def __nonzero__(self):
+        return True
+    __bool__ = __nonzero__
+
     def __repr__(self):
 
         if self.tag == PType.INT:
