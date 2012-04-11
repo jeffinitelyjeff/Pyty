@@ -453,7 +453,33 @@ def check_Lambda_expr(lambd, t, env):
 
     assert lambd.__class__ is ast.Lambda
 
-    # TODO: implement!
+    a = lambd.args
+    e = lambd.body
+
+    # All Abs rules have specific forms for args.
+    if (all(arg.__class__ is ast.Name for arg in a.args) and
+        a.vararg is None and a.kwarg is None and not a.defaults):
+
+        # (Abs1) assignment rule.
+        if not a.args:
+            return check_expr(e, t.ran, env)
+
+        # (Abs2) assignment rule.
+        elif len(a.args) == 1 and t.dom != unit_t:
+            arg_id = a.args[0].id
+            new_env = dict(env.items + [(arg_id, t.dom)])
+            return check_expr(e, t.ran, new_env)
+
+        # (Abs3) assignment rule.
+        elif t.dom.is_tuple() and t.dom.tuple_len() == len(a.args):
+            arg_ids = map(lambda x: x.id, a.args)
+            arg_ts = t.dom.elts
+            new_env = dict(env.items() + zip(arg_ids, arg_ts))
+            return check_expr(e, t.ran, new_env)
+
+    # No assignment rule found.
+    else:
+        return False    
 
 def check_IfExp_expr(ifx, t, env):
     """Conditional Expression."""
