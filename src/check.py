@@ -595,90 +595,48 @@ def check_Subscript_expr(subs, t, env):
 
     assert subs.__class__ is ast.Subscript
 
-    # Type inference is necessary becuase subscripting is very overloaded.
-    col = subs.value
-    col_t = infer_expr(col, env)
+    c = subs.value
+    s = subs.slice
 
-    is_index = subs.slice.__class__ is ast.Index
-    is_slice = subs.slice.__class__ is ast.Slice
-    assert is_index or is_slice
+    # Type inference is necessary off the bat; these rules are the polar
+    # opposite of syntax direction.
+    c_t = infer_expr(c, env)
 
-    # Store the attributes of the slice.
-    if is_index:
-        i = subs.slice.value
-    else: # is_slice
-        l = subs.slice.lower
-        u = subs.slice.upper
-        s = subs.slice.step
+    # Indexing.
+    if s.__class__ is ast.Index:
 
-    if col_t is None:
-        
-        # The collection doesn't typecheck properly.
-        return False
+        e = s.value
 
-    # String subscripting.
-    elif col_t == t == str_t or col_t == t == unicode_t:
+        # (Str-Idx) assignment rule.
+        if c_t == str_t or c_t == unicode_t:
+            return c_t == t and check_expr(e, int_t, env)
 
-        if is_index:
+        # (Lst-Idx) assignment rule.
+        elif c_t.is_list():
+            return t == c_t.elt and check_expr(e, int_t, env)
 
-            # (sidx) assignment rule.
-            return check_expr(i, int_t, env)
+        # (Tup-Idx) assignment rule.
+        elif c_t.is_tuple():
+            n = len(c_t.elts)
+            return node_is_int(e) and -n <= e.n < n and c_t.elts[e.n] == t
 
-        else: # is_slice
+    # Slicing.
+    elif s.__class__ is ast.Slice:
+        e0, e1, e2 = s.lower, s.upper, s.step
 
-            # (sslc) assignment rule.
-            return valid_int_slice(l, u, s, env) and check_expr(col, t, env)
+        # (Flat-Slc) assignment rule.
+        if c_t == str_t or c_t == unicode_t or c_t.is_list():
+            return c_t == t and valid_int_slice(e0, e1, e2, env)
 
-    # List subscripting.
-    elif col_t.is_list():
+        # (Tup-Slc) assignment rule.
+        if c_t.is_tuple() and all(not e or node_is_int(e)
+                                  for e in [e0, e1, e2]):
+            rng = slice_range(e0, e1, e2, len(c_t.elts))
+            return t.is_tuple() and rng and all(c_t.elts[j] == t.elts[i]
+                                                for (i,j) in enumerate(rng))
 
-        if is_index:
-
-            # (lidx) assignment rule.
-            return (check_expr(i, int_t, env) and
-                    check_expr(col, PType.list(t), env))
-
-        else: # is_slice
-
-            # (lslc) assignment rule.
-            return valid_int_slice(l, u, s, env) and check_expr(col, t, env)
-
-    # Tuple subscripting.
-    elif col_t.is_tuple():
-
-        if is_index:
-
-            col_ts = col_t.elts
-            n = len(col_ts)
-
-            # (tidx) assignment rule.
-            # Note: we don't need to normalize i.n by len(col_ts) if i.n < 0
-            # because col_ts[i.n] handles this automatically.
-            return node_is_int(i) and -n <= i.n < n and col_ts[i.n] == t
-
-        else: # is_slice
-
-            # (tslc) assignment rule.
-
-            # Rule out easy failure case.
-            if not t.is_tuple():
-                return False # not expceting a tuple type.
-
-            col_ts = col_t.elts
-            ts = t.elts
-
-            rng = slice_range(l, u, s, len(col_ts))
-
-            if rng is None:
-                # The range wasn't valid.
-                return False
-
-            z = zip(range(0, len(rng)), rng)
-            return all(col_ts[j] == ts[i] for (i,j) in z)
-
-    else:
-
-        return False # Only subscripts of str, list, and tuple work.
+    # No assignment rule found
+    return False
 
 def check_Name_expr(name, t, env):
     """Identifiers."""
