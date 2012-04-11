@@ -24,6 +24,14 @@ str_t = PType.string()
 unicode_t = PType.unicode()
 unit_t = PType.unit()
 
+bool_ops = set([ast.And, ast.Or])
+arith_ops = set([ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod,
+                 ast.Pow])
+bit_ops = set([ast.LShift, ast.RShift, ast.BitOr, ast.BitAnd, ast.BitXor])
+bin_ops = arith_ops | bit_ops
+unary_ops = set([ast.Invert, ast.Not, ast.UAdd, ast.USub])
+
+
 
 
 ## Module Typechecking.
@@ -344,7 +352,7 @@ def check_BoolOp_expr(boolop, t, env):
     op = boolop.op
     es = boolop.values
 
-    assert op in (ast.And, ast.Or)
+    assert op.__class__ in bool_ops, "%s not in bool ops" % cname(op)
 
     # (BoolOp) assignment rule.
     return all(check_expr(e, t, env) for e in es)
@@ -354,141 +362,75 @@ def check_BinOp_expr(binop, t, env):
 
     assert binop.__class__ is ast.BinOp
 
-    l = binop.left
-    r = binop.right
+    e0 = binop.left
+    e1 = binop.right
     op = binop.op
 
-    arith_ops = set(ast.Add, ast.Sub, ast.Mult, ast.Div,
-                    ast.FloorDiv, ast.Mod, ast.Pow)
-    bit_ops = set(ast.LShift, ast.RShift, ast.BitOr,
-                  ast.BitAnd, ast.BitXor)
+    assert op.__class__ in bin_ops, "%s not in binary ops" % cname(op)
 
-    assert op.__class__ in arith_ops + bit_ops, \
-        "Invalid binary operator, %s" % cname(op)
-
-
-    # Numeric operations.
+    # Numeric Operations.
     if t == int_t or t == float_t:
 
+        # (Arith) assignment rule.
         if op.__class__ in arith_ops:
+            return check_expr(e0, t, env) and check_expr(e1, t, env)
 
-            # (arith) assignment rule.
-            return check_expr(l, t, env) and check_expr(r, t, env)
+        # (BitOp) assignment rule.
+        elif op.__class__ in bit_ops and t == int_t:
+            return check_expr(e0, int_t, env) and check_expr(e1, int_t, env)
 
-        else: # op.__class__ in bit_ops
+    # String and List Operations.
+    elif t == str_t or t == unicode_t or t.is_list():
 
-            # (bitop) assignment rule.
-            return (t == int_t and
-                    check_expr(l, int_t, env) and
-                    check_expr(r, int_t, env))
-
-    # String operations.
-    elif t == str_t or t == unicode_t:
-
+        # (Str-Cat) assignment rule.
         if op.__class__ is ast.Add:
+            return check_expr(e0, t, env) and check_expr(e1, t, env)
 
-            # (scat) assignment rule.
-            # t is str_t or unicode_t.
-            return check_expr(l, t, env) and check_expr(r, t, env)
-
+        # (Str-Rep) assignment rule.
         elif op.__class__ is ast.Mult:
+            return any(check_expr(l, int_t, env) and check_expr(r, t, env) for
+                       (l, r) in [(e0, e1), (e1, e0)])
 
-            # (srep) or (urep) assignment rule.
-            # t is str_t or unicode_t.
-            return ((check_expr(l, t, env) and check_expr(r, int_t, env)) or
-                    (check_expr(l, int_t, env) and check_expr(r, t, env)))
+        # (Str-Form) assignment rule.
+        elif not t.is_list() and op.__class__ is ast.Mod:
+            return check_expr(e0, t, env)
 
-        elif op.__class__ is ast.Mod:
-
-            # (sform) assignment rule.
-            # t is str_t or unicode_t.
-            return check_expr(l, t, env)
-
-        else:
-
-            # No assignment rule found.
-            return False
-
-    # List operations.
-    elif t.is_list():
-
-        if op.__class__ is ast.Add:
-
-            # (lcat) assignment rule.
-            return check_expr(l, t, env) and check_expr(r, t, env)
-
-        elif op.__class__ is ast.Mult:
-
-            # (lrep) assignment rule.
-            return ((check_expr(l, t, env) and check_expr(r, int_t, env))
-                    or (check_expr(l, int_t, env) and check_expr(r, t, env)))
-
-        else:
-
-            # No assignment rule found.
-            return False
-
-    # Tuple operations.
+    # Tuple Operations.
     elif t.is_tuple():
 
+        # (Tup-Cat) assignment rule.
         if op.__class__ is ast.Add:
 
-            # (tcat) assignment rule.
-            # This is pretty inefficient; we check every way which `t` can
-            # be split up into two tuples, but this seems to be the only way
-            # around type inference.
-            return any(check_expr(l, t.tuple_slice(0, i), env)
-                       and check_expr(r, t.tuple_slice(i), env)
-                       for i in range(1, len(t.elts)))
+            return any(check_expr(e0, t.tuple_slice(0, m), env) and
+                       check_expr(e1, t.tuple_slice(m), env)
+                       for m in range(t.tuple_len()))
 
-        elif op.__class__ is ast.Mult:
+        # (Tup-Rep) assignment rule.
+        elif (op.__class__ is ast.Mult and
+              any(e.__class__ is ast.Num for e in [e0,e1])):
+            m = e0.n if e0.__class__ is ast.Num else e1.n
+            e = e0 if e1.__class__ is ast.Num else e1
 
-            # (trep) assignment rule.
-            # We have to restrict ourselves to repeating tuples by integer
-            # values because we need to know the value while type checking
-            # to figure out the expected shape of the type.
+            e_len = int(t.tuple_len() / m)
+            e_t = t.tuple_slice(0, e_len)
 
-            # Figure out if we're looking at e * m or m * e.
-            if l.__class__ is ast.Num and type(l.n) is int:
-                e = r
-                m = l.n
-            elif r.__class__ is ast.Num and type(r.n) is int:
-                e = l
-                m = r.n
-            else:
-                # These are the only two froms of expressions which can be
-                # assigned in (trep).
-                return False
-
-            # the length of the tuple we expect e to typecheck as.
-            e_len = len(t.elts) / m
-            # the tuple we expect e to typecheck as.
-            e_typ = t.tuple_slice(0, e_len)
-
-            return (len(t.elts) % m == 0 and
-                    check_expr(e, e_typ, env) and
-                    all(e_typ == t.tuple_slice(e_len*i, e_len*(i+1))
+            return (type(m) is int and t.tuple_len() % m == 0 and
+                    check_expr(e, e_t, env) and
+                    all(e_t == t.tuple_slice(e_len*i, e_len*(i+1))
                         for i in range(1, m)))
 
-        else:
-
-            # No assignment rule found.
-            return False
-
-    else:
-
-        # No assignmment rules found.
-        return False
+    # No assignment rule found.
+    return False
 
 def check_UnaryOp_expr(unop, t, env):
     """Unary Operations."""
 
-    assert unop.__class__ is ast.UnaryOp
+    assert unop.__class__ is ast.UnaryOp, "%s not in unary ops" % cname(op)
 
     rator = unop.op
     rand = unop.operand
 
-    assert rator.__class__ in [ast.Invert, ast.Not, ast.UAdd, ast.USub]
+    assert rator.__class__ in unary_ops
 
     if rator.__class__ is ast.Invert and t == int_t:
 
