@@ -706,35 +706,25 @@ def check_List_expr(lst, t, env):
 
     assert lst.__class__ is ast.List
 
-    elts_list = lst.elts
+    es = lst.elts
 
+    # (Lst) assignment rule.
     if t.is_list():
+        return all(check_expr(e, t.elt, env) for e in es)
 
-        # (lst) assignment rule.
-        e_t = t.elt
-        return all(check_expr(e, e_t, env) for e in elts_list)
-    
-    else:
-
-        # No assignment rule found.
-        return False
+    # No assignment rule found.
+    return False
 
 def check_Tuple_expr(tup, t, env):
     """Tuple Construction."""
 
     assert tup.__class__ is ast.Tuple
 
-    elts_list = tup.elts
+    es = tup.elts
 
-    if t.is_tuple():
+    # (Tup) assignment rule.
+    if t.is_tuple() and t.tuple_len() == len(es):
+        return all(check_expr(e, elt_t, env) for (e, elt_t) in zip(es, t.elts))
 
-        # (tup) assignment rule.
-        ts_list = t.elts
-        return (len(elts_list) == len(ts_list) and
-                all(check_expr(e, t0, env)
-                    for (e, t0) in zip(elts_list, ts_list)))
-    
-    else:
-
-        # No assignment rule found.
-        return False 
+    # No assignment rule found.
+    return False
