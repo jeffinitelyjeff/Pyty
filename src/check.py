@@ -425,36 +425,27 @@ def check_BinOp_expr(binop, t, env):
 def check_UnaryOp_expr(unop, t, env):
     """Unary Operations."""
 
-    assert unop.__class__ is ast.UnaryOp, "%s not in unary ops" % cname(op)
+    assert unop.__class__ is ast.UnaryOp
+    
+    op = unop.op
+    e = unop.operand
 
-    rator = unop.op
-    rand = unop.operand
+    assert op.__class__ in unary_ops, "%s not in unary ops" % cname(op)
 
-    assert rator.__class__ in unary_ops
+    # (Inv) assignment rule.
+    if op.__class__ is ast.Invert and t == int_t:
+        return check_expr(e, int_t, env)
 
-    if rator.__class__ is ast.Invert and t == int_t:
+    # (Uadd) assignment rule.
+    elif op.__class__ in [ast.UAdd, ast.USub] and t in [int_t, float_t]:
+        return check_expr(e, t, env)
 
-        # (inv) assignment rule.
-        return check_expr(rand, int_t, env)
+    # (Not) assignment rule.
+    elif op.__class__ is ast.Not and t == bool_t:
+        return check_expr(e, bool_t, env)
 
-    elif rator.__class__ is ast.Not and t == bool_t:
-
-        # (not) assignment rule.
-        return check_expr(rand, bool_t, env)
-
-    elif rator.__class__ in [ast.UAdd, ast.USub] and t == int_t:
-
-        # (uadd) assignment rule v1.
-        return check_expr(rand, int_t, env)
-
-    elif rator.__class__ in [ast.UAdd, ast.USub] and t == float_t:
-
-        # (uadd) assignment rule v2.
-        return check_expr(rand, float_t, env)
-
+    # No assignment rule found.
     else:
-
-        # No type assignment rules found.
         return False
 
 def check_Lambda_expr(lambd, t, env):
