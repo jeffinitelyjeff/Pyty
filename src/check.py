@@ -174,31 +174,16 @@ def check_Assign_stmt(stmt, env):
     v = stmt.value
     tars = stmt.targets
 
-    for tar in tars:
+    def valid_tar(t):
+        if t.__class__ is ast.Subscript:
+            col_t = infer_expr(t.value, env)
+            sub_of_tup = col_t and col_t.is_tuple()
+        else:
+            sub_of_tup = False
+        t_t = infer_expr(t, env)
+        return t_t and check_expr(v, t_t, env) and not sub_of_tup
 
-        assert tar.ctx.__class__ is ast.Store, \
-            "Should be store ctx, not " + cname(tar.ctx)
-
-        if tar.__class__ is ast.Subscript:
-
-            col_t = infer_expr(tar.value, env)
-
-            if col_t is not None and col_t.is_tuple():
-                # Can't assign to a subscript of a tuple.
-                return False
-
-        t = infer_expr(tar, env)
-
-        if t is None:
-            # The target doesn't typecheck properly.
-            return False
-
-        if not check_expr(v, t, env):
-            # The value doesn't typecheck as the type of the target.
-            return False
-
-    # return True if we reached here, meaning that it matched with all targets
-    return True
+    return all(valid_tar(tar) for tar in tars)
 
 def check_AugAssign_stmt(stmt, env):
     """Augmented Assignment."""
