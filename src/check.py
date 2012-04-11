@@ -141,9 +141,8 @@ def check_FunctionDef_stmt(stmt, env):
                            zip(arg_ids, arg_ts) + [("return", f_t.ran)])
             return check_stmt_list(b, new_env)
 
+    # No assignment rule found.
     else:
-
-        # No assignment rule found.
         return False
 
 def check_Return_stmt(stmt, env):
@@ -174,16 +173,21 @@ def check_Assign_stmt(stmt, env):
     v = stmt.value
     tars = stmt.targets
 
-    def valid_tar(t):
-        if t.__class__ is ast.Subscript:
-            col_t = infer_expr(t.value, env)
-            sub_of_tup = col_t and col_t.is_tuple()
-        else:
-            sub_of_tup = False
-        t_t = infer_expr(t, env)
-        return t_t and check_expr(v, t_t, env) and not sub_of_tup
+    # (Assmt) assignment rule.
+    if tars:
+        def valid_tar(t):
+            if t.__class__ is ast.Subscript:
+                col_t = infer_expr(t.value, env)
+                sub_of_tup = col_t and col_t.is_tuple()
+            else:
+                sub_of_tup = False
+            t_t = infer_expr(t, env)
+            return t_t and check_expr(v, t_t, env) and not sub_of_tup
+        return all(valid_tar(tar) for tar in tars)
 
-    return all(valid_tar(tar) for tar in tars)
+    # No assignment rule found.
+    else:
+        return False
 
 def check_AugAssign_stmt(stmt, env):
     """Augmented Assignment."""
@@ -196,6 +200,7 @@ def check_AugAssign_stmt(stmt, env):
 
     e0_t = infer_expr(e0, env)
 
+    # (Aug-Assmt) assignment rule. -- restricted by type inference
     return e0_t and check_expr(ast.BinOp(e0, op, e1), e0_t, env)
 
 def check_Print_stmt(stmt, env):
@@ -203,9 +208,17 @@ def check_Print_stmt(stmt, env):
 
     assert stmt.__class__ is ast.Print
 
-    # todo: need to make sure no dest
+    d = stmt.dest
+    v = stmt.values
+    n = stmt.nl
 
-    return True
+    # (Print) assignment rule.
+    if not d:
+        return True
+
+    # No assignment rule found.
+    else:
+        return False
 
 def check_For_stmt(stmt, env):
     """For Loop."""
