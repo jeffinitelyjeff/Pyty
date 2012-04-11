@@ -344,6 +344,8 @@ def check_BoolOp_expr(boolop, t, env):
     op = boolop.op
     es = boolop.values
 
+    assert op in (ast.And, ast.Or)
+
     # (BoolOp) assignment rule.
     return all(check_expr(e, t, env) for e in es)
 
@@ -356,8 +358,10 @@ def check_BinOp_expr(binop, t, env):
     r = binop.right
     op = binop.op
 
-    arith_ops = [ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod, ast.Pow]
-    bit_ops = [ast.LShift, ast.RShift, ast.BitOr, ast.BitAnd, ast.BitXor]
+    arith_ops = set(ast.Add, ast.Sub, ast.Mult, ast.Div,
+                    ast.FloorDiv, ast.Mod, ast.Pow)
+    bit_ops = set(ast.LShift, ast.RShift, ast.BitOr,
+                  ast.BitAnd, ast.BitXor)
 
     assert op.__class__ in arith_ops + bit_ops, \
         "Invalid binary operator, %s" % cname(op)
