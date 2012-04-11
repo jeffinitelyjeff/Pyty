@@ -11,6 +11,9 @@ import parse_file
 import infer
 log = check.log = parse_file.log = infer.log = Logger()
 
+# Invoked like:
+# python pyty.py <source_file.py>
+
 if __name__ == '__main__':
     file_name = sys.argv[1]
 
