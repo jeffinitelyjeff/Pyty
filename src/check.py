@@ -265,20 +265,16 @@ def check_Expr_stmt(stmt, env):
 
     assert stmt.__class__ is ast.Expr
 
-    if stmt.value.__class__ is ast.Call:
+    e = stmt.value
 
-        call = stmt.value
+    # (Expr-Stmt) assignment rule
+    if e.__class__ is ast.Call:
+        f = e.func
+        f_t = env_get(env, f.id)
+        return check_expr(e, f_t.ran, env)
 
-        # (exprs) assignment rule.
-
-        # Determine the type that the call expression should typecheck as by
-        # looking at the type of the function being called.
-        tau = infer_expr(call.func, env).ran
-
-        return check_expr(call, tau, env)
-
+    # No assignment rule found.
     else:
-
         return False
 
 def check_Pass_stmt(stmt, env):
