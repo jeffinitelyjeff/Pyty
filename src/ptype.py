@@ -246,6 +246,10 @@ class PType:
 
         return PType.tuple(self.elts[start:end:step])
 
+    def tuple_len(self):
+        assert self.is_tuple()
+        return len(self.elts)
+
     def free_type_vars(self):
 
         if self.is_base():

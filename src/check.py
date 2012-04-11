@@ -110,50 +110,41 @@ def check_FunctionDef_stmt(stmt, env):
 
     assert stmt.__class__ == ast.FunctionDef
 
-    name = stmt.name
-    args = stmt.args.args
-    body = stmt.body
+    f = stmt.name
+    a = stmt.args
+    b = stmt.body
+    d = stmt.decorator_list
 
-    # (fndef) assignment rule.
-    # The implementation here looks a lot messier than the (fndef) rule; most of
-    # this is complication in determining whether args and sigma look similar
-    # and args : sigma has meaning.
+    # All Fn-Def rules have specific forms for args and decorator_list.
+    if (all(arg.__class__ is ast.Name for arg in a.args) and
+        a.vararg is None and a.kwarg is None and not a.defaults and not d):
 
-    # First, we ensure that all the arguments are `ast.Name` nodes, since the
-    # AST specification allows arbitrary expressions).
-    if any(arg.__class__ is not ast.Name for arg in args):
+        f_t = env_get(env, f)
+
+        # (Fn-Def1) assignment rule.
+        if not a.args:
+            new_env = dict(env.items() + [("return", f_t.ran)])
+            return check_stmt_list(b, new_env)
+
+        # (Fn-Def2) assignment rule.
+        elif len(a.args) == 1 and f_t.dom != unit_t:
+            arg_id = a.args[0].id
+            new_env = dict(env.items() +
+                           [(arg_id, f_t.dom), ("return", f_t.ran)])
+            return check_stmt_list(b, new_env)
+
+        # (Fn-Def3) assignment rule.
+        elif f_t.dom.is_tuple() and f_t.dom.tuple_len() == len(a.args):
+            arg_ids = map(lambda x: x.id, a.args)
+            arg_ts = f_t.dom.elts
+            new_env = dict(env.items() +
+                           zip(arg_ids, arg_ts) + [("return", f_t.ran)])
+            return check_stmt_list(b, new_env)
+
+    else:
+
+        # No assignment rule found.
         return False
-
-    # The user has to have declared the type of of the function prior to the
-    # function definition, so choosing the sigma and tau reduces to environment
-    # lookup.
-    t = env_get(env, name)
-    sigma = t.dom
-    tau = t.ran
-
-    # Next, ensure that the input type is the correct form given the number of
-    # parameters.
-    if not ((len(args) == 0 and sigma == unit_t) or
-            (len(args) == 1 and sigma != unit_t) or
-            (sigma.is_tuple() and len(sigma.elts) == len(args))):
-        return False
-
-    # The environment to use while typechecking the function body.
-    body_env = env.copy()
-
-    # Mandate the specified return type.
-    body_env["return"] = tau
-
-    # Add the types of the parameters.
-    if len(args) == 1:
-        body_env[args[0].id] = sigma
-    elif len(args) > 1:
-        t_debug(str(args))
-        t_debug(str(sigma))
-        for (arg, arg_t) in zip(args, sigma.elts):
-            body_env[arg.id] = arg_t
-
-    return check_stmt_list(body, body_env)
 
 def check_Return_stmt(stmt, env):
     """Return Statement."""
