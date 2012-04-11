@@ -190,19 +190,13 @@ def check_AugAssign_stmt(stmt, env):
     
     assert stmt.__class__ is ast.AugAssign
 
-    v = stmt.value
-    tar = stmt.target
+    e0 = stmt.target
     op = stmt.op
+    e1 = stmt.value
 
-    binop = ast.BinOp(tar, op, v)
+    e0_t = infer_expr(e0, env)
 
-    t = infer_expr(tar, env)
-
-    if t is None:
-        # The target doesn't typecheck properly.
-        return False
-    else:
-        return check_expr(binop, t, env)
+    return e0_t and check_expr(ast.BinOp(e0, op, e1), e0_t, env)
 
 def check_Print_stmt(stmt, env):
     """Print Statement."""
