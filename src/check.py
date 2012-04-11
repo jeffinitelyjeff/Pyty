@@ -601,6 +601,8 @@ def check_Subscript_expr(subs, t, env):
     # Type inference is necessary off the bat; these rules are the polar
     # opposite of syntax direction.
     c_t = infer_expr(c, env)
+    if not c_t:
+        return False
 
     # Indexing.
     if s.__class__ is ast.Index:
@@ -631,7 +633,7 @@ def check_Subscript_expr(subs, t, env):
         # (Tup-Slc) assignment rule.
         if c_t.is_tuple() and all(not e or node_is_int(e)
                                   for e in [e0, e1, e2]):
-            rng = slice_range(e0, e1, e2, len(c_t.elts))
+            rng = slice_range(e0, e1, e2, c_t.tuple_len())
             return t.is_tuple() and rng and all(c_t.elts[j] == t.elts[i]
                                                 for (i,j) in enumerate(rng))
 
@@ -649,7 +651,7 @@ def check_Name_expr(name, t, env):
 
     # (Base-Env) assignment rule.
     if x in base_env:
-        return base_env[x]
+        return t == base_env[x]
 
     # (Idn) assignment rule.
     elif env_get(env, x) == t:
