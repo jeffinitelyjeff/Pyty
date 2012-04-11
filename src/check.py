@@ -150,19 +150,21 @@ def check_Return_stmt(stmt, env):
     """Return Statement."""
     
     assert stmt.__class__ == ast.Return
-    
+
     e = stmt.value
-    ret_t = env_get(env, "return")
 
-    if e is None:
+    try:
+        r_t = env_get(env, "return")
+    except TypeUnspecifiedError:
+        r_t = None
 
-        # (urtn) assignment rule.
-        return ret_t == unit_t
+    # (RetU) assignment rule.
+    if not e:
+        return r_t == unit_t
 
+    # (Ret) assignment rule.
     else:
-
-        # (rtn) assignment rule.
-        return check_expr(e, ret_t, env)
+        return check_expr(e, r_t, env)
 
 def check_Assign_stmt(stmt, env):
     """Assignment."""
