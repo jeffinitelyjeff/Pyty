@@ -130,7 +130,7 @@ def check_FunctionDef_stmt(stmt, env):
 
     # All Fn-Def rules have specific forms for args and decorator_list.
     if (all(arg.__class__ is ast.Name for arg in a.args) and
-        a.vararg is None and a.kwarg is None and not a.defaults and not d):
+        not a.vararg and not a.kwarg and not a.defaults and not d):
 
         f_t = env_get(env, f)
 
