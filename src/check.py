@@ -108,7 +108,7 @@ def check_stmt(stmt, env):
 def check_FunctionDef_stmt(stmt, env):
     """Function Definition."""
 
-    assert stmt.__class__ == ast.FunctionDef
+    assert stmt.__class__ is ast.FunctionDef
 
     f = stmt.name
     a = stmt.args
@@ -149,7 +149,7 @@ def check_FunctionDef_stmt(stmt, env):
 def check_Return_stmt(stmt, env):
     """Return Statement."""
     
-    assert stmt.__class__ == ast.Return
+    assert stmt.__class__ is ast.Return
 
     e = stmt.value
 
@@ -168,8 +168,8 @@ def check_Return_stmt(stmt, env):
 
 def check_Assign_stmt(stmt, env):
     """Assignment."""
-    
-    assert stmt.__class__ == ast.Assign
+
+    assert stmt.__class__ is ast.Assign
 
     v = stmt.value
     tars = stmt.targets
@@ -203,7 +203,7 @@ def check_Assign_stmt(stmt, env):
 def check_AugAssign_stmt(stmt, env):
     """Augmented Assignment."""
     
-    assert stmt.__class__ == ast.AugAssign
+    assert stmt.__class__ is ast.AugAssign
 
     v = stmt.value
     tar = stmt.target
@@ -222,7 +222,7 @@ def check_AugAssign_stmt(stmt, env):
 def check_Print_stmt(stmt, env):
     """Print Statement."""
 
-    assert stmt.__class__ == ast.Print
+    assert stmt.__class__ is ast.Print
 
     # todo: need to make sure no dest
 
@@ -231,7 +231,7 @@ def check_Print_stmt(stmt, env):
 def check_For_stmt(stmt, env):
     """For Loop."""
 
-    assert stmt.__class__ == ast.For
+    assert stmt.__class__ is ast.For
 
     # Look up the type we've declared for the loop variable. We don't just do an
     # environment lookup because the target could be any left-hand side of an
@@ -250,7 +250,7 @@ def check_For_stmt(stmt, env):
 def check_While_stmt(stmt, env):
     """While Loop."""
 
-    assert stmt.__class__ == ast.While
+    assert stmt.__class__ is ast.While
 
     e = stmt.test
     b0 = stmt.body
@@ -263,7 +263,7 @@ def check_While_stmt(stmt, env):
 def check_If_stmt(stmt, env):
     """Conditional Block."""
 
-    assert stmt.__class__ == ast.If
+    assert stmt.__class__ is ast.If
 
     e = stmt.test
     b0 = stmt.body
@@ -276,9 +276,9 @@ def check_If_stmt(stmt, env):
 def check_Expr_stmt(stmt, env):
     """Expression Statement."""
 
-    assert stmt.__class__ == ast.Expr
+    assert stmt.__class__ is ast.Expr
 
-    if stmt.value.__class__ == ast.Call:
+    if stmt.value.__class__ is ast.Call:
 
         call = stmt.value
 
@@ -297,21 +297,21 @@ def check_Expr_stmt(stmt, env):
 def check_Pass_stmt(stmt, env):
     """Pass Statement."""
 
-    assert stmt.__class__ == ast.Pass
+    assert stmt.__class__ is ast.Pass
 
     return True
 
 def check_Break_stmt(stmt, env):
     """Break Statement."""
 
-    assert stmt.__class__ == ast.Break
+    assert stmt.__class__ is ast.Break
 
     return True
 
 def check_Continue_stmt(stmt, env):
     """Continue Statement."""
 
-    assert stmt.__class__ == ast.Continue
+    assert stmt.__class__ is ast.Continue
 
     return True
 
