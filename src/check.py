@@ -567,19 +567,12 @@ def check_Num_expr(num, t, env):
 
     n = num.n
 
-    if t == int_t:
+    # (Num) assignment rule.
+    if t == int_t or t == float_t:
+        return type(n) is (int if t == int_t else float)
 
-        # (int) assignment rule.
-        return type(n) is int
-
-    elif t == float_t:
-
-        # (flt) assignment rule.
-        return type(n) is float
-
+    # No type assignment rule found.
     else:
-
-        # No type assignment rule found.
         return False
 
 def check_Str_expr(s, t, env):
