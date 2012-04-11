@@ -575,26 +575,19 @@ def check_Num_expr(num, t, env):
     else:
         return False
 
-def check_Str_expr(s, t, env):
+def check_Str_expr(strr, t, env):
     """String Literals."""
 
-    assert s.__class__ is ast.Str
+    assert strr.__class__ is ast.Str
 
-    the_string = s.s
+    s = strr.s
 
-    if t == str_t:
+    # (Str) assignment rule.
+    if t == str_t or t == unicode_t:
+        return type(s) is (str if t == str_t else unicode)
 
-        # (str) assignment rule.
-        return type(the_string) is str
-
-    elif t == unicode_t:
-
-        # (ustr) assignment rule.
-        return type(the_string) is unicode
-
+    # No type assignment rule found.
     else:
-
-        # No type assignment rule found.
         return False
 
 def check_Subscript_expr(subs, t, env):
