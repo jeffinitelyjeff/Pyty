@@ -685,22 +685,21 @@ def check_Name_expr(name, t, env):
 
     assert name.__class__ is ast.Name
 
-    id_str = name.id
+    x = name.id
 
-    if id_str == 'True' or id_str == 'False':
+    base_env = {"True" : bool_t, "False" : bool_t, "None" : unit_t}
 
-        # (bool) assignment rule
-        return t == bool_t
+    # (Base-Env) assignment rule.
+    if x in base_env:
+        return base_env[x]
 
-    elif id_str == 'None':
+    # (Idn) assignment rule.
+    elif env_get(env, x) == t:
+        return True
 
-        # (none) assignment rule.
-        return t == unit_t
-
+    # No assignment rule found.
     else:
-
-        # (idn) assignment rule
-        return env_get(env, id_str) == t
+        return False
 
 def check_List_expr(lst, t, env):
     """List Construction."""
