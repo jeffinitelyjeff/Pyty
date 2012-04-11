@@ -77,6 +77,8 @@ def check_stmt_list(stmt_list, env):
 
 ## Statement Typechecking.
 
+stmt_template = "check_%s_stmt"
+
 def check_stmt(stmt, env):
     """
     Check whether the statement `stmt` typechecks under type environment `env`.
@@ -89,7 +91,7 @@ def check_stmt(stmt, env):
     t_debug("--- v Typechecking " + stmt.__class__.__name__ + " stmt v ---"
             "\nStmt: " + str(stmt) + "\nEnv: " + str(env))
 
-    n = "check_%s_stmt" % stmt.__class__.__name__
+    n = stmt_template % stmt.__class__.__name__
 
     # if we get a KeyError, then we're inspecting an AST node that is not in
     # the subset of the language we're considering (note: the subset is
@@ -324,6 +326,8 @@ def check_Continue_stmt(stmt, env):
 
 ## Expression Checking Functions.
 
+expr_template = "check_%s_expr"
+
 def check_expr(expr, t, env):
     """
     Check whether the expression `expr` can be assigned type `t` under type
@@ -339,7 +343,7 @@ def check_expr(expr, t, env):
     assert isinstance(t, PType), \
            "Should be checking against a PType, not a " + cname(t)
 
-    n = "check_%s_expr" % expr.__class__.__name__
+    n = expr_template % expr.__class__.__name__
 
     t_debug("-- v Typechecking expr as " + str(t) + " v --\nExpr: " +
             str(expr) + "\nEnv: " + str(env))

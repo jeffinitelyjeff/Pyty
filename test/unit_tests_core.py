@@ -9,8 +9,7 @@ import ast
 sys.path.insert(0, '../src')
 
 from ast_extensions import TypeDecASTModule
-from check import (check_expr, check_mod, get_check_expr_func_name,
-                   call_function)
+from check import (check_expr, check_mod, expr_template, call_function)
 from parse_file import parse_type_decs
 from ptype import PType
 from errors import TypeUnspecifiedError, TypeIncorrectlySpecifiedError
@@ -43,7 +42,7 @@ class PytyTests(unittest.TestCase):
 
         a = ast.parse(s).body[0].value
 
-        f = get_check_expr_func_name(expr_kind)
+        f = expr_template % expr_kind
 
         if expected == "pass" or expected == "fail":
             t = PType.from_str(typ)
