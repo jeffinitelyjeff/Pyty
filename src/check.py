@@ -486,13 +486,13 @@ def check_IfExp_expr(ifx, t, env):
 
     assert ifx.__class__ is ast.IfExp
 
-    test = ifx.test
-    e1 = ifx.body
+    e0 = ifx.body
+    e1 = ifx.test
     e2 = ifx.orelse
 
-    # (ifx) assignment rule.
-    return (check_expr(test, bool_t, env) and
-            check_expr(e1, t, env) and
+    # (If-Exp) assignment rule.
+    return (check_expr(e0, t, env) and
+            check_expr(e1, bool_t, env) and
             check_expr(e2, t, env))
 
 def check_Compare_expr(compare, t, env):
