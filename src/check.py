@@ -341,8 +341,11 @@ def check_BoolOp_expr(boolop, t, env):
 
     assert boolop.__class__ is ast.BoolOp
 
-    # TODO: implement!
-    return False
+    op = boolop.op
+    es = boolop.values
+
+    # (BoolOp) assignment rule.
+    return all(check_expr(e, t, env) for e in es)
 
 def check_BinOp_expr(binop, t, env):
     """Binary Operations."""
