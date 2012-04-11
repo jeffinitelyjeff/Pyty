@@ -209,8 +209,6 @@ def check_Print_stmt(stmt, env):
     assert stmt.__class__ is ast.Print
 
     d = stmt.dest
-    v = stmt.values
-    n = stmt.nl
 
     # (Print) assignment rule.
     if not d:
@@ -225,19 +223,16 @@ def check_For_stmt(stmt, env):
 
     assert stmt.__class__ is ast.For
 
-    # Look up the type we've declared for the loop variable. We don't just do an
-    # environment lookup because the target could be any left-hand side of an
-    # assignment.
-    t = infer_expr(stmt.target, env)
+    x = stmt.target
+    e = stmt.iter
+    b0 = stmt.body
+    b1 = stmt.orelse
 
-    if t is None:
-        # The target expression doesn't typecheck properly.
-        return False
+    x_t = infer_expr(x, env)
 
-    # (lfor) assigment rule.
-    return (check_expr(stmt.iter, PType.list(t), env) and
-            check_stmt_list(stmt.body, env) and
-            check_stmt_list(stmt.orelse, env))
+    # (For) assignment rule. -- restricted by type inference
+    return (x_t and check_expr(e, PType.list(x_t), env) and
+            check_stmt_list(b0, env) and check_stmt_list(b1, env))
 
 def check_While_stmt(stmt, env):
     """While Loop."""
