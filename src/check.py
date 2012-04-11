@@ -31,6 +31,11 @@ bit_ops = set([ast.LShift, ast.RShift, ast.BitOr, ast.BitAnd, ast.BitXor])
 bin_ops = arith_ops | bit_ops
 unary_ops = set([ast.Invert, ast.Not, ast.UAdd, ast.USub])
 
+comp_eq_ops = set([ast.Eq, ast.NotEq, ast.Is, ast.IsNot])
+comp_num_ops = set([ast.Lt, ast.LtE, ast.Gt, ast.GtE])
+comp_ops = comp_num_ops | comp_eq_ops
+
+
 
 
 
@@ -499,50 +504,31 @@ def check_Compare_expr(compare, t, env):
     """Comparisons."""
 
     assert compare.__class__ is ast.Compare
-
-    # Operators that need to take numbers.
-    num_ops = [ast.Lt, ast.LtE, ast.Gt, ast.GtE]
-    # Operators that can take arbitrary expressions.
-    eq_ops = [ast.Eq, ast.NotEq, ast.Is, ast.IsNot]
-
+    
     e0 = compare.left
     ops = compare.ops
     es = compare.comparators
 
-    # Base case; either (eq) or (ineq).
-    if len(ops) == 1 and t == bool_t:
+    assert all(op.__class__ in comp_ops for op in ops)
 
-        e1 = es[0]
+    # (Eqlty) assigment rule.
+    if len(ops) == 1 and ops[0].__class__ in comp_eq_ops and t == bool_t:
+        return True
 
-        if ops[0].__class__ in eq_ops:
+    # (Ineqlty) assignment rule.
+    elif len(ops) == 1 and ops[0].__class__ in comp_num_ops and t == bool_t:
+        possible_ts = (int_t, float_t, str_t, unicode_t)
+        return any(check_expr(e0, pt, env) and check_expr(es[0], pt, env)
+                   for pt in possible_ts)
 
-            # (eq) assignment rule.
-            return True
-
-        elif ops[0].__class__ in num_ops:
-
-            # (ineq) assignment rule.
-            ts = (int_t, float_t, str_t, unicode_t)
-            return any(check_expr(e0, t, env) and check_expr(e1, t, env)
-                       for t in ts)
-
-        else:
-
-            # no assignment rule found.
-            return False
-
-    elif t == bool_t:
-
-        # (cmp) assignment rule.
-
+    # (Comp-Chain) assignment rule.
+    elif len(ops) > 1 and t == bool_t:
         head = ast.Compare(e0, ops[:1], es[:1])
         tail = ast.Compare(es[0], ops[1:], es[1:])
-
         return check_expr(head, bool_t, env) and check_expr(tail, bool_t, env)
 
+    # No assignment rule found.
     else:
-
-        # no assignment rule fonud.
         return False
 
 def check_Call_expr(call, t, env):
