@@ -537,37 +537,28 @@ def check_Call_expr(call, t, env):
     assert call.__class__ is ast.Call
 
     f = call.func
-    args = call.args
+    a = call.args
+    k = call.keywords
+    s = call.starargs
+    kw = call.kwargs
 
-    # (call) assignment rule.
+    # All App rules have specific forms for keywords, starargs, and kwargs.
+    if not k and not s and not kw:
+        
+        f_t = env_get(env, f.id)
 
-    # FIXME: We're using infer_expr here, but it's not clear whether this is
-    # legitimate -- will the inferable subset of the language allow calling
-    # functions returned by other functions? (this is fine if we're just calling
-    # functions by identifiers.)
-    f_t = infer_expr(f, env)
+        # (App1) assignment rule.
+        if not a:
+            return f_t == PType.arrow(unit_t, t)
 
-    # If f doesn't typecheck.
-    if f_t is None:
-        return False
+        # (App2) assignment rule.
+        elif len(a) == 1:
+            return check_expr(a[0], f_t.dom, env) and f_t.ran == t
 
-    sigma = f_t.dom
-    tau = f_t.ran
-
-    # In the type system, we treat no arguments as unit type, and multiple
-    # arguments as a tuple.
-    if len(args) == 0:
-
-        return tau == t and sigma == unit_t
-
-    else:
-
-        if len(args) == 1:
-            wrap_args = args[0]
+        # (App3) assignment rule.
         else:
-            wrap_args = ast.Tuple(elts=[arg for arg in args], load=ast.Load())
-
-        return tau == t and check_expr(wrap_args, sigma, env)
+            tup = ast.Tuple([b for b in a], ast.Load())
+            return check_expr(tup, f_t.dom, env) and f_t.ran == t
 
 def check_Num_expr(num, t, env):
     """Numeric Literals."""
