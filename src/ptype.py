@@ -216,7 +216,10 @@ class PType:
         elif self.is_set():
             return "{" + self.elt.__repr__() + "}"
         elif self.is_tuple():
-            return "(" + ", ".join(elt.__repr__() for elt in self.elts) + ")"
+            if self.tuple_len() == 1:
+                return "(%s,)" % self.elts[0].__repr__()
+            else:
+                return "(" + ", ".join(elt.__repr__() for elt in self.elts) + ")"
         elif self.is_map():
             return "{" + self.dom.__repr__() + ": " + self.ran.__repr__() + "}"
         elif self.is_arrow():

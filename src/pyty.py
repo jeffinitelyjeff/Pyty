@@ -69,8 +69,8 @@ elif opt.expr and opt.type and not opt.filename and not opt.infer_expr:
     e = ast.parse(opt.expr).body[0].value
     t = PType.from_str(opt.type)
     template = ("YES! -- %s typechecks as type %s" if check_expr(e, t, {}) else
-                "NO! --- %s does not typechecka s type %s")
-    print template % (opt.expr, opt.type)
+                "NO! --- %s does not typecheck as type %s")
+    print template % (opt.expr, t)
 
 elif opt.infer_expr and not opt.filename and not opt.expr and not opt.type:
     e = ast.parse(opt.infer_expr).body[0].value
