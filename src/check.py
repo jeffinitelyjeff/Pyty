@@ -542,22 +542,25 @@ def _check_Call_expr(call, t, env):
     kw = call.kwargs
 
     # All App rules have specific forms for keywords, starargs, and kwargs.
-    if not k and not s and not kw and f.__class__ is ast.Name:
-
-        f_t = env_get(env, f.id)
+    if not k and not s and not kw:
 
         # (App1) assignment rule.
         if not a:
-            return f_t == PType.arrow(unit_t, t)
+            return check_expr(f, PType.arrow(unit_t, t), env)
 
         # (App2) assignment rule.
-        elif len(a) == 1:
+        elif len(a) == 1 and f.__class__ is ast.Name:
+            f_t = env_get(env, f.id)
             return check_expr(a[0], f_t.dom, env) and f_t.ran == t
 
         # (App3) assignment rule.
-        else:
+        elif f.__class__ is ast.Name:
+            f_t = env_get(env, f.id)
             tup = ast.Tuple([b for b in a], ast.Load())
             return check_expr(tup, f_t.dom, env) and f_t.ran == t
+
+    # No assignment rule found.
+    return False
 
 def _check_Num_expr(num, t, env):
     """Numeric Literals."""
