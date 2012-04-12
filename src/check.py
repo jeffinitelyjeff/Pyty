@@ -167,7 +167,7 @@ def _check_Return_stmt(stmt, env):
     try:
         r_t = env_get(env, "return")
     except TypeUnspecifiedError:
-        r_t = None
+        return False
 
     # (RetU) assignment rule.
     if not e:
