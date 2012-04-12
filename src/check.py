@@ -280,7 +280,7 @@ def _check_Expr_stmt(stmt, env):
     e = stmt.value
 
     # (Expr-Stmt) assignment rule
-    if e.__class__ is ast.Call:
+    if e.__class__ is ast.Call and e.func.__class__ is ast.Name:
         f = e.func
         f_t = env_get(env, f.id)
         return check_expr(e, f_t.ran, env)
@@ -542,8 +542,8 @@ def _check_Call_expr(call, t, env):
     kw = call.kwargs
 
     # All App rules have specific forms for keywords, starargs, and kwargs.
-    if not k and not s and not kw:
-        
+    if not k and not s and not kw and f.__class__ is ast.Name:
+
         f_t = env_get(env, f.id)
 
         # (App1) assignment rule.
