@@ -631,11 +631,12 @@ def check_Subscript_expr(subs, t, env):
             return c_t == t and valid_int_slice(e0, e1, e2, env)
 
         # (Tup-Slc) assignment rule.
-        if c_t.is_tuple() and all(not e or node_is_int(e)
-                                  for e in [e0, e1, e2]):
+        elif c_t.is_tuple() and all(not e or node_is_int(e)
+                                    for e in [e0, e1, e2]):
             rng = slice_range(e0, e1, e2, c_t.tuple_len())
-            return t.is_tuple() and rng and all(c_t.elts[j] == t.elts[i]
-                                                for (i,j) in enumerate(rng))
+            return (t.is_tuple() and rng and len(rng) == t.tuple_len()
+                    and all(c_t.elts[j] == t.elts[i]
+                            for (i,j) in enumerate(rng)))
 
     # No assignment rule found
     return False

@@ -4,7 +4,7 @@ import sys
 from optparse import OptionParser, OptionGroup
 
 from logger import Logger
-from check import check_mod
+from check import check_mod, check_expr
 from infer import infer_expr
 from ptype import PType
 from parse_file import parse_type_decs
@@ -67,9 +67,9 @@ if opt.filename and not opt.expr and not opt.type and not opt.infer_expr:
 
 elif opt.expr and opt.type and not opt.filename and not opt.infer_expr:
     e = ast.parse(opt.expr).body[0].value
-    t = PType(opt.type)
-    template = ("YES! %s typechecks as type %s" if infer_expr(e, t, {}) else
-                "NO! %s does not typechecka s type %s")
+    t = PType.from_str(opt.type)
+    template = ("YES! -- %s typechecks as type %s" if check_expr(e, t, {}) else
+                "NO! --- %s does not typechecka s type %s")
     print template % (opt.expr, opt.type)
 
 elif opt.infer_expr and not opt.filename and not opt.expr and not opt.type:
