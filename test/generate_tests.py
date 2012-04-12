@@ -12,6 +12,7 @@ from settings import (TEST_CODE_SUBDIR, SPEC_SUBDIR, SPEC_EXPR_PREFIX,
                       SPEC_MOD_PREFIX, UNIT_TEST_CORE, UNIT_TEST_OUTPUT)
 from logger import announce_file
 from util import escape
+from check import expr_template
 
 import check
 
@@ -87,7 +88,7 @@ def _create_generic_tests(spec_file, result_delim, test_delim, expr_kind):
         # function in typecheck.py to actually deal with that kind of
         # expression.
         try:
-            getattr(check, "check_%s_expr" % expr_kind)
+            getattr(check, expr_template % expr_kind)
         except AttributeError:
             raise Exception("Expression test spec states that checking " +
                             "against expressions of type " + expr_kind +
