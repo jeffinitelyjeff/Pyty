@@ -17,17 +17,15 @@ class PType:
 
     # Containers.
     LIST = 6
-    SET = 7
-    TUPLE = 8
-    MAP = 9
-    ARROW = 10
+    TUPLE = 7
+    ARROW = 8
 
     # Polymorphism stuff.
-    VAR = 11
-    UNIV = 12
+    VAR = 9
+    UNIV = 10
 
     def __init__(self, tag):
-        assert type(tag) is int and 0 <= tag <= 12
+        assert type(tag) is int and 0 <= tag <= 10
         self.tag = tag
 
     ## Type constructor dispatchers.
@@ -65,12 +63,8 @@ class PType:
                 assert True, ast
         elif ast.__class__ == Lst:
             return PType.list(from_ast(ast.elt_t()))
-        elif ast.__class__ == Stt:
-            return PType.set(from_ast(ast.elt_t()))
         elif ast.__class__ == Tup:
             return PType.tuple([from_ast(t) for t in ast.elt_ts()])
-        elif ast.__class__ == Mpp:
-            return PType.map(from_ast(ast.key_t()), from_ast(ast.val_t()))
         elif ast.__class__ == Arr:
             return PType.arrow(from_ast(ast.domain_t()),
                                from_ast(ast.range_t()))
@@ -124,22 +118,9 @@ class PType:
         return t
 
     @staticmethod
-    def set(elt):
-        t = PType(PType.SET)
-        t.elt = elt
-        return t
-
-    @staticmethod
     def tuple(elts):
         t = PType(PType.TUPLE)
         t.elts = elts
-        return t
-
-    @staticmethod
-    def map(dom, ran):
-        t = PType(PType.MAP)
-        t.dom = dom
-        t.ran = ran
         return t
 
     @staticmethod
@@ -172,14 +153,8 @@ class PType:
     def is_list(self):
         return self.tag == PType.LIST
 
-    def is_set(self):
-        return self.tag == PType.SET
-
     def is_tuple(self):
         return self.tag == PType.TUPLE
-
-    def is_map(self):
-        return self.tag == PType.MAP
 
     def is_arrow(self):
         return self.tag == PType.ARROW
@@ -213,15 +188,11 @@ class PType:
 
         elif self.is_list():
             return "[" + self.elt.__repr__() + "]"
-        elif self.is_set():
-            return "{" + self.elt.__repr__() + "}"
         elif self.is_tuple():
             if self.tuple_len() == 1:
                 return "(%s,)" % self.elts[0].__repr__()
             else:
                 return "(" + ", ".join(elt.__repr__() for elt in self.elts) + ")"
-        elif self.is_map():
-            return "{" + self.dom.__repr__() + ": " + self.ran.__repr__() + "}"
         elif self.is_arrow():
             return self.dom.__repr__() + " -> " + self.ran.__repr__()
 
@@ -263,12 +234,8 @@ class PType:
             return {}
         elif self.is_list():
             return self.elt.free_type_vars()
-        elif self.is_set():
-            return self.elt.free_type_vars()
         elif self.is_tuple():
             return set().union(*[elt.free_type_vars() for elt in self.elts])
-        elif self.is_map():
-            return self.dom.free_type_vars() | self.ran.free_type_vars()
         elif self.is_arrow():
             return self.dom.free_type_vars() | self.ran.free_type_vars()
 
@@ -300,20 +267,9 @@ class Lst(List):
     def elt_t(self):
         return self[0]
 
-class Stt(List):
-    def elt_t(self):
-        return self[0]
-
 class Tup(List):
     def elt_ts(self):
         return [t for t in self]
-
-class Mpp(List):
-    def key_t(self):
-        return self[0]
-
-    def val_t(self):
-        return self[1]
 
 class Arr(List):
     def domain_t(self):
@@ -334,16 +290,9 @@ class TypeSpecParser:
     list_start = Token(r'\[')
     list_end = Token(r'\]')
 
-    set_start = Token(r'\{')
-    set_end = Token(r'\}')
-
     tuple_start = Token(r'\(')
     tuple_div = Token(r',')
     tuple_end = Token(r'\)')
-
-    map_start = Token(r'\{')
-    map_div = Token(r':')
-    map_end = Token(r'\}')
 
     arrow_div = Token(r'\->')
 
@@ -355,19 +304,16 @@ class TypeSpecParser:
     base_typ = num_typ | str_typ | bool_tok | unit_tok | var_tok
 
     lst = ~list_start & typ & ~list_end > Lst
-    stt = ~set_start & typ & ~set_end > Stt
 
     empty_tup = ~tuple_start & ~tuple_end > Tup
     comma_tup = ~tuple_start & (typ & ~tuple_div)[1:] & ~tuple_end > Tup
     no_comma_tup = ~tuple_start & (typ & ~tuple_div)[1:] & typ & ~tuple_end > Tup
     tup = empty_tup | comma_tup | no_comma_tup
 
-    mpp = ~map_start & typ & ~map_div & typ & ~map_end > Mpp
-
     arr = tight_typ & ~arrow_div & typ > Arr
 
     parens = ~tuple_start & typ & ~tuple_end
-    tight_typ += base_typ | lst | stt | tup | mpp | parens
+    tight_typ += base_typ | lst | tup | parens
     typ += arr | tight_typ
 
     @staticmethod
