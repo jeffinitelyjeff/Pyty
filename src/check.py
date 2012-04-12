@@ -90,7 +90,7 @@ def check_stmt_list(stmt_list, env):
 
 ## Statement Typechecking.
 
-stmt_template = "check_%s_stmt"
+stmt_template = "_check_%s_stmt"
 
 def check_stmt(stmt, env):
     """
@@ -118,7 +118,7 @@ def check_stmt(stmt, env):
         return False
 
 
-def check_FunctionDef_stmt(stmt, env):
+def _check_FunctionDef_stmt(stmt, env):
     """Function Definition."""
 
     assert stmt.__class__ is ast.FunctionDef
@@ -155,10 +155,9 @@ def check_FunctionDef_stmt(stmt, env):
             return check_stmt_list(b, new_env)
 
     # No assignment rule found.
-    else:
-        return False
+    return False
 
-def check_Return_stmt(stmt, env):
+def _check_Return_stmt(stmt, env):
     """Return Statement."""
     
     assert stmt.__class__ is ast.Return
@@ -178,7 +177,7 @@ def check_Return_stmt(stmt, env):
     else:
         return check_expr(e, r_t, env)
 
-def check_Assign_stmt(stmt, env):
+def _check_Assign_stmt(stmt, env):
     """Assignment."""
 
     assert stmt.__class__ is ast.Assign
@@ -202,7 +201,7 @@ def check_Assign_stmt(stmt, env):
     else:
         return False
 
-def check_AugAssign_stmt(stmt, env):
+def _check_AugAssign_stmt(stmt, env):
     """Augmented Assignment."""
     
     assert stmt.__class__ is ast.AugAssign
@@ -216,7 +215,7 @@ def check_AugAssign_stmt(stmt, env):
     # (Aug-Assmt) assignment rule. -- restricted by type inference
     return e0_t and check_expr(ast.BinOp(e0, op, e1), e0_t, env)
 
-def check_Print_stmt(stmt, env):
+def _check_Print_stmt(stmt, env):
     """Print Statement."""
 
     assert stmt.__class__ is ast.Print
@@ -231,7 +230,7 @@ def check_Print_stmt(stmt, env):
     else:
         return False
 
-def check_For_stmt(stmt, env):
+def _check_For_stmt(stmt, env):
     """For Loop."""
 
     assert stmt.__class__ is ast.For
@@ -247,7 +246,7 @@ def check_For_stmt(stmt, env):
     return (x_t and check_expr(e, PType.list(x_t), env) and
             check_stmt_list(b0, env) and check_stmt_list(b1, env))
 
-def check_While_stmt(stmt, env):
+def _check_While_stmt(stmt, env):
     """While Loop."""
 
     assert stmt.__class__ is ast.While
@@ -260,7 +259,7 @@ def check_While_stmt(stmt, env):
             check_stmt_list(b0, env) and
             check_stmt_list(b1, env))
 
-def check_If_stmt(stmt, env):
+def _check_If_stmt(stmt, env):
     """Conditional Block."""
 
     assert stmt.__class__ is ast.If
@@ -273,7 +272,7 @@ def check_If_stmt(stmt, env):
             check_stmt_list(b0, env) and
             check_stmt_list(b1, env))
 
-def check_Expr_stmt(stmt, env):
+def _check_Expr_stmt(stmt, env):
     """Expression Statement."""
 
     assert stmt.__class__ is ast.Expr
@@ -290,21 +289,21 @@ def check_Expr_stmt(stmt, env):
     else:
         return False
 
-def check_Pass_stmt(stmt, env):
+def _check_Pass_stmt(stmt, env):
     """Pass Statement."""
 
     assert stmt.__class__ is ast.Pass
 
     return True
 
-def check_Break_stmt(stmt, env):
+def _check_Break_stmt(stmt, env):
     """Break Statement."""
 
     assert stmt.__class__ is ast.Break
 
     return True
 
-def check_Continue_stmt(stmt, env):
+def _check_Continue_stmt(stmt, env):
     """Continue Statement."""
 
     assert stmt.__class__ is ast.Continue
@@ -315,7 +314,7 @@ def check_Continue_stmt(stmt, env):
 
 ## Expression Checking Functions.
 
-expr_template = "check_%s_expr"
+expr_template = "_check_%s_expr"
 
 def check_expr(expr, t, env):
     """
@@ -349,7 +348,7 @@ def check_expr(expr, t, env):
         return False
 
 
-def check_BoolOp_expr(boolop, t, env):
+def _check_BoolOp_expr(boolop, t, env):
     """Boolean Operations."""
 
     assert boolop.__class__ is ast.BoolOp
@@ -362,7 +361,7 @@ def check_BoolOp_expr(boolop, t, env):
     # (BoolOp) assignment rule.
     return all(check_expr(e, t, env) for e in es)
 
-def check_BinOp_expr(binop, t, env):
+def _check_BinOp_expr(binop, t, env):
     """Binary Operations."""
 
     assert binop.__class__ is ast.BinOp
@@ -427,7 +426,7 @@ def check_BinOp_expr(binop, t, env):
     # No assignment rule found.
     return False
 
-def check_UnaryOp_expr(unop, t, env):
+def _check_UnaryOp_expr(unop, t, env):
     """Unary Operations."""
 
     assert unop.__class__ is ast.UnaryOp
@@ -453,7 +452,7 @@ def check_UnaryOp_expr(unop, t, env):
     else:
         return False
 
-def check_Lambda_expr(lambd, t, env):
+def _check_Lambda_expr(lambd, t, env):
     """Abstraction."""
 
     assert lambd.__class__ is ast.Lambda
@@ -486,7 +485,7 @@ def check_Lambda_expr(lambd, t, env):
     else:
         return False    
 
-def check_IfExp_expr(ifx, t, env):
+def _check_IfExp_expr(ifx, t, env):
     """Conditional Expression."""
 
     assert ifx.__class__ is ast.IfExp
@@ -500,7 +499,7 @@ def check_IfExp_expr(ifx, t, env):
             check_expr(e1, bool_t, env) and
             check_expr(e2, t, env))
 
-def check_Compare_expr(compare, t, env):
+def _check_Compare_expr(compare, t, env):
     """Comparisons."""
 
     assert compare.__class__ is ast.Compare
@@ -531,7 +530,7 @@ def check_Compare_expr(compare, t, env):
     else:
         return False
 
-def check_Call_expr(call, t, env):
+def _check_Call_expr(call, t, env):
     """Application."""
 
     assert call.__class__ is ast.Call
@@ -560,7 +559,7 @@ def check_Call_expr(call, t, env):
             tup = ast.Tuple([b for b in a], ast.Load())
             return check_expr(tup, f_t.dom, env) and f_t.ran == t
 
-def check_Num_expr(num, t, env):
+def _check_Num_expr(num, t, env):
     """Numeric Literals."""
 
     assert num.__class__ is ast.Num
@@ -575,7 +574,7 @@ def check_Num_expr(num, t, env):
     else:
         return False
 
-def check_Str_expr(strr, t, env):
+def _check_Str_expr(strr, t, env):
     """String Literals."""
 
     assert strr.__class__ is ast.Str
@@ -590,7 +589,7 @@ def check_Str_expr(strr, t, env):
     else:
         return False
 
-def check_Subscript_expr(subs, t, env):
+def _check_Subscript_expr(subs, t, env):
     """Subscription."""
 
     assert subs.__class__ is ast.Subscript
@@ -642,7 +641,7 @@ def check_Subscript_expr(subs, t, env):
     # No assignment rule found
     return False
 
-def check_Name_expr(name, t, env):
+def _check_Name_expr(name, t, env):
     """Identifiers."""
 
     assert name.__class__ is ast.Name
@@ -663,7 +662,7 @@ def check_Name_expr(name, t, env):
     else:
         return False
 
-def check_List_expr(lst, t, env):
+def _check_List_expr(lst, t, env):
     """List Construction."""
 
     assert lst.__class__ is ast.List
@@ -677,7 +676,7 @@ def check_List_expr(lst, t, env):
     # No assignment rule found.
     return False
 
-def check_Tuple_expr(tup, t, env):
+def _check_Tuple_expr(tup, t, env):
     """Tuple Construction."""
 
     assert tup.__class__ is ast.Tuple
