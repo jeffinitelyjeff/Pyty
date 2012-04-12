@@ -49,12 +49,12 @@ ur"test string"[3] : unicode
 (True, 3.0, None)[2] : unit
 
 ## Tuple slicing
-(0, 1, 2, 3, 4, 5, 6)[1:3:2] : (int, int)
+(0, 1, 2, 3, 4, 5, 6)[1:4:2] : (int, int)
 (0, 1, 2, 3, 4, 5, 6)[:3:2] : (int, int)
 (0, 1, 2, 3, 4, 5, 6)[1::3] : (int, int)
-(0, 1, 2, 3, 4, 5, 6)[1:5:] : (int, int, int, int, int)
+(0, 1, 2, 3, 4, 5, 6)[1:5:] : (int, int, int, int)
 (0, 1, 2, 3, 4, 5, 6)[1::] : (int, int, int, int, int, int)
-(0, 1, 2, 3, 4, 5, 6)[:5:] : (int, int, int, int, int, int)
+(0, 1, 2, 3, 4, 5, 6)[:5:] : (int, int, int, int, int)
 (0, 1, 2, 3, 4, 5, 6)[::3] : (int, int, int)
 (0, 1, 2, 3, 4, 5, 6)[::] : (int, int, int, int, int, int, int)
 (True, "1", u'1.0', 5.0, None)[-500:] : (bool, str, unicode, float, unit)
@@ -81,7 +81,7 @@ u"hell"[0][0][0] : unicode
 [(1, 2, 3), (4, 5, 6), (7, 8, 9)][:3:2][2] : (int, int, int)
 ([1.0, 2.0], [3.0, 4.0])[-1][:1:2] : [float]
 [(True, False), (False, False), (True, True)][1::2][1][0] : bool
-[(True, 4), (False, 1), (True, 9)][2][0:-1] : (bool, int)
+[(True, 4), (False, 1), (True, 9)][2][0:] : (bool, int)
 [(True, 4), (False, 1), (True, 9)][2][-1::2] : (int,)
 "hello"[0][0][0] : str
 u"hell"[0][0][0] : unicode
