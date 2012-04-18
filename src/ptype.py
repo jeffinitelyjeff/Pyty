@@ -231,7 +231,7 @@ class PType:
     def free_type_vars(self):
 
         if self.is_base():
-            return {}
+            return set()
         elif self.is_list():
             return self.elt.free_type_vars()
         elif self.is_tuple():
