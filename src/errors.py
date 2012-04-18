@@ -4,6 +4,9 @@ class PytyError(Exception):
 class TypeIncorrectlySpecifiedError(PytyError):
     pass
 
+class TypeMultiSpecifiedError(PytyError):
+    pass
+
 class TypeUnspecifiedError(PytyError):
     def __init__(self, msg=None, var=None, env=None):
         super(TypeUnspecifiedError, self).__init__(msg)

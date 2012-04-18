@@ -63,28 +63,87 @@ def check_mod(mod):
 
 ## Statement List Typechecking.
 
-def check_stmt_list(stmt_list, env):
+def check_stmt_list(stmts, env):
     """
-    Check whether each stmt in `stmt_list` typechecks correctly. `env` is the
-    common type environment shared by all stmts in `stmt_list`
+    Check whether each stmt in `stmts` typechecks correctly. `env` is the
+    common type environment shared by all stmts in `stmts`
     """
 
-    # Make duplicate of environment to add to as we encounter type declarations.
-    w_env = env.copy()
+    # (Stmts-Base) assignment rule.
+    if not stmts:
+        return True
 
-    for s in stmt_list:
+    # (Stmts) assignment rule.
+    elif stmts[0].__class__ is not TypeDec:
+        return check_stmt(stmts[0], env) and check_stmt_list(stmts[1:], env)
 
-        if s.__class__ is TypeDec:
-            # Add each binding to the environment for future statements.
-            for tar in s.targets:
-                w_env[tar.id] = s.t
-        elif not check_stmt(s, w_env):
-            # Break out if a statement doesn't typecheck.
-            return False
+    # (StmtsT) assignment rule.
+    elif stmts[1].__class__ not in (ast.Assign, ast.FunctionDef):
+        tdec = stmts[0]
 
-    # Reaching here means all statements typechecked.
-    return True
+        # Throw an error if a typedec target has already been declared with a
+        # different type.
+        for tar in tdec.targets:
+            try:
+                tar_t = env_get(env, tar.id)
+                if tar_t != tdec.t:
+                    raise TypeMultiSpecifiedError()
+            except TypeUnspecifiedError:
+                pass
 
+        new_env = dict(env)
+        for tar in tdec.targets:
+            new_env[tar.id] = tdec.t
+
+        return check_stmt_list(stmts[1:], env)
+
+    # (Stmts-LetA) assignment rule.
+    elif (stmts[1].__class__ is ast.Assign and
+          len(stmts[0].targets) == 1 and len(stmts[1].targets) == 1 and
+          stmts[0].targets[0].id == stmts[1].targets[0].id):
+        tdec = stmts[0]
+        tar_id = tdec.targets[0].id
+
+        # Throw an error if the typedec target has already been declared with a
+        # different type.
+        try:
+            tar_t = env_get(env, tar_id)
+            if tar_t != tedc.t:
+                raise TypeMultiSpecifiedError()
+        except TypeUnspecifiedError:
+            pass
+
+        new_env = dict(env)
+        new_env[tar_id] = tdec.t.quantify()
+
+        return (check_expr(stmts[1].value, tdec.t, env) and
+                check_stmt_list(stmts[2:], new_env))        
+
+    # (Stmts-LetF) assignment rule.
+    elif (stmts[1].__clas__ is ast.FunctionDef and
+          len(stmts[0].targets) == 1 and smts[0].t.is_arrow() and
+          stmts[0].targets[0].id == stmts[1].name):
+        tdec = stmts[0]
+        tar = tdec.targets[0].id
+        assmt = stmts[1]
+
+        # Throw an error if the typedec target has already been declared with a
+        # different type.
+        try:
+            tar_t = env_get(env, tar_id)
+            if tar_t != tdec.t:
+                raise TypeMultiSpecifiedError()
+        except TypeUnspecifiedError:
+            pass
+
+        env1, env2 = dict(env), dict(env)
+        env1[tar_id] = tdec.t
+        env2[tar_id] = tdec.t.quantify()
+
+        return check_stmt(assmt, env1) and check_stmt_list(stmts[2:], env2)
+
+    # No assignment rule found.
+    return False
 
 
 
